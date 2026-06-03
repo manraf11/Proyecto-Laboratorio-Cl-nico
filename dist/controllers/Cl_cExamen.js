@@ -10,7 +10,7 @@ export default class Cl_cExamen {
         let yoMismo = this;
         this.pantallaExamen.cuandoDenCancelar(() => yoMismo.alCancelar());
         this.pantallaExamen.cuandoDenAceptar((datos) => yoMismo.alAceptar(datos));
-        if ('cuandoRegistrenNuevoEstudio' in this.pantallaExamen) {
+        if (this.pantallaExamen.cuandoRegistrenNuevoEstudio) {
             this.pantallaExamen.cuandoRegistrenNuevoEstudio((nuevoEstudio) => {
                 yoMismo.alRegistrarEstudioCatalogo(nuevoEstudio);
             });

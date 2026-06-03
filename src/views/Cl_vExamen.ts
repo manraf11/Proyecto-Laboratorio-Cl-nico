@@ -1,5 +1,4 @@
 import { I_vExamen } from "../interfaces/I_vExamen.js";
-import { IDatosExamen } from "../interfaces/I_Examen.js";
 import Cl_mEstudio from "../models/Cl_mEstudio.js";
 import Cl_mCatalogoEstudios from "../models/Cl_mCatalogoEstudios.js";
 
@@ -8,7 +7,13 @@ export default class Cl_vExamen implements I_vExamen {
   private contenidoModal: HTMLElement | null;
   private botonCancelar: HTMLButtonElement | null;
   private botonAceptar: HTMLButtonElement | null;
-  private avisarAceptar: ((datos: IDatosExamen) => void) | null = null;
+  private avisarAceptar: ((datos: {
+    nombrePaciente: string;
+    cedulaPaciente: string;
+    telefonoPaciente?: string;
+    estudiosSeleccionados: string[];
+    formaPago: string;
+  }) => void) | null = null;
   private avisarCancelar: (() => void) | null = null;
   private avisarNuevoEstudio: ((estudio: Cl_mEstudio) => void) | null = null;
   private catalogoEstudios: Cl_mCatalogoEstudios;
@@ -66,7 +71,13 @@ export default class Cl_vExamen implements I_vExamen {
   }
 
   public cuandoDenCancelar(callback: () => void): void { this.avisarCancelar = callback; }
-  public cuandoDenAceptar(callback: (datos: IDatosExamen) => void): void { this.avisarAceptar = callback; }
+  public cuandoDenAceptar(callback: (datos: {
+    nombrePaciente: string;
+    cedulaPaciente: string;
+    telefonoPaciente?: string;
+    estudiosSeleccionados: string[];
+    formaPago: string;
+  }) => void): void { this.avisarAceptar = callback; }
   
   public cuandoRegistrenNuevoEstudio(callback: (estudio: Cl_mEstudio) => void): void {
     this.avisarNuevoEstudio = callback;

@@ -5,7 +5,7 @@ import Cl_mCatalogoEstudios from "../models/Cl_mCatalogoEstudios.js";
 export default class Cl_sLaboratorio {
   private static direccionWeb: string = "https://6a14b55c91ff9a63de06fced.mockapi.io/examenes";
 
-  static async guardarEnNube(examen: Cl_mExamen): Promise<any> {
+  static async guardarEnNube(examen: Cl_mExamen): Promise<{ ok: boolean; id?: string }> {
     try {
       let respuesta = await fetch(this.direccionWeb, {
         method: "POST",
@@ -32,7 +32,7 @@ export default class Cl_sLaboratorio {
     }
   }
 
-  static async traerDesdeNube(catalogo: Cl_mCatalogoEstudios): Promise<any> {
+  static async traerDesdeNube(catalogo: Cl_mCatalogoEstudios): Promise<{ ok: boolean; laboratorio: Cl_mLaboratorio }> {
     try {
       let respuesta = await fetch(this.direccionWeb);
       let laboratorio = new Cl_mLaboratorio();
@@ -62,7 +62,7 @@ export default class Cl_sLaboratorio {
     }
   }
 
-  static async actualizarEnNube(id: string, examen: Cl_mExamen): Promise<any> {
+  static async actualizarEnNube(id: string, examen: Cl_mExamen): Promise<{ ok: boolean }> {
     try {
       let respuesta = await fetch(`${this.direccionWeb}/${id}`, {
         method: "PUT",

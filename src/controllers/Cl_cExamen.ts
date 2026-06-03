@@ -1,5 +1,4 @@
 import { I_vExamen } from "../interfaces/I_vExamen.js";
-import { IDatosExamen } from "../interfaces/I_Examen.js";
 import Cl_mExamen from "../models/Cl_mExamen.js";
 import Cl_mEstudio from "../models/Cl_mEstudio.js";
 import Cl_mCatalogoEstudios from "../models/Cl_mCatalogoEstudios.js";
@@ -7,7 +6,7 @@ import Cl_sEstudio from "../services/Cl_sEstudio.js";
 
 export default class Cl_cExamen {
   private pantallaExamen: I_vExamen;
-private avisar: ((examen: Cl_mExamen | null) => void) | null = null;
+  private avisar: ((examen: Cl_mExamen | null) => void) | null = null;
   private catalogoEstudios: Cl_mCatalogoEstudios;
 
   constructor(pantallaExamen: I_vExamen, catalogoEstudios: Cl_mCatalogoEstudios) {
@@ -16,20 +15,24 @@ private avisar: ((examen: Cl_mExamen | null) => void) | null = null;
     let yoMismo = this;
     
     this.pantallaExamen.cuandoDenCancelar(() => yoMismo.alCancelar());
+    this.pantallaExamen.cuandoDenAceptar((datos: {
+      nombrePaciente: string;
+      cedulaPaciente: string;
+      telefonoPaciente?: string;
+      estudiosSeleccionados: string[];
+      formaPago: string;
+    }) => yoMismo.alAceptar(datos));
 
-    this.pantallaExamen.cuandoDenAceptar((datos: IDatosExamen) => yoMismo.alAceptar(datos));
-    if ('cuandoRegistrenNuevoEstudio' in this.pantallaExamen) {
-      (this.pantallaExamen as any).cuandoRegistrenNuevoEstudio((nuevoEstudio: Cl_mEstudio) => {
+    if (this.pantallaExamen.cuandoRegistrenNuevoEstudio) {
+      this.pantallaExamen.cuandoRegistrenNuevoEstudio((nuevoEstudio: Cl_mEstudio) => {
         yoMismo.alRegistrarEstudioCatalogo(nuevoEstudio);
       });
     }
   }
 
-  public async pedirDatosExamen(avisar: (examen: Cl_mExamen | null) => void | Promise<void>) {
+  public async pedirDatosExamen(avisar: (examen: Cl_mExamen | null) => void) {
     this.avisar = avisar;
-    
     await Cl_sEstudio.cargarCatálogo(this.catalogoEstudios);
-    
     this.pantallaExamen.mostrar();
   }
 
@@ -38,7 +41,13 @@ private avisar: ((examen: Cl_mExamen | null) => void) | null = null;
     this.pantallaExamen.ocultar();
   }
 
-  private alAceptar(datos: IDatosExamen) {
+  private alAceptar(datos: {
+    nombrePaciente: string;
+    cedulaPaciente: string;
+    telefonoPaciente?: string;
+    estudiosSeleccionados: string[];
+    formaPago: string;
+  }) {
     if (this.avisar) {
       let nuevoExamen = new Cl_mExamen({
         nombrePaciente: datos.nombrePaciente,
@@ -56,7 +65,6 @@ private avisar: ((examen: Cl_mExamen | null) => void) | null = null;
     let exito = await Cl_sEstudio.guardarNuevoEstudio(estudio);
     if (exito) {
       alert(`¡Estudio "${estudio.nombre}" registrado con éxito en MockAPI!`);
-      
       await Cl_sEstudio.cargarCatálogo(this.catalogoEstudios);
       
       let inputNombre = (document.getElementById("modal_nombre") as HTMLInputElement)?.value;
