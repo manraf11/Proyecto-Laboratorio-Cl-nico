@@ -1,1 +1,1 @@
-# Proyecto-Laboratorio-Cl-nico
+# Proyecto-Laboratorio-Clinico
