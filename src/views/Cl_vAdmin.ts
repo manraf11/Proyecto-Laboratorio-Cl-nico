@@ -5,7 +5,7 @@ export default class Cl_vAdmin implements I_vAdmin {
   private divFinalizados: HTMLElement;
   private divFormulario: HTMLElement;
   private botonNuevoExamen: HTMLButtonElement | null = null;
-  private avisarImprimir: any;
+  private avisarImprimir: ((idExamen: string) => void) | null = null;
 
   constructor() {
     this.divFinalizados = document.getElementById("admin_finalizados") as HTMLElement;

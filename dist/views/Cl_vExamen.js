@@ -4,8 +4,8 @@ export default class Cl_vExamen {
     contenidoModal;
     botonCancelar;
     botonAceptar;
-    avisarAceptar;
-    avisarCancelar;
+    avisarAceptar = null;
+    avisarCancelar = null;
     avisarNuevoEstudio = null;
     catalogoEstudios;
     constructor(catalogoEstudios) {

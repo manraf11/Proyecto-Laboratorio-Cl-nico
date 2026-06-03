@@ -1,7 +1,7 @@
 export default class Cl_vBioanalista {
     divPendientes;
-    avisarCargar;
-    avisarFinalizar;
+    avisarCargar = null;
+    avisarFinalizar = null;
     constructor() {
         this.divPendientes = document.getElementById("listaPendientes");
     }

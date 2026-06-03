@@ -3,8 +3,8 @@ import Cl_mExamen from "../models/Cl_mExamen.js";
 
 export default class Cl_vBioanalista implements I_vBioanalista {
   private divPendientes: HTMLElement;
-  private avisarCargar: any;
-  private avisarFinalizar: any;
+  private avisarCargar: ((idExamen: string, resultados: string[]) => void) | null = null;
+  private avisarFinalizar: ((idExamen: string) => void) | null = null;
 
   constructor() {
     this.divPendientes = document.getElementById("listaPendientes") as HTMLElement;

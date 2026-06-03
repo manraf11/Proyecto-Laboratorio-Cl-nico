@@ -1,4 +1,5 @@
 import Cl_mLaboratorio from "../models/Cl_mLaboratorio.js";
+import Cl_mExamen from "../models/Cl_mExamen.js";
 import Cl_sLaboratorio from "../services/Cl_sLaboratorio.js";
 import { I_vAdmin } from "../interfaces/I_vAdmin.js";
 import Cl_cExamen from "./Cl_cExamen.js";
@@ -37,7 +38,7 @@ export default class Cl_cLaboratorioAdmin {
 
   private guardarNuevoExamen() {
     let yoMismo = this;
-    this.controladorExamen.pedirDatosExamen(async function(examen: any) {
+    this.controladorExamen.pedirDatosExamen(async function(examen: Cl_mExamen | null) {
       if (examen !== null) {
         let guardado = await Cl_sLaboratorio.guardarEnNube(examen);
         if (guardado.ok) {

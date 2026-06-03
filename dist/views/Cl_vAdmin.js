@@ -2,7 +2,7 @@ export default class Cl_vAdmin {
     divFinalizados;
     divFormulario;
     botonNuevoExamen = null;
-    avisarImprimir;
+    avisarImprimir = null;
     constructor() {
         this.divFinalizados = document.getElementById("admin_finalizados");
         this.divFormulario = document.getElementById("admin_formulario");

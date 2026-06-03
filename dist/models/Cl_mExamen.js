@@ -18,12 +18,13 @@ export default class Cl_mExamen {
         this.resultadoExamen = datos.resultadoExamen || "";
         this.estaFinalizado = datos.estaFinalizado || false;
         this.fechaRegistro = datos.fechaRegistro || new Date().toISOString();
-        if (datos.estudiosSeleccionados) {
-            this.nombreEstudio = datos.estudiosSeleccionados.join(", ");
-            this.precioEstudio = catalogo.calcularPrecioTotal(datos.estudiosSeleccionados);
+        if ("estudiosSeleccionados" in datos && Array.isArray(datos.estudiosSeleccionados)) {
+            const estudios = datos.estudiosSeleccionados || [];
+            this.nombreEstudio = estudios.join(", ");
+            this.precioEstudio = catalogo.calcularPrecioTotal(estudios);
         }
-        else if (datos.nombreEstudio) {
-            this.nombreEstudio = datos.nombreEstudio;
+        else if ("nombreEstudio" in datos && datos.nombreEstudio) {
+            this.nombreEstudio = datos.nombreEstudio || "";
             this.precioEstudio = Number(datos.precioEstudio) || 0;
         }
         else {

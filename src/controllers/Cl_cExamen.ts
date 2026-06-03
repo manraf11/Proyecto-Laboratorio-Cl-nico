@@ -1,4 +1,5 @@
 import { I_vExamen } from "../interfaces/I_vExamen.js";
+import { IDatosExamen } from "../interfaces/I_Examen.js";
 import Cl_mExamen from "../models/Cl_mExamen.js";
 import Cl_mEstudio from "../models/Cl_mEstudio.js";
 import Cl_mCatalogoEstudios from "../models/Cl_mCatalogoEstudios.js";
@@ -6,7 +7,7 @@ import Cl_sEstudio from "../services/Cl_sEstudio.js";
 
 export default class Cl_cExamen {
   private pantallaExamen: I_vExamen;
-  private avisar: any;
+private avisar: ((examen: Cl_mExamen | null) => void) | null = null;
   private catalogoEstudios: Cl_mCatalogoEstudios;
 
   constructor(pantallaExamen: I_vExamen, catalogoEstudios: Cl_mCatalogoEstudios) {
@@ -15,8 +16,8 @@ export default class Cl_cExamen {
     let yoMismo = this;
     
     this.pantallaExamen.cuandoDenCancelar(() => yoMismo.alCancelar());
-    this.pantallaExamen.cuandoDenAceptar((datos: any) => yoMismo.alAceptar(datos));
-    
+
+    this.pantallaExamen.cuandoDenAceptar((datos: IDatosExamen) => yoMismo.alAceptar(datos));
     if ('cuandoRegistrenNuevoEstudio' in this.pantallaExamen) {
       (this.pantallaExamen as any).cuandoRegistrenNuevoEstudio((nuevoEstudio: Cl_mEstudio) => {
         yoMismo.alRegistrarEstudioCatalogo(nuevoEstudio);
@@ -24,7 +25,7 @@ export default class Cl_cExamen {
     }
   }
 
-  public async pedirDatosExamen(avisar: any) {
+  public async pedirDatosExamen(avisar: (examen: Cl_mExamen | null) => void | Promise<void>) {
     this.avisar = avisar;
     
     await Cl_sEstudio.cargarCatálogo(this.catalogoEstudios);
@@ -37,7 +38,7 @@ export default class Cl_cExamen {
     this.pantallaExamen.ocultar();
   }
 
-  private alAceptar(datos: any) {
+  private alAceptar(datos: IDatosExamen) {
     if (this.avisar) {
       let nuevoExamen = new Cl_mExamen({
         nombrePaciente: datos.nombrePaciente,

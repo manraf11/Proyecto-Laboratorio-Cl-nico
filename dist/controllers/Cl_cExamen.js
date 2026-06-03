@@ -2,7 +2,7 @@ import Cl_mExamen from "../models/Cl_mExamen.js";
 import Cl_sEstudio from "../services/Cl_sEstudio.js";
 export default class Cl_cExamen {
     pantallaExamen;
-    avisar;
+    avisar = null;
     catalogoEstudios;
     constructor(pantallaExamen, catalogoEstudios) {
         this.pantallaExamen = pantallaExamen;
