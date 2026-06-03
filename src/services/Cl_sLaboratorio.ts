@@ -1,6 +1,5 @@
 import Cl_mExamen from "../models/Cl_mExamen.js";
 import Cl_mLaboratorio from "../models/Cl_mLaboratorio.js";
-import Cl_mCatalogoEstudios from "../models/Cl_mCatalogoEstudios.js";
 
 export default class Cl_sLaboratorio {
   private static direccionWeb: string = "https://6a14b55c91ff9a63de06fced.mockapi.io/examenes";
@@ -32,7 +31,7 @@ export default class Cl_sLaboratorio {
     }
   }
 
-  static async traerDesdeNube(catalogo: Cl_mCatalogoEstudios): Promise<{ ok: boolean; laboratorio: Cl_mLaboratorio }> {
+  static async traerDesdeNube(): Promise<{ ok: boolean; laboratorio: Cl_mLaboratorio }> {
     try {
       let respuesta = await fetch(this.direccionWeb);
       let laboratorio = new Cl_mLaboratorio();
@@ -51,7 +50,7 @@ export default class Cl_sLaboratorio {
             formaPago: c.formaPago,
             estaFinalizado: c.estaFinalizado,
             fechaRegistro: c.fechaRegistro
-          }, catalogo);
+          });
           laboratorio.agregarExamen(examen);
         }
         return { ok: true, laboratorio: laboratorio };

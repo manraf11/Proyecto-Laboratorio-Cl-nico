@@ -334,9 +334,8 @@
     import Cl_vExamen from "./dist/views/Cl_vExamen.js";
     import Cl_cExamen from "./dist/controllers/Cl_cExamen.js";
     import Cl_cLaboratorioAdmin from "./dist/controllers/Cl_cLaboratorioAdmin.js";
-    import Cl_mCatalogoEstudios from "./dist/models/Cl_mCatalogoEstudios.js";
     import Cl_sEstudio from "./dist/services/Cl_sEstudio.js";
-
+    import Cl_mEstudio from "./dist/models/Cl_mEstudio.js";
     // Función para mostrar aviso temporal
     function mostrarAviso(mensaje, esError = false) {
       const aviso = document.createElement('div');
@@ -382,19 +381,12 @@
     
     async function iniciarAplicacion() {
       try {
-        const catalogoEstudios = new Cl_mCatalogoEstudios();
-        
         console.log("🔄 Cargando catálogo de estudios desde MockAPI...");
-        const exito = await Cl_sEstudio.cargarCatálogo(catalogoEstudios);
+        const exito = await Cl_sEstudio.cargarCatálogo();
         
         if (exito) {
-          const cantidad = catalogoEstudios.obtenerTodos().length;
+          const cantidad = Cl_mEstudio.obtenerTodos().length;
           console.log(`✅ Catálogo cargado exitosamente: ${cantidad} estudios disponibles`);
-          
-          const estudios = catalogoEstudios.obtenerTodos();
-          estudios.forEach(estudio => {
-            console.log(`   - ${estudio.nombre}: ${estudio.valoresReferencia} (${estudio.unidad})`);
-          });
         } else {
           console.warn("⚠️ No se pudo cargar el catálogo desde la nube. Verifica tu conexión a internet.");
           alert("Advertencia: No se pudo cargar el catálogo de estudios. Los valores de referencia podrían no mostrarse correctamente.");
@@ -407,9 +399,9 @@
         if (contenidoPrincipal) contenidoPrincipal.style.display = "block";
         
         const vAdmin = new Cl_vAdmin();
-        const vExamen = new Cl_vExamen(catalogoEstudios);
-        const cExamen = new Cl_cExamen(vExamen, catalogoEstudios);
-        const cLaboratorioAdmin = new Cl_cLaboratorioAdmin(vAdmin, cExamen, catalogoEstudios);
+        const vExamen = new Cl_vExamen();
+        const cExamen = new Cl_cExamen(vExamen);
+        const cLaboratorioAdmin = new Cl_cLaboratorioAdmin(vAdmin, cExamen);
         
         console.log("🚀 Aplicación de Administración iniciada correctamente");
         

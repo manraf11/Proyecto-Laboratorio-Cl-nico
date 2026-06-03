@@ -1,4 +1,4 @@
-import Cl_mCatalogoEstudios from "./Cl_mCatalogoEstudios.js";
+import Cl_mEstudio from "./Cl_mEstudio.js";
 
 export default class Cl_mExamen {
   public id: string;
@@ -24,7 +24,7 @@ export default class Cl_mExamen {
     formaPago?: string;
     estaFinalizado?: boolean;
     fechaRegistro?: string;
-  }, catalogo: Cl_mCatalogoEstudios) {
+  }) {
     this.id = datos.id || "";
     this.nombrePaciente = datos.nombrePaciente || "";
     this.cedulaPaciente = datos.cedulaPaciente || "";
@@ -36,7 +36,7 @@ export default class Cl_mExamen {
 
     if (datos.estudiosSeleccionados && Array.isArray(datos.estudiosSeleccionados)) {
       this.nombreEstudio = datos.estudiosSeleccionados.join(", ");
-      this.precioEstudio = catalogo.calcularPrecioTotal(datos.estudiosSeleccionados);
+      this.precioEstudio = Cl_mEstudio.calcularPrecioTotal(datos.estudiosSeleccionados);
     } else if (datos.nombreEstudio) {
       this.nombreEstudio = datos.nombreEstudio;
       this.precioEstudio = Number(datos.precioEstudio) || 0;

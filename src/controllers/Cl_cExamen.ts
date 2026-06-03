@@ -1,17 +1,14 @@
 import { I_vExamen } from "../interfaces/I_vExamen.js";
 import Cl_mExamen from "../models/Cl_mExamen.js";
 import Cl_mEstudio from "../models/Cl_mEstudio.js";
-import Cl_mCatalogoEstudios from "../models/Cl_mCatalogoEstudios.js";
 import Cl_sEstudio from "../services/Cl_sEstudio.js";
 
 export default class Cl_cExamen {
   private pantallaExamen: I_vExamen;
   private avisar: ((examen: Cl_mExamen | null) => void) | null = null;
-  private catalogoEstudios: Cl_mCatalogoEstudios;
 
-  constructor(pantallaExamen: I_vExamen, catalogoEstudios: Cl_mCatalogoEstudios) {
+  constructor(pantallaExamen: I_vExamen) {
     this.pantallaExamen = pantallaExamen;
-    this.catalogoEstudios = catalogoEstudios;
     let yoMismo = this;
     
     this.pantallaExamen.cuandoDenCancelar(() => yoMismo.alCancelar());
@@ -32,7 +29,7 @@ export default class Cl_cExamen {
 
   public async pedirDatosExamen(avisar: (examen: Cl_mExamen | null) => void) {
     this.avisar = avisar;
-    await Cl_sEstudio.cargarCatálogo(this.catalogoEstudios);
+    await Cl_sEstudio.cargarCatálogo();
     this.pantallaExamen.mostrar();
   }
 
@@ -55,7 +52,7 @@ export default class Cl_cExamen {
         telefonoPaciente: datos.telefonoPaciente,
         estudiosSeleccionados: datos.estudiosSeleccionados,
         formaPago: datos.formaPago
-      }, this.catalogoEstudios);
+      });
       this.avisar(nuevoExamen);
     }
     this.pantallaExamen.ocultar();
@@ -65,7 +62,7 @@ export default class Cl_cExamen {
     let exito = await Cl_sEstudio.guardarNuevoEstudio(estudio);
     if (exito) {
       alert(`¡Estudio "${estudio.nombre}" registrado con éxito en MockAPI!`);
-      await Cl_sEstudio.cargarCatálogo(this.catalogoEstudios);
+      await Cl_sEstudio.cargarCatálogo();
       
       let inputNombre = (document.getElementById("modal_nombre") as HTMLInputElement)?.value;
       let inputCedula = (document.getElementById("modal_cedula") as HTMLInputElement)?.value;

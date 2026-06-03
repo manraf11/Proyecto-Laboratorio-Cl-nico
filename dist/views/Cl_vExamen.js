@@ -7,9 +7,7 @@ export default class Cl_vExamen {
     avisarAceptar = null;
     avisarCancelar = null;
     avisarNuevoEstudio = null;
-    catalogoEstudios;
-    constructor(catalogoEstudios) {
-        this.catalogoEstudios = catalogoEstudios;
+    constructor() {
         this.modal = document.getElementById("modalExamen");
         this.contenidoModal = document.getElementById("modal_contenido");
         this.botonCancelar = document.getElementById("modal_btnCancelar");
@@ -64,7 +62,7 @@ export default class Cl_vExamen {
         if (!this.contenidoModal || !this.modal)
             return;
         let checkboxesHtml = "";
-        let estudios = this.catalogoEstudios.obtenerTodos();
+        let estudios = Cl_mEstudio.obtenerTodos();
         for (let i = 0; i < estudios.length; i++) {
             let est = estudios[i];
             checkboxesHtml += `

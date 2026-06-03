@@ -3,10 +3,8 @@ import Cl_sLaboratorio from "../services/Cl_sLaboratorio.js";
 export default class Cl_cLaboratorioBio {
     laboratorio;
     pantallaBioanalista;
-    catalogoEstudios;
-    constructor(pantallaBioanalista, catalogoEstudios) {
+    constructor(pantallaBioanalista) {
         this.pantallaBioanalista = pantallaBioanalista;
-        this.catalogoEstudios = catalogoEstudios;
         this.laboratorio = new Cl_mLaboratorio();
         let yoMismo = this;
         this.cargarExamenes();
@@ -14,7 +12,7 @@ export default class Cl_cLaboratorioBio {
         this.pantallaBioanalista.cuandoFinalizarExamen((id) => yoMismo.terminarExamen(id));
     }
     async cargarExamenes() {
-        let resultado = await Cl_sLaboratorio.traerDesdeNube(this.catalogoEstudios);
+        let resultado = await Cl_sLaboratorio.traerDesdeNube();
         if (resultado.ok) {
             this.laboratorio = resultado.laboratorio;
             this.refrescarPantalla();

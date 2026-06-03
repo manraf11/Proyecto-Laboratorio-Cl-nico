@@ -3,10 +3,8 @@ import Cl_sEstudio from "../services/Cl_sEstudio.js";
 export default class Cl_cExamen {
     pantallaExamen;
     avisar = null;
-    catalogoEstudios;
-    constructor(pantallaExamen, catalogoEstudios) {
+    constructor(pantallaExamen) {
         this.pantallaExamen = pantallaExamen;
-        this.catalogoEstudios = catalogoEstudios;
         let yoMismo = this;
         this.pantallaExamen.cuandoDenCancelar(() => yoMismo.alCancelar());
         this.pantallaExamen.cuandoDenAceptar((datos) => yoMismo.alAceptar(datos));
@@ -18,7 +16,7 @@ export default class Cl_cExamen {
     }
     async pedirDatosExamen(avisar) {
         this.avisar = avisar;
-        await Cl_sEstudio.cargarCatálogo(this.catalogoEstudios);
+        await Cl_sEstudio.cargarCatálogo();
         this.pantallaExamen.mostrar();
     }
     alCancelar() {
@@ -34,7 +32,7 @@ export default class Cl_cExamen {
                 telefonoPaciente: datos.telefonoPaciente,
                 estudiosSeleccionados: datos.estudiosSeleccionados,
                 formaPago: datos.formaPago
-            }, this.catalogoEstudios);
+            });
             this.avisar(nuevoExamen);
         }
         this.pantallaExamen.ocultar();
@@ -43,7 +41,7 @@ export default class Cl_cExamen {
         let exito = await Cl_sEstudio.guardarNuevoEstudio(estudio);
         if (exito) {
             alert(`¡Estudio "${estudio.nombre}" registrado con éxito en MockAPI!`);
-            await Cl_sEstudio.cargarCatálogo(this.catalogoEstudios);
+            await Cl_sEstudio.cargarCatálogo();
             let inputNombre = document.getElementById("modal_nombre")?.value;
             let inputCedula = document.getElementById("modal_cedula")?.value;
             let inputTelef = document.getElementById("modal_telefono")?.value;

@@ -1,16 +1,14 @@
 import Cl_mLaboratorio from "../models/Cl_mLaboratorio.js";
+import Cl_mExamen from "../models/Cl_mExamen.js";
 import Cl_sLaboratorio from "../services/Cl_sLaboratorio.js";
 import { I_vBioanalista } from "../interfaces/I_vBioanalista.js";
-import Cl_mCatalogoEstudios from "../models/Cl_mCatalogoEstudios.js";
 
 export default class Cl_cLaboratorioBio {
   private laboratorio: Cl_mLaboratorio;
   private pantallaBioanalista: I_vBioanalista;
-  private catalogoEstudios: Cl_mCatalogoEstudios;
 
-  constructor(pantallaBioanalista: I_vBioanalista, catalogoEstudios: Cl_mCatalogoEstudios) {
+  constructor(pantallaBioanalista: I_vBioanalista) {
     this.pantallaBioanalista = pantallaBioanalista;
-    this.catalogoEstudios = catalogoEstudios;
     this.laboratorio = new Cl_mLaboratorio();
     
     let yoMismo = this;
@@ -21,7 +19,7 @@ export default class Cl_cLaboratorioBio {
   }
 
   private async cargarExamenes() {
-    let resultado = await Cl_sLaboratorio.traerDesdeNube(this.catalogoEstudios);
+    let resultado = await Cl_sLaboratorio.traerDesdeNube();
     if (resultado.ok) {
       this.laboratorio = resultado.laboratorio;
       this.refrescarPantalla();

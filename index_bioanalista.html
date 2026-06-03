@@ -211,15 +211,13 @@
   <script type="module">
     import Cl_vBioanalista from "./dist/views/Cl_vBioanalista.js";
     import Cl_cLaboratorioBio from "./dist/controllers/Cl_cLaboratorioBio.js";
-    import Cl_mCatalogoEstudios from "./dist/models/Cl_mCatalogoEstudios.js";
+    import Cl_mEstudio from "./dist/models/Cl_mEstudio.js";
     import Cl_sEstudio from "./dist/services/Cl_sEstudio.js";
 
     async function iniciarAplicacion() {
       try {
-        const catalogoEstudios = new Cl_mCatalogoEstudios();
-        
         console.log("🔄 Cargando catálogo para Bioanalista...");
-        await Cl_sEstudio.cargarCatálogo(catalogoEstudios);
+        await Cl_sEstudio.cargarCatálogo();
         
         const cargandoDiv = document.getElementById("cargando");
         const listaPendientes = document.getElementById("listaPendientes");
@@ -228,7 +226,7 @@
         if (listaPendientes) listaPendientes.style.display = "block";
         
         const vBio = new Cl_vBioanalista();
-        const cLaboratorioBio = new Cl_cLaboratorioBio(vBio, catalogoEstudios);
+        const cLaboratorioBio = new Cl_cLaboratorioBio(vBio);
         
         console.log("🚀 Aplicación de Bioanalista iniciada correctamente");
       } catch (error) {

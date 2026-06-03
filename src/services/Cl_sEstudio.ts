@@ -1,20 +1,19 @@
 import Cl_mEstudio from "../models/Cl_mEstudio.js";
-import Cl_mCatalogoEstudios from "../models/Cl_mCatalogoEstudios.js";
 
 export default class Cl_sEstudio {
   private static direccionWeb: string = "https://6a14b55c91ff9a63de06fced.mockapi.io/estudios";
 
-  static async cargarCatálogo(catalogo: Cl_mCatalogoEstudios): Promise<boolean> {
+  static async cargarCatálogo(): Promise<boolean> {
     try {
       let respuesta = await fetch(this.direccionWeb);
       if (respuesta.ok) {
         let datosCrudos = await respuesta.json();
         
-        catalogo.limpiar();
+        Cl_mEstudio.limpiar();
         
         for (let i = 0; i < datosCrudos.length; i++) {
           let e = datosCrudos[i];
-          catalogo.agregarEstudio(new Cl_mEstudio({
+          Cl_mEstudio.agregarEstudio(new Cl_mEstudio({
             id: e.id,
             nombre: e.nombre,
             precio: Number(e.precio),

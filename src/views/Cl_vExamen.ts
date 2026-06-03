@@ -1,6 +1,5 @@
 import { I_vExamen } from "../interfaces/I_vExamen.js";
 import Cl_mEstudio from "../models/Cl_mEstudio.js";
-import Cl_mCatalogoEstudios from "../models/Cl_mCatalogoEstudios.js";
 
 export default class Cl_vExamen implements I_vExamen {
   private modal: HTMLElement | null;
@@ -16,10 +15,8 @@ export default class Cl_vExamen implements I_vExamen {
   }) => void) | null = null;
   private avisarCancelar: (() => void) | null = null;
   private avisarNuevoEstudio: ((estudio: Cl_mEstudio) => void) | null = null;
-  private catalogoEstudios: Cl_mCatalogoEstudios;
 
-  constructor(catalogoEstudios: Cl_mCatalogoEstudios) {
-    this.catalogoEstudios = catalogoEstudios;
+  constructor() {
     this.modal = document.getElementById("modalExamen");
     this.contenidoModal = document.getElementById("modal_contenido");
     this.botonCancelar = document.getElementById("modal_btnCancelar") as HTMLButtonElement;
@@ -87,7 +84,7 @@ export default class Cl_vExamen implements I_vExamen {
     if (!this.contenidoModal || !this.modal) return;
 
     let checkboxesHtml = "";
-    let estudios = this.catalogoEstudios.obtenerTodos();
+    let estudios = Cl_mEstudio.obtenerTodos();
     
     for (let i = 0; i < estudios.length; i++) {
       let est = estudios[i];

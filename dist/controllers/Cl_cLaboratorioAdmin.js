@@ -1,14 +1,13 @@
 import Cl_mLaboratorio from "../models/Cl_mLaboratorio.js";
+import Cl_mEstudio from "../models/Cl_mEstudio.js";
 import Cl_sLaboratorio from "../services/Cl_sLaboratorio.js";
 export default class Cl_cLaboratorioAdmin {
     laboratorio;
     pantallaAdmin;
     controladorExamen;
-    catalogoEstudios;
-    constructor(pantallaAdmin, controladorExamen, catalogoEstudios) {
+    constructor(pantallaAdmin, controladorExamen) {
         this.pantallaAdmin = pantallaAdmin;
         this.controladorExamen = controladorExamen;
-        this.catalogoEstudios = catalogoEstudios;
         this.laboratorio = new Cl_mLaboratorio();
         let yoMismo = this;
         this.cargarExamenes();
@@ -16,7 +15,7 @@ export default class Cl_cLaboratorioAdmin {
         this.pantallaAdmin.cuandoClicEnImprimir((id) => yoMismo.imprimirReporte(id));
     }
     async cargarExamenes() {
-        let resultado = await Cl_sLaboratorio.traerDesdeNube(this.catalogoEstudios);
+        let resultado = await Cl_sLaboratorio.traerDesdeNube();
         if (resultado.ok) {
             this.laboratorio = resultado.laboratorio;
             this.refrescarPantalla();
@@ -47,8 +46,8 @@ export default class Cl_cLaboratorioAdmin {
         for (let i = 0; i < listaEstudios.length; i++) {
             let nombreEst = listaEstudios[i];
             let resultadoVal = listaResultados[i] || "Pendiente";
-            let refInfo = this.catalogoEstudios.obtenerValoresReferencia(nombreEst);
-            let unidadMedida = this.catalogoEstudios.obtenerUnidad(nombreEst);
+            let refInfo = Cl_mEstudio.obtenerValoresReferencia(nombreEst);
+            let unidadMedida = Cl_mEstudio.obtenerUnidad(nombreEst);
             filasHtml += `
         <tr style="border-bottom: 1px solid #e2e8f0;">
           <td style="padding: 12px; font-weight: 600; color: #0b3b4f;">${nombreEst}</td>

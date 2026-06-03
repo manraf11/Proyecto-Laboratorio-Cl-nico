@@ -1,3 +1,4 @@
+import Cl_mEstudio from "./Cl_mEstudio.js";
 export default class Cl_mExamen {
     id;
     nombrePaciente;
@@ -9,7 +10,7 @@ export default class Cl_mExamen {
     formaPago;
     estaFinalizado;
     fechaRegistro;
-    constructor(datos, catalogo) {
+    constructor(datos) {
         this.id = datos.id || "";
         this.nombrePaciente = datos.nombrePaciente || "";
         this.cedulaPaciente = datos.cedulaPaciente || "";
@@ -20,7 +21,7 @@ export default class Cl_mExamen {
         this.fechaRegistro = datos.fechaRegistro || new Date().toISOString();
         if (datos.estudiosSeleccionados && Array.isArray(datos.estudiosSeleccionados)) {
             this.nombreEstudio = datos.estudiosSeleccionados.join(", ");
-            this.precioEstudio = catalogo.calcularPrecioTotal(datos.estudiosSeleccionados);
+            this.precioEstudio = Cl_mEstudio.calcularPrecioTotal(datos.estudiosSeleccionados);
         }
         else if (datos.nombreEstudio) {
             this.nombreEstudio = datos.nombreEstudio;

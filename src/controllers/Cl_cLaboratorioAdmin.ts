@@ -1,20 +1,18 @@
 import Cl_mLaboratorio from "../models/Cl_mLaboratorio.js";
 import Cl_mExamen from "../models/Cl_mExamen.js";
+import Cl_mEstudio from "../models/Cl_mEstudio.js";
 import Cl_sLaboratorio from "../services/Cl_sLaboratorio.js";
 import { I_vAdmin } from "../interfaces/I_vAdmin.js";
 import Cl_cExamen from "./Cl_cExamen.js";
-import Cl_mCatalogoEstudios from "../models/Cl_mCatalogoEstudios.js";
 
 export default class Cl_cLaboratorioAdmin {
   private laboratorio: Cl_mLaboratorio;
   private pantallaAdmin: I_vAdmin;
   private controladorExamen: Cl_cExamen;
-  private catalogoEstudios: Cl_mCatalogoEstudios;
 
-  constructor(pantallaAdmin: I_vAdmin, controladorExamen: Cl_cExamen, catalogoEstudios: Cl_mCatalogoEstudios) {
+  constructor(pantallaAdmin: I_vAdmin, controladorExamen: Cl_cExamen) {
     this.pantallaAdmin = pantallaAdmin;
     this.controladorExamen = controladorExamen;
-    this.catalogoEstudios = catalogoEstudios;
     this.laboratorio = new Cl_mLaboratorio();
     
     let yoMismo = this;
@@ -25,7 +23,7 @@ export default class Cl_cLaboratorioAdmin {
   }
 
   private async cargarExamenes() {
-    let resultado = await Cl_sLaboratorio.traerDesdeNube(this.catalogoEstudios);
+    let resultado = await Cl_sLaboratorio.traerDesdeNube();
     if (resultado.ok) {
       this.laboratorio = resultado.laboratorio;
       this.refrescarPantalla();
@@ -61,8 +59,8 @@ export default class Cl_cLaboratorioAdmin {
       let nombreEst = listaEstudios[i];
       let resultadoVal = listaResultados[i] || "Pendiente";
       
-      let refInfo = this.catalogoEstudios.obtenerValoresReferencia(nombreEst);
-      let unidadMedida = this.catalogoEstudios.obtenerUnidad(nombreEst);
+      let refInfo = Cl_mEstudio.obtenerValoresReferencia(nombreEst);
+      let unidadMedida = Cl_mEstudio.obtenerUnidad(nombreEst);
 
       filasHtml += `
         <tr style="border-bottom: 1px solid #e2e8f0;">

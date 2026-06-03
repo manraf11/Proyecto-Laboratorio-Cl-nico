@@ -29,7 +29,7 @@ export default class Cl_sLaboratorio {
             return { ok: false };
         }
     }
-    static async traerDesdeNube(catalogo) {
+    static async traerDesdeNube() {
         try {
             let respuesta = await fetch(this.direccionWeb);
             let laboratorio = new Cl_mLaboratorio();
@@ -48,7 +48,7 @@ export default class Cl_sLaboratorio {
                         formaPago: c.formaPago,
                         estaFinalizado: c.estaFinalizado,
                         fechaRegistro: c.fechaRegistro
-                    }, catalogo);
+                    });
                     laboratorio.agregarExamen(examen);
                 }
                 return { ok: true, laboratorio: laboratorio };
