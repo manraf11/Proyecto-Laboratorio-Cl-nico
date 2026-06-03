@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratorio Clínico - Sistema Administrativo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif; 
+      background: #eef2f7; 
+      min-height: 100vh; 
+      padding: 20px; 
+    }
+    .container { max-width: 1000px; margin: 0 auto; }
+    .panel { 
+      background: white; 
+      border-radius: 12px; 
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08); 
+      overflow: hidden; 
+      border: 1px solid #dce4ec;
+    }
+    .panel-header { 
+      background: #1a5f7a; 
+      color: white; 
+      padding: 20px 24px; 
+      text-align: center; 
+      border-bottom: 3px solid #ffc107;
+      position: relative;
+    }
+    .panel-header h1 { 
+      font-size: 1.8rem; 
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+    .panel-header p { 
+      font-size: 0.9rem; 
+      margin-top: 6px; 
+      opacity: 0.9;
+      font-weight: 400;
+    }
+    .btn-cambiar-rol {
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 2px solid rgba(255,255,255,0.5);
+      padding: 8px 16px;
+      border-radius: 40px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(5px);
+    }
+    .btn-cambiar-rol:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+      border-color: #ffc107;
+    }
+    .panel-content { padding: 28px; }
+    .seccion { margin-bottom: 32px; }
+    .seccion-titulo { 
+      font-size: 1.2rem; 
+      color: #1a5f7a; 
+      margin-bottom: 16px; 
+      border-left: 4px solid #2c9cd4;
+      padding-left: 12px;
+      font-weight: 600;
+    }
+    .mensaje-vacio { 
+      text-align: center; 
+      color: #7f8c8d; 
+      padding: 32px; 
+      background: #f9fafb;
+      border-radius: 10px;
+      font-size: 0.9rem;
+    }
+    
+    /* Spinner de carga - institucional */
+    .loader {
+      border: 4px solid #e0e7ed;
+      border-top: 4px solid #1a5f7a;
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      animation: spin 0.9s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .cargando-mensaje {
+      text-align: center;
+      color: #1a5f7a;
+      padding: 24px;
+      font-weight: 500;
+      background: #f0f6fa;
+      border-radius: 12px;
+      margin: 16px 0;
+    }
+
+    /* Estilos para listados y elementos del admin */
+    .admin-lista-ordenes {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .orden-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .orden-item:hover {
+      border-color: #bdd4e7;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    .orden-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+      border-bottom: 1px dashed #e2edf2;
+      padding-bottom: 8px;
+    }
+    .orden-paciente {
+      font-weight: 700;
+      color: #0b3b4f;
+      font-size: 1.05rem;
+    }
+    .orden-fecha {
+      font-size: 0.75rem;
+      color: #5e7a93;
+      background: #ecf5f9;
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+    .orden-estudios {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 12px 0;
+    }
+    .estudio-badge {
+      background: #eef3fc;
+      padding: 5px 12px;
+      border-radius: 25px;
+      font-size: 0.8rem;
+      color: #1f6e8c;
+      font-weight: 500;
+    }
+    .orden-acciones {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 12px;
+      border-top: 1px solid #f0f4f9;
+      padding-top: 12px;
+    }
+    .btn-finalizar, .btn-detalle, .btn-facturar {
+      border: none;
+      padding: 6px 14px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+    .btn-finalizar {
+      background: #2c9cd4;
+      color: white;
+    }
+    .btn-finalizar:hover {
+      background: #1f7aa8;
+      transform: translateY(-1px);
+    }
+    .btn-detalle {
+      background: #e9ecef;
+      color: #2c3e50;
+    }
+    .btn-detalle:hover {
+      background: #dee2e6;
+    }
+    .btn-facturar {
+      background: #2c6e49;
+      color: white;
+    }
+    .btn-facturar:hover {
+      background: #1f5738;
+    }
+    .resultado-item {
+      background: #f9fdf9;
+      border-left: 4px solid #2c6e49;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .resultado-paciente {
+      font-weight: 700;
+      color: #1a5f7a;
+    }
+    .btn-imprimir {
+      background: #4b6e8a;
+      color: white;
+      border: none;
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .btn-imprimir:hover {
+      background: #2c4d6e;
+    }
+    .admin-botones {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .btn-primario {
+      background: #1a5f7a;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .btn-primario:hover {
+      background: #104a60;
+    }
+    .btn-secundario {
+      background: #eef2f7;
+      color: #1f5e7a;
+      border: 1px solid #cbdde9;
+      padding: 10px 18px;
+      border-radius: 40px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .btn-secundario:hover {
+      background: #e2eaf1;
+    }
+    .badge-cantidad {
+      background: #ffc107;
+      color: #1a3e4c;
+      border-radius: 30px;
+      padding: 2px 10px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      margin-left: 8px;
+    }
+    .aviso-cambio {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #2c6e49;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 40px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s ease;
+      z-index: 1000;
+    }
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="panel">
+      <div class="panel-header">
+        <button id="btnCambiarARolBioanalista" class="btn-cambiar-rol">
+          🔬 Cambiar a Bioanalista
+        </button>
+        <h1>🏥 Laboratorio Clínico </h1>
+        <p>SISTEMA ADMINISTRATIVO - Gestión de Órdenes</p>
+      </div>
+      <div class="panel-content">
+        <!-- Indicador de carga -->
+        <div id="cargando" class="cargando-mensaje">
+          <div class="loader"></div>
+          Cargando catálogo de estudios desde la nube...
+        </div>
+        
+        <div id="contenidoPrincipal" style="display: none;">
+          <div class="seccion">
+            <div class="seccion-titulo">📋 Opciones Generales</div>
+            <div id="admin_formulario"></div>
+          </div>
+          <div class="seccion">
+            <div class="seccion-titulo">🖨️ Resultados Listos para Impresión</div>
+            <div id="admin_finalizados"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalExamen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000;">
+    <div style="background: white; border-radius: 20px; padding: 28px; width: 480px; max-width: 92%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 35px rgba(0,0,0,0.2);">
+      <h3 style="margin-bottom: 20px; color: #1a5f7a; border-left: 5px solid #ffc107; padding-left: 14px; font-weight: 600;">📝 Registrar Orden Médica</h3>
+      
+      <div id="modal_contenido"></div>
+      
+      <div style="display: flex; gap: 12px; margin-top: 28px;">
+        <button id="modal_btnCancelar" style="flex:1; padding: 10px; background: #eef2f7; border: 1px solid #cbd5e1; border-radius: 40px; cursor: pointer; font-weight: 600; color: #2c3e50;">Cancelar</button>
+        <button id="modal_btnAceptar" style="flex:1; padding: 10px; background: #1a5f7a; color: white; border: none; border-radius: 40px; cursor: pointer; font-weight: 600; transition: 0.2s;">Registrar Orden</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import Cl_vAdmin from "./dist/views/Cl_vAdmin.js";
+    import Cl_vExamen from "./dist/views/Cl_vExamen.js";
+    import Cl_cExamen from "./dist/controllers/Cl_cExamen.js";
+    import Cl_cLaboratorioAdmin from "./dist/controllers/Cl_cLaboratorioAdmin.js";
+    import Cl_mCatalogoEstudios from "./dist/models/Cl_mCatalogoEstudios.js";
+    import Cl_sEstudio from "./dist/services/Cl_sEstudio.js";
+
+    // Función para mostrar aviso temporal
+    function mostrarAviso(mensaje, esError = false) {
+      const aviso = document.createElement('div');
+      aviso.className = 'aviso-cambio';
+      aviso.textContent = mensaje;
+      aviso.style.background = esError ? '#c0392b' : '#2c6e49';
+      document.body.appendChild(aviso);
+      
+      setTimeout(() => {
+        aviso.remove();
+      }, 3000);
+    }
+
+    // Función para cambiar al rol de bioanalista
+    function cambiarABioanalista() {
+      console.log("🔄 Intentando cambiar a vista de Bioanalista...");
+      
+      // Verificar si el archivo existe antes de intentar la navegación
+      fetch('index_bioanalista.html', { method: 'HEAD' })
+        .then(response => {
+          if (response.ok) {
+            console.log("✅ Redirigiendo a index_bioanalista.html");
+            mostrarAviso("🔬 Cambiando al panel de Bioanalista...");
+            
+            // Pequeño retraso para que el usuario vea el aviso
+            setTimeout(() => {
+              window.location.href = 'index_bioanalista.html';
+            }, 500);
+          } else {
+            console.warn("⚠️ El archivo index_bioanalista.html no existe");
+            mostrarAviso("⚠️ El módulo de Bioanalista no está disponible aún", true);
+            
+            // Crear un mensaje más detallado en la consola
+            console.warn("Para habilitar esta funcionalidad, crea el archivo index_bioanalista.html");
+            console.warn("O ajusta la ruta en el botón si el archivo tiene otro nombre");
+          }
+        })
+        .catch(error => {
+          console.error("❌ Error al verificar index_bioanalista.html:", error);
+          mostrarAviso("❌ Error al cambiar de módulo. Verifica la consola.", true);
+        });
+    }
+    
+    async function iniciarAplicacion() {
+      try {
+        const catalogoEstudios = new Cl_mCatalogoEstudios();
+        
+        console.log("🔄 Cargando catálogo de estudios desde MockAPI...");
+        const exito = await Cl_sEstudio.cargarCatálogo(catalogoEstudios);
+        
+        if (exito) {
+          const cantidad = catalogoEstudios.obtenerTodos().length;
+          console.log(`✅ Catálogo cargado exitosamente: ${cantidad} estudios disponibles`);
+          
+          const estudios = catalogoEstudios.obtenerTodos();
+          estudios.forEach(estudio => {
+            console.log(`   - ${estudio.nombre}: ${estudio.valoresReferencia} (${estudio.unidad})`);
+          });
+        } else {
+          console.warn("⚠️ No se pudo cargar el catálogo desde la nube. Verifica tu conexión a internet.");
+          alert("Advertencia: No se pudo cargar el catálogo de estudios. Los valores de referencia podrían no mostrarse correctamente.");
+        }
+        
+        const cargandoDiv = document.getElementById("cargando");
+        const contenidoPrincipal = document.getElementById("contenidoPrincipal");
+        
+        if (cargandoDiv) cargandoDiv.style.display = "none";
+        if (contenidoPrincipal) contenidoPrincipal.style.display = "block";
+        
+        const vAdmin = new Cl_vAdmin();
+        const vExamen = new Cl_vExamen(catalogoEstudios);
+        const cExamen = new Cl_cExamen(vExamen, catalogoEstudios);
+        const cLaboratorioAdmin = new Cl_cLaboratorioAdmin(vAdmin, cExamen, catalogoEstudios);
+        
+        console.log("🚀 Aplicación de Administración iniciada correctamente");
+        
+        // Configurar el botón de cambio de rol después de que la UI está lista
+        const btnCambioRol = document.getElementById("btnCambiarARolBioanalista");
+        if (btnCambioRol) {
+          // Eliminar event listeners previos si existen
+          const nuevoBoton = btnCambioRol.cloneNode(true);
+          btnCambioRol.parentNode.replaceChild(nuevoBoton, btnCambioRol);
+          
+          // Agregar el nuevo event listener
+          nuevoBoton.addEventListener("click", cambiarABioanalista);
+          console.log("✅ Botón 'Cambiar a Bioanalista' configurado correctamente");
+        } else {
+          console.error("❌ No se encontró el botón con id 'btnCambiarARolBioanalista'");
+        }
+        
+      } catch (error) {
+        console.error("❌ Error fatal al iniciar la aplicación:", error);
+        
+        // Mostrar mensaje de error al usuario
+        const cargandoDiv = document.getElementById("cargando");
+        if (cargandoDiv) {
+          cargandoDiv.innerHTML = `
+            <div style="color: #a1220a; background: #ffe8e5; padding: 20px; border-radius: 12px; border-left: 5px solid #c0392b;">
+              <strong>⚠️ Error al cargar la aplicación:</strong><br>
+              ${error.message}<br><br>
+              <button onclick="location.reload()" style="padding: 8px 20px; background: #1a5f7a; color: white; border: none; border-radius: 40px; cursor: pointer; font-weight: 500;">
+                Reintentar
+              </button>
+            </div>
+          `;
+        }
+      }
+    }
+    
+    iniciarAplicacion();
+  </script>
+</body>
+</html>
