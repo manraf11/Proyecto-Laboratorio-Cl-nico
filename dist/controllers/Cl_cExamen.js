@@ -40,7 +40,7 @@ export default class Cl_cExamen {
     async alRegistrarEstudioCatalogo(estudio) {
         let exito = await Cl_sEstudio.guardarNuevoEstudio(estudio);
         if (exito) {
-            alert(`¡Estudio "${estudio.nombre}" registrado con éxito en MockAPI!`);
+            alert(`estudio "${estudio.nombre}" registrado con éxito `);
             await Cl_sEstudio.cargarCatálogo();
             let inputNombre = document.getElementById("modal_nombre")?.value;
             let inputCedula = document.getElementById("modal_cedula")?.value;
@@ -54,7 +54,7 @@ export default class Cl_cExamen {
                 document.getElementById("modal_telefono").value = inputTelef;
         }
         else {
-            alert("Error de comunicación: No se pudo almacenar el estudio clínico en MockAPI.");
+            alert("error no se pudo almacenar el estudio .");
         }
     }
 }

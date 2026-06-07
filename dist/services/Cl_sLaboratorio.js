@@ -16,7 +16,7 @@ export default class Cl_sLaboratorio {
                     resultadoExamen: examen.resultadoExamen,
                     precioEstudio: examen.precioEstudio,
                     formaPago: examen.formaPago,
-                    estado: examen.estado, // ✅ CAMBIADO: usar estado en lugar de estaFinalizado
+                    estado: examen.estado, // cambiado  estado en lugar de estaFinalizado
                     fechaRegistro: examen.fechaRegistro
                 })
             });
@@ -38,13 +38,11 @@ export default class Cl_sLaboratorio {
                 let arregloCrudo = await respuesta.json();
                 for (let i = 0; i < arregloCrudo.length; i++) {
                     let c = arregloCrudo[i];
-                    // ✅ Convertir el campo legacy "estaFinalizado" a "estado" si existe
                     let estadoExamen = "preparacion";
                     if (c.estado) {
                         estadoExamen = c.estado;
                     }
                     else if (c.estaFinalizado !== undefined) {
-                        // Compatibilidad con datos antiguos
                         estadoExamen = c.estaFinalizado ? "listo" : "pendiente";
                     }
                     let examen = new Cl_mExamen({
@@ -56,7 +54,7 @@ export default class Cl_sLaboratorio {
                         resultadoExamen: c.resultadoExamen,
                         precioEstudio: c.precioEstudio,
                         formaPago: c.formaPago,
-                        estado: estadoExamen, // ✅ USAR estado
+                        estado: estadoExamen, //  estado
                         fechaRegistro: c.fechaRegistro
                     });
                     laboratorio.agregarExamen(examen);
@@ -82,7 +80,7 @@ export default class Cl_sLaboratorio {
                     resultadoExamen: examen.resultadoExamen,
                     precioEstudio: examen.precioEstudio,
                     formaPago: examen.formaPago,
-                    estado: examen.estado, // ✅ CAMBIADO: usar estado
+                    estado: examen.estado, // usa estado
                     fechaRegistro: examen.fechaRegistro
                 })
             });
@@ -96,7 +94,7 @@ export default class Cl_sLaboratorio {
         try {
             let respuesta = await fetch(this.direccionWeb);
             if (!respuesta.ok) {
-                return { ok: false, cantidad: 0, mensaje: "No se pudo obtener los registros desde MockAPI." };
+                return { ok: false, cantidad: 0, mensaje: "no se pudo obtener los registros desde MockAPI." };
             }
             let datosCrudos = await respuesta.json();
             let fechaBusqueda = fechaSeleccionada.trim().slice(0, 10);
@@ -124,7 +122,7 @@ export default class Cl_sLaboratorio {
             return { ok: true, cantidad };
         }
         catch {
-            return { ok: false, cantidad: 0, mensaje: "Error de comunicación con MockAPI." };
+            return { ok: false, cantidad: 0, mensaje: "error de MockAPI." };
         }
     }
     static obtenerFechaISO(valor) {

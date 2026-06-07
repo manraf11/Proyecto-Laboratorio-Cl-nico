@@ -43,41 +43,40 @@ export default class Cl_mExamen {
             return [];
         return this.resultadoExamen.split(", ").map(item => item.trim());
     }
-    // ✅ MÉTODO EN EL MODELO: Lógica de negocio para enviar WhatsApp
+    // enviar WhatsApp
     async enviarResultadosPorWhatsApp() {
-        // Validar que el examen esté en estado "listo" (completado)
+        // valida examen en estado listo
         if (this.estado !== "listo") {
             return {
                 exito: false,
-                mensaje: `El examen está en estado "${this.estado}". Solo se pueden enviar resultados cuando está "listo".`
+                mensaje: `examen está en estado "${this.estado}". se pueden enviar resultados cuando está listo.`
             };
         }
-        // Validar que tenga resultados
+        // valida que tenga resultados
         if (!this.resultadoExamen || this.resultadoExamen.trim() === "") {
             return {
                 exito: false,
-                mensaje: "No hay resultados registrados para enviar."
+                mensaje: "no hay resultados registrados para enviar."
             };
         }
-        // Validar que tenga número de teléfono
+        // valida que tenga número de teléfono
         if (!this.telefonoPaciente || this.telefonoPaciente.trim() === "") {
             return {
                 exito: false,
-                mensaje: "El paciente no tiene número de teléfono registrado."
+                mensaje: "el paciente no tiene número de teléfono registrado."
             };
         }
-        // Construir el mensaje para WhatsApp
+        // hacer el mensaje de WhatsApp
         let mensajeWhatsApp = this.construirMensajeResultados();
-        // Limpiar número de teléfono (solo dígitos)
+        // limpia el numero de telefono numeros
         let telefonoLimpio = this.telefonoPaciente.replace(/\D/g, "");
-        // Si el número no tiene código de país, asumir Venezuela (+58)
+        // si el numero no tiene código asume que es +58
         if (telefonoLimpio.length === 10 && !telefonoLimpio.startsWith("58")) {
             telefonoLimpio = "58" + telefonoLimpio;
         }
-        // URL de WhatsApp Web (abre el chat sin enviar automáticamente por seguridad)
-        // El usuario debe hacer clic en enviar
+        // el usuario debe hacer cli en enviar
         let urlWhatsApp = `https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensajeWhatsApp)}`;
-        // Abrir WhatsApp en nueva pestaña
+        // abre el  wahtsap en nueva pestaña
         window.open(urlWhatsApp, "_blank");
         return {
             exito: true,
@@ -109,18 +108,18 @@ export default class Cl_mExamen {
         mensaje += `_Ante cualquier duda, consulte con su médico._`;
         return mensaje;
     }
-    // Método para cambiar estado (lógica de negocio)
+    // cambia el estado
     cambiarEstado(nuevoEstado) {
         this.estado = nuevoEstado;
     }
-    // Verificar si puede pasar a listo
+    // verifica si puede pasar a listo
     puedeFinalizar() {
         if (!this.resultadoExamen || this.resultadoExamen.trim() === "") {
             return false;
         }
         let resultados = this.obtenerArregloResultados();
         let estudios = this.obtenerArregloEstudios();
-        // Todos los estudios deben tener resultado
+        // los estudios deben tener resultado
         return resultados.length === estudios.length && resultados.every(r => r.trim() !== "");
     }
 }

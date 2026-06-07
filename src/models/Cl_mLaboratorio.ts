@@ -41,7 +41,7 @@ export default class Cl_mLaboratorio {
     return finalizados;
   }
 
-  // ✅ Nuevo método: obtener exámenes por múltiples estados
+  // obteniene examenes por estados
   public obtenerPorEstados(estados: ("preparacion" | "pendiente" | "listo")[]): Cl_mExamen[] {
     let filtrados: Cl_mExamen[] = [];
     for (let i = 0; i < this.listaExamenes.length; i++) {

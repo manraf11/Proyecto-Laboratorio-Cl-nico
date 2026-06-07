@@ -80,11 +80,11 @@ export default class Cl_vBioanalista {
                 let inputs = card.querySelectorAll(`.resultado-input-${examen.id}`);
                 for (let k = 0; k < inputs.length; k++) {
                     if (inputs[k].value.trim() === "") {
-                        alert("Atención: Debe rellenar todos los resultados analíticos antes de poder finalizar la orden médica.");
+                        alert("debe rellenar todos los resultados analíticos antes de poder finalizar la orden médica.");
                         return;
                     }
                 }
-                if (confirm(`¿Está seguro de cerrar permanentemente la orden de ${examen.nombrePaciente}?`)) {
+                if (confirm(`está seguro de cerrar permanentemente la orden de ${examen.nombrePaciente}?`)) {
                     if (yoMismo.avisarFinalizar)
                         yoMismo.avisarFinalizar(examen.id);
                 }

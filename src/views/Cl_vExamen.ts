@@ -46,11 +46,11 @@ export default class Cl_vExamen implements I_vExamen {
         }
 
         if (nombre.trim() === "" || cedula.trim() === "") {
-          alert("Debe ingresar obligatoriamente el Nombre y la Cédula del paciente.");
+          alert("debe ingresar obligatoriamente el nombre y la cedula del paciente.");
           return;
         }
         if (estudiosMarcados.length === 0) {
-          alert("Debe marcar al menos un estudio clínico para el paciente.");
+          alert("debe marcar al menos un estudio clinico para el paciente.");
           return;
         }
 
@@ -170,7 +170,7 @@ export default class Cl_vExamen implements I_vExamen {
         let refEst = (document.getElementById("add_est_referencia") as HTMLInputElement).value;
 
         if (!nomEst.trim() || isNaN(preEst) || !uniEst.trim() || !refEst.trim()) {
-          alert("Debe rellenar todos los campos del nuevo estudio correctamente.");
+          alert("debe rellenar todos los campos del nuevo estudio correctamente.");
           return;
         }
 

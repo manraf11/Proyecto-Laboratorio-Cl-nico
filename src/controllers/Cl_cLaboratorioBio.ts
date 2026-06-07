@@ -28,7 +28,7 @@ export default class Cl_cLaboratorioBio {
   }
 
   private refrescarPantalla() {
-    // El bioanalista ve exámenes en estado "preparacion" (recién registrados) y "pendiente" (en proceso)
+    // bioanalista ve examenes en estado preparacion y pendientes
     let examenesTrabajo = this.laboratorio.obtenerPorEstados(["preparacion", "pendiente"]);
     this.pantallaBioanalista.mostrarPendientes({ examenes: examenesTrabajo });
   }
@@ -38,14 +38,14 @@ export default class Cl_cLaboratorioBio {
     if (examen && examen.id) {
       examen.resultadoExamen = resultados.join(", ");
       
-      // Si estaba en preparación y ya tiene resultados, pasa a pendiente
+      // si estaba en preparacion y ya tiene resultados, pasa a pendiente
       if (examen.estado === "preparacion" && resultados.some(r => r.trim() !== "")) {
         examen.cambiarEstado("pendiente");
       }
       
       let exito = await Cl_sLaboratorio.actualizarEnNube(examen.id, examen);
       if (exito.ok) {
-        alert(`Resultados guardados. El examen ahora está en estado: ${examen.estado.toUpperCase()}`);
+        alert(`resultados guardados. }`);
         await this.cargarExamenes();
       }
     }
@@ -54,18 +54,18 @@ export default class Cl_cLaboratorioBio {
   private async terminarExamen(idExamen: string) {
     let examen = this.laboratorio.buscarPorId(idExamen);
     if (examen && examen.id) {
-      // Usar la lógica del modelo para verificar si puede finalizar
+      // verificar si puede finalizar
       if (!examen.puedeFinalizar()) {
-        alert("Error: Debe cargar todos los resultados antes de finalizar el examen.");
+        alert("error cargar todos los resultados antes de finalizar.");
         return;
       }
       
-      // Cambiar a estado "listo" (el administrador luego enviará WhatsApp)
+      // Cambiar a estado listo 
       examen.cambiarEstado("listo");
       
       let exito = await Cl_sLaboratorio.actualizarEnNube(examen.id, examen);
       if (exito.ok) {
-        alert(`✅ Orden de ${examen.nombrePaciente} completada y marcada como "LISTO".\nEl administrador se encargará de enviar los resultados por WhatsApp.`);
+        alert(` Orden de ${examen.nombrePaciente} completada`);
         await this.cargarExamenes();
       }
     }

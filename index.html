@@ -78,7 +78,6 @@
       font-size: 0.9rem;
     }
     
-    /* Spinner de carga - institucional */
     .loader {
       border: 4px solid #e0e7ed;
       border-top: 4px solid #1a5f7a;
@@ -102,7 +101,6 @@
       margin: 16px 0;
     }
 
-    /* Estilos para listados y elementos del admin */
     .admin-lista-ordenes {
       display: flex;
       flex-direction: column;
@@ -296,7 +294,6 @@
         <p>SISTEMA ADMINISTRATIVO - Gestión de Órdenes</p>
       </div>
       <div class="panel-content">
-        <!-- Indicador de carga -->
         <div id="cargando" class="cargando-mensaje">
           <div class="loader"></div>
           Cargando catálogo de estudios desde la nube...
@@ -318,10 +315,12 @@
                     Fecha
                     <input id="filtro_fecha" type="date" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;" />
                   </label>
-                  <label style="display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem; color: #2b4363;">
-                    Estudio
-                    <input id="filtro_tipo_estudio" type="text" placeholder="Ej. Hemograma" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;" />
-                  </label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem; color: #2b4363;">
+  Estudio
+  <select id="filtro_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1; background: white;">
+    <option value="">-- Seleccione un estudio --</option>
+  </select>
+</label>
                 </div>
                 <button id="botonFiltrarEstudios" class="btn-secundario" style="width: 100%; max-width: 320px;">Buscar cantidad</button>
                 <div id="resultadoFiltroEstudios" style="margin-top: 18px;"></div>
@@ -357,7 +356,7 @@
     import Cl_cLaboratorioAdmin from "./dist/controllers/Cl_cLaboratorioAdmin.js";
     import Cl_sEstudio from "./dist/services/Cl_sEstudio.js";
     import Cl_mEstudio from "./dist/models/Cl_mEstudio.js";
-    // Función para mostrar aviso temporal
+    // aviso temporal
     function mostrarAviso(mensaje, esError = false) {
       const aviso = document.createElement('div');
       aviso.className = 'aviso-cambio';
@@ -370,18 +369,18 @@
       }, 3000);
     }
 
-    // Función para cambiar al rol de bioanalista
+    // cambiar al  bioanalista
     function cambiarABioanalista() {
       console.log("🔄 Intentando cambiar a vista de Bioanalista...");
       
-      // Verificar si el archivo existe antes de intentar la navegación
+      // verifica sio existe antes de intentar la navegación
       fetch('index_bioanalista.html', { method: 'HEAD' })
         .then(response => {
           if (response.ok) {
             console.log("✅ Redirigiendo a index_bioanalista.html");
             mostrarAviso("🔬 Cambiando al panel de Bioanalista...");
             
-            // Pequeño retraso para que el usuario vea el aviso
+            // retraso para que el usuario vea el aviso
             setTimeout(() => {
               window.location.href = 'index_bioanalista.html';
             }, 500);
@@ -389,7 +388,7 @@
             console.warn("⚠️ El archivo index_bioanalista.html no existe");
             mostrarAviso("⚠️ El módulo de Bioanalista no está disponible aún", true);
             
-            // Crear un mensaje más detallado en la consola
+            //  mensaje detallado en la consola
             console.warn("Para habilitar esta funcionalidad, crea el archivo index_bioanalista.html");
             console.warn("O ajusta la ruta en el botón si el archivo tiene otro nombre");
           }
@@ -426,14 +425,14 @@
         
         console.log("🚀 Aplicación de Administración iniciada correctamente");
         
-        // Configurar el botón de cambio de rol después de que la UI está lista
+        //  cambio de rol después de que la UI está lista
         const btnCambioRol = document.getElementById("btnCambiarARolBioanalista");
         if (btnCambioRol) {
-          // Eliminar event listeners previos si existen
+          // elimina eventos listeners si existen
           const nuevoBoton = btnCambioRol.cloneNode(true);
           btnCambioRol.parentNode.replaceChild(nuevoBoton, btnCambioRol);
           
-          // Agregar el nuevo event listener
+          // agrega el nuevo evento listener
           nuevoBoton.addEventListener("click", cambiarABioanalista);
           console.log("✅ Botón 'Cambiar a Bioanalista' configurado correctamente");
         } else {
@@ -443,7 +442,7 @@
       } catch (error) {
         console.error("❌ Error fatal al iniciar la aplicación:", error);
         
-        // Mostrar mensaje de error al usuario
+        // muestra mensaje de error al usuario
         const cargandoDiv = document.getElementById("cargando");
         if (cargandoDiv) {
           cargandoDiv.innerHTML = `

@@ -1,12 +1,13 @@
+import Cl_mEstudio from "../models/Cl_mEstudio.js";
 export default class Cl_vAdmin {
     divFinalizados;
     divFormulario;
     botonNuevoExamen = null;
     botonFiltrarEstudios = null;
     inputFiltroFecha = null;
-    inputFiltroTipo = null;
+    selectFiltroTipo = null;
     avisarImprimir = null;
-    avisarWhatsApp = null; // ✅ NUEVO
+    avisarWhatsApp = null;
     avisarFiltrarEstudios = null;
     constructor() {
         this.divFinalizados = document.getElementById("admin_finalizados");
@@ -23,7 +24,6 @@ export default class Cl_vAdmin {
     cuandoClicEnImprimir(avisar) {
         this.avisarImprimir = avisar;
     }
-    // ✅ NUEVO
     cuandoClicEnEnviarWhatsApp(avisar) {
         this.avisarWhatsApp = avisar;
     }
@@ -42,17 +42,42 @@ export default class Cl_vAdmin {
       </div>
     `;
     }
+    actualizarListaEstudios() {
+        if (!this.selectFiltroTipo)
+            return;
+        const estudios = Cl_mEstudio.obtenerTodos();
+        const valorActual = this.selectFiltroTipo.value;
+        this.selectFiltroTipo.innerHTML = '<option value="">-- Seleccione un estudio --</option>';
+        for (let i = 0; i < estudios.length; i++) {
+            const option = document.createElement("option");
+            option.value = estudios[i].nombre;
+            option.textContent = `${estudios[i].nombre} ($${estudios[i].precio})`;
+            this.selectFiltroTipo.appendChild(option);
+        }
+        if (valorActual && this.selectFiltroTipo.querySelector(`option[value="${valorActual}"]`)) {
+            this.selectFiltroTipo.value = valorActual;
+        }
+    }
     mostrarFormulario() {
         if (!this.divFormulario)
             return;
         this.botonNuevoExamen = document.getElementById("botonAbrirModal");
         this.botonFiltrarEstudios = document.getElementById("botonFiltrarEstudios");
         this.inputFiltroFecha = document.getElementById("filtro_fecha");
-        this.inputFiltroTipo = document.getElementById("filtro_tipo_estudio");
+        this.selectFiltroTipo = document.getElementById("filtro_tipo_estudio");
+        this.actualizarListaEstudios();
         if (this.botonFiltrarEstudios) {
             this.botonFiltrarEstudios.onclick = () => {
-                const tipo = this.inputFiltroTipo?.value || "";
+                const tipo = this.selectFiltroTipo?.value || "";
                 const fecha = this.inputFiltroFecha?.value || "";
+                if (!tipo) {
+                    alert("Por favor, seleccione un estudio de la lista.");
+                    return;
+                }
+                if (!fecha) {
+                    alert("Por favor, seleccione una fecha.");
+                    return;
+                }
                 if (this.avisarFiltrarEstudios) {
                     this.avisarFiltrarEstudios(tipo, fecha);
                 }
@@ -63,7 +88,7 @@ export default class Cl_vAdmin {
         if (!this.divFinalizados)
             return;
         if (datos.examenes.length === 0) {
-            this.divFinalizados.innerHTML = "<div class='mensaje-vacio'>No hay exámenes en estado LISTO para enviar resultados.</div>";
+            this.divFinalizados.innerHTML = "<div class='mensaje-vacio'>no hay examenes en estado LISTO para enviar resultados.</div>";
             return;
         }
         let html = `
@@ -83,7 +108,6 @@ export default class Cl_vAdmin {
     `;
         for (let i = 0; i < datos.examenes.length; i++) {
             let ex = datos.examenes[i];
-            // Determinar color de estado
             let estadoColor = "";
             let estadoTexto = "";
             if (ex.estado === "preparacion") {
@@ -115,7 +139,7 @@ export default class Cl_vAdmin {
               💬 Enviar WhatsApp
             </button>
             ` : `
-            <span style="font-size:0.7rem; color:#999;">(Esperando resultados)</span>
+            <span style="font-size:0.7rem; color:#999;">(esperando resultados)</span>
             `}
           </td>
         </tr>
@@ -123,7 +147,6 @@ export default class Cl_vAdmin {
         }
         html += "</tbody></table>";
         this.divFinalizados.innerHTML = html;
-        // Botones de imprimir
         let botonesImprimir = this.divFinalizados.querySelectorAll(".btn-imprimir");
         let yoMismo = this;
         for (let i = 0; i < botonesImprimir.length; i++) {
@@ -134,7 +157,6 @@ export default class Cl_vAdmin {
                     yoMismo.avisarImprimir(id);
             };
         }
-        // ✅ Botones de WhatsApp
         let botonesWhatsApp = this.divFinalizados.querySelectorAll(".btn-whatsapp");
         for (let i = 0; i < botonesWhatsApp.length; i++) {
             let btn = botonesWhatsApp[i];

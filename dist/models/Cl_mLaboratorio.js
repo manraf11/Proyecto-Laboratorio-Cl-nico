@@ -32,7 +32,7 @@ export default class Cl_mLaboratorio {
         }
         return finalizados;
     }
-    // ✅ Nuevo método: obtener exámenes por múltiples estados
+    // obteniene examenes por estados
     obtenerPorEstados(estados) {
         let filtrados = [];
         for (let i = 0; i < this.listaExamenes.length; i++) {

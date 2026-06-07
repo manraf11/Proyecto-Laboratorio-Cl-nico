@@ -34,7 +34,6 @@ export default class Cl_cLaboratorioAdmin {
   }
 
   private refrescarPantalla() {
-    // Mostrar exámenes en estado "listo" (completados por bioanalista)
     this.pantallaAdmin.mostrarFinalizados({ examenes: this.laboratorio.obtenerFinalizados() });
   }
 
@@ -42,15 +41,18 @@ export default class Cl_cLaboratorioAdmin {
     let yoMismo = this;
     this.controladorExamen.pedirDatosExamen(async function(examen: Cl_mExamen | null) {
       if (examen !== null) {
-        // El nuevo examen siempre empieza en estado "preparacion"
         examen.cambiarEstado("preparacion");
         
         let guardado = await Cl_sLaboratorio.guardarEnNube(examen);
         if (guardado.ok) {
-          alert("✅ Orden de examen registrada con éxito (estado: PREPARACIÓN)");
+          alert(" examen registrado con éxito)");
           await yoMismo.cargarExamenes();
+          
+          if (yoMismo.pantallaAdmin.actualizarListaEstudios) {
+            yoMismo.pantallaAdmin.actualizarListaEstudios();
+          }
         } else {
-          alert("❌ Error al guardar el examen en la nube.");
+          alert("error al guardar el examen.");
         }
       }
     });
@@ -58,7 +60,7 @@ export default class Cl_cLaboratorioAdmin {
 
   private filtrarEstudios(tipoEstudio: string, fechaSeleccionada: string) {
     if (!tipoEstudio.trim() || !fechaSeleccionada.trim()) {
-      alert("Debe ingresar una fecha y un tipo de estudio para filtrar.");
+      alert("ingresar fecha y un tipo de estudio .");
       return;
     }
 
@@ -140,17 +142,16 @@ export default class Cl_cLaboratorioAdmin {
   private async enviarWhatsApp(idExamen: string) {
     let examen = this.laboratorio.buscarPorId(idExamen);
     if (!examen) {
-      alert("❌ No se encontró el examen solicitado.");
+      alert(" no se encontró el examen solicitado.");
       return;
     }
 
-    // ✅ El controlador llama al método del modelo (respetando MVC)
     let resultado = await examen.enviarResultadosPorWhatsApp();
     
     if (resultado.exito) {
-      alert(`✅ ${resultado.mensaje}\n\n📱 Se abrirá WhatsApp en una nueva pestaña.`);
+      alert(` ${resultado.mensaje}\n\n📱 Se abrirá WhatsApp en una nueva pestaña.`);
     } else {
-      alert(`❌ Error: ${resultado.mensaje}`);
+      alert(` Error: ${resultado.mensaje}`);
     }
   }
 }
