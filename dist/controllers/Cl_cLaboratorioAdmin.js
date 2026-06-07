@@ -1,3 +1,4 @@
+// controllers/Cl_cLaboratorioAdmin.ts
 import Cl_mLaboratorio from "../models/Cl_mLaboratorio.js";
 import Cl_mEstudio from "../models/Cl_mEstudio.js";
 import Cl_sLaboratorio from "../services/Cl_sLaboratorio.js";
@@ -12,7 +13,9 @@ export default class Cl_cLaboratorioAdmin {
         let yoMismo = this;
         this.cargarExamenes();
         this.pantallaAdmin.cuandoClicEnNuevoExamen(() => yoMismo.guardarNuevoExamen());
+        this.pantallaAdmin.cuandoClicEnFiltrarEstudios((tipo, fecha) => yoMismo.filtrarEstudios(tipo, fecha));
         this.pantallaAdmin.cuandoClicEnImprimir((id) => yoMismo.imprimirReporte(id));
+        this.pantallaAdmin.cuandoClicEnEnviarWhatsApp((id) => yoMismo.enviarWhatsApp(id));
     }
     async cargarExamenes() {
         let resultado = await Cl_sLaboratorio.traerDesdeNube();
@@ -22,19 +25,33 @@ export default class Cl_cLaboratorioAdmin {
         }
     }
     refrescarPantalla() {
+        // Mostrar exámenes en estado "listo" (completados por bioanalista)
         this.pantallaAdmin.mostrarFinalizados({ examenes: this.laboratorio.obtenerFinalizados() });
     }
     guardarNuevoExamen() {
         let yoMismo = this;
         this.controladorExamen.pedirDatosExamen(async function (examen) {
             if (examen !== null) {
+                // El nuevo examen siempre empieza en estado "preparacion"
+                examen.cambiarEstado("preparacion");
                 let guardado = await Cl_sLaboratorio.guardarEnNube(examen);
                 if (guardado.ok) {
-                    alert("Orden de examen registrada con exito");
+                    alert("✅ Orden de examen registrada con éxito (estado: PREPARACIÓN)");
                     await yoMismo.cargarExamenes();
+                }
+                else {
+                    alert("❌ Error al guardar el examen en la nube.");
                 }
             }
         });
+    }
+    filtrarEstudios(tipoEstudio, fechaSeleccionada) {
+        if (!tipoEstudio.trim() || !fechaSeleccionada.trim()) {
+            alert("Debe ingresar una fecha y un tipo de estudio para filtrar.");
+            return;
+        }
+        let cantidad = this.laboratorio.contarEstudiosPorTipoYFecha(tipoEstudio, fechaSeleccionada);
+        this.pantallaAdmin.mostrarResultadoFiltro(cantidad, tipoEstudio, fechaSeleccionada);
     }
     imprimirReporte(idExamen) {
         let examen = this.laboratorio.buscarPorId(idExamen);
@@ -56,6 +73,20 @@ export default class Cl_cLaboratorioAdmin {
         </tr>
       `;
         }
+        let estadoTexto = "";
+        let estadoColor = "";
+        if (examen.estado === "preparacion") {
+            estadoTexto = "PREPARACIÓN";
+            estadoColor = "#ffc107";
+        }
+        else if (examen.estado === "pendiente") {
+            estadoTexto = "PENDIENTE";
+            estadoColor = "#17a2b8";
+        }
+        else {
+            estadoTexto = "LISTO";
+            estadoColor = "#28a745";
+        }
         let plantilla = `
       <div style="font-family: 'Segoe UI', 'Roboto', Arial, sans-serif; padding: 30px; color: #2c3e50; max-width: 650px; margin: auto; border: 2px solid #1a5f7a; border-radius: 12px; background: white;">
         <div style="text-align: center; border-bottom: 3px solid #ffc107; padding-bottom: 15px; margin-bottom: 20px;">
@@ -65,7 +96,8 @@ export default class Cl_cLaboratorioAdmin {
         <div style="margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #f0f6fa; padding: 15px; border-radius: 8px; border: 1px solid #dce4ec;">
           <div><strong style="color: #1a5f7a;">Paciente:</strong> <span style="color: #2c3e50;">${examen.nombrePaciente}</span></div>
           <div><strong style="color: #1a5f7a;">Cedula:</strong> <span style="color: #2c3e50;">${examen.cedulaPaciente}</span></div>
-          <div><strong style="color: #1a5f7a;">Telefono:</strong> <span style="color: #2c3e50;">${examen.telefonoPaciente}</span></div>
+          <div><strong style="color: #1a5f7a;">Telefono:</strong> <span style="color: #2c3e50;">${examen.telefonoPaciente || "No registrado"}</span></div>
+          <div><strong style="color: #1a5f7a;">Estado:</strong> <span style="background: ${estadoColor}; color: white; padding: 2px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold;">${estadoTexto}</span></div>
           <div><strong style="color: #1a5f7a;">Fecha de Emision:</strong> <span style="color: #2c3e50;">${new Date(examen.fechaRegistro).toLocaleDateString()}</span></div>
         </div>
         <table style="width: 100%; border-collapse: collapse; text-align: left; margin-bottom: 25px;">
@@ -86,6 +118,21 @@ export default class Cl_cLaboratorioAdmin {
       </div>
     `;
         this.pantallaAdmin.mostrarReporte(plantilla);
+    }
+    async enviarWhatsApp(idExamen) {
+        let examen = this.laboratorio.buscarPorId(idExamen);
+        if (!examen) {
+            alert("❌ No se encontró el examen solicitado.");
+            return;
+        }
+        // ✅ El controlador llama al método del modelo (respetando MVC)
+        let resultado = await examen.enviarResultadosPorWhatsApp();
+        if (resultado.exito) {
+            alert(`✅ ${resultado.mensaje}\n\n📱 Se abrirá WhatsApp en una nueva pestaña.`);
+        }
+        else {
+            alert(`❌ Error: ${resultado.mensaje}`);
+        }
     }
 }
 //# sourceMappingURL=Cl_cLaboratorioAdmin.js.map

@@ -305,7 +305,28 @@
         <div id="contenidoPrincipal" style="display: none;">
           <div class="seccion">
             <div class="seccion-titulo">📋 Opciones Generales</div>
-            <div id="admin_formulario"></div>
+            <div id="admin_formulario">
+              <div class="admin-botones">
+                <button id="botonAbrirModal" class="btn-primario">
+                  + Registrar Orden de Examen
+                </button>
+              </div>
+              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff; margin-top: 16px;">
+                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">Filtrar estudios por fecha</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                  <label style="display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem; color: #2b4363;">
+                    Fecha
+                    <input id="filtro_fecha" type="date" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;" />
+                  </label>
+                  <label style="display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem; color: #2b4363;">
+                    Estudio
+                    <input id="filtro_tipo_estudio" type="text" placeholder="Ej. Hemograma" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;" />
+                  </label>
+                </div>
+                <button id="botonFiltrarEstudios" class="btn-secundario" style="width: 100%; max-width: 320px;">Buscar cantidad</button>
+                <div id="resultadoFiltroEstudios" style="margin-top: 18px;"></div>
+              </div>
+            </div>
           </div>
           <div class="seccion">
             <div class="seccion-titulo">🖨️ Resultados Listos para Impresión</div>

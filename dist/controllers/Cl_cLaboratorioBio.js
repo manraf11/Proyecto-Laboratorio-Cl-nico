@@ -1,3 +1,4 @@
+// controllers/Cl_cLaboratorioBio.ts
 import Cl_mLaboratorio from "../models/Cl_mLaboratorio.js";
 import Cl_sLaboratorio from "../services/Cl_sLaboratorio.js";
 export default class Cl_cLaboratorioBio {
@@ -19,15 +20,21 @@ export default class Cl_cLaboratorioBio {
         }
     }
     refrescarPantalla() {
-        this.pantallaBioanalista.mostrarPendientes({ examenes: this.laboratorio.obtenerPendientes() });
+        // El bioanalista ve exámenes en estado "preparacion" (recién registrados) y "pendiente" (en proceso)
+        let examenesTrabajo = this.laboratorio.obtenerPorEstados(["preparacion", "pendiente"]);
+        this.pantallaBioanalista.mostrarPendientes({ examenes: examenesTrabajo });
     }
     async guardarResultados(idExamen, resultados) {
         let examen = this.laboratorio.buscarPorId(idExamen);
         if (examen && examen.id) {
             examen.resultadoExamen = resultados.join(", ");
+            // Si estaba en preparación y ya tiene resultados, pasa a pendiente
+            if (examen.estado === "preparacion" && resultados.some(r => r.trim() !== "")) {
+                examen.cambiarEstado("pendiente");
+            }
             let exito = await Cl_sLaboratorio.actualizarEnNube(examen.id, examen);
             if (exito.ok) {
-                alert("Resultados parciales guardados en la orden.");
+                alert(`Resultados guardados. El examen ahora está en estado: ${examen.estado.toUpperCase()}`);
                 await this.cargarExamenes();
             }
         }
@@ -35,14 +42,16 @@ export default class Cl_cLaboratorioBio {
     async terminarExamen(idExamen) {
         let examen = this.laboratorio.buscarPorId(idExamen);
         if (examen && examen.id) {
-            if (!examen.resultadoExamen.trim()) {
-                alert("Error: No se puede finalizar una orden médica que no tiene ningún resultado cargado.");
+            // Usar la lógica del modelo para verificar si puede finalizar
+            if (!examen.puedeFinalizar()) {
+                alert("Error: Debe cargar todos los resultados antes de finalizar el examen.");
                 return;
             }
-            examen.estaFinalizado = true;
+            // Cambiar a estado "listo" (el administrador luego enviará WhatsApp)
+            examen.cambiarEstado("listo");
             let exito = await Cl_sLaboratorio.actualizarEnNube(examen.id, examen);
             if (exito.ok) {
-                alert(`Orden de ${examen.nombrePaciente} completada y enviada a Administración.`);
+                alert(`✅ Orden de ${examen.nombrePaciente} completada y marcada como "LISTO".\nEl administrador se encargará de enviar los resultados por WhatsApp.`);
                 await this.cargarExamenes();
             }
         }
