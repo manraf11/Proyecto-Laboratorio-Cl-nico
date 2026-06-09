@@ -1,6 +1,7 @@
 // controllers/Cl_cLaboratorioBio.ts
 import Cl_mLaboratorio from "../models/Cl_mLaboratorio.js";
 import Cl_sLaboratorio from "../services/Cl_sLaboratorio.js";
+import Cl_sEstudio from "../services/Cl_sEstudio.js";
 export default class Cl_cLaboratorioBio {
     laboratorio;
     pantallaBioanalista;
@@ -11,6 +12,10 @@ export default class Cl_cLaboratorioBio {
         this.cargarExamenes();
         this.pantallaBioanalista.cuandoCargarResultados((id, resultados) => yoMismo.guardarResultados(id, resultados));
         this.pantallaBioanalista.cuandoFinalizarExamen((id) => yoMismo.terminarExamen(id));
+        // Registrar callback para nuevo estudio
+        if (this.pantallaBioanalista.cuandoRegistrenNuevoEstudio) {
+            this.pantallaBioanalista.cuandoRegistrenNuevoEstudio((nuevoEstudio) => yoMismo.registrarNuevoEstudio(nuevoEstudio));
+        }
     }
     async cargarExamenes() {
         let resultado = await Cl_sLaboratorio.traerDesdeNube();
@@ -20,7 +25,6 @@ export default class Cl_cLaboratorioBio {
         }
     }
     refrescarPantalla() {
-        // bioanalista ve examenes en estado preparacion y pendientes
         let examenesTrabajo = this.laboratorio.obtenerPorEstados(["preparacion", "pendiente"]);
         this.pantallaBioanalista.mostrarPendientes({ examenes: examenesTrabajo });
     }
@@ -28,32 +32,46 @@ export default class Cl_cLaboratorioBio {
         let examen = this.laboratorio.buscarPorId(idExamen);
         if (examen && examen.id) {
             examen.resultadoExamen = resultados.join(", ");
-            // si estaba en preparacion y ya tiene resultados, pasa a pendiente
-            if (examen.estado === "preparacion" && resultados.some(r => r.trim() !== "")) {
+            if (examen.estado === "preparacion" && resultados.some(r => r.trim() !== "" && r !== "No realizado")) {
                 examen.cambiarEstado("pendiente");
             }
             let exito = await Cl_sLaboratorio.actualizarEnNube(examen.id, examen);
             if (exito.ok) {
-                alert(`resultados guardados. }`);
+                alert("✅ Resultados guardados correctamente.");
                 await this.cargarExamenes();
+            }
+            else {
+                alert("❌ Error al guardar los resultados.");
             }
         }
     }
     async terminarExamen(idExamen) {
         let examen = this.laboratorio.buscarPorId(idExamen);
         if (examen && examen.id) {
-            // verificar si puede finalizar
             if (!examen.puedeFinalizar()) {
-                alert("error cargar todos los resultados antes de finalizar.");
+                alert("⚠️ Debe cargar todos los resultados antes de finalizar.");
                 return;
             }
-            // Cambiar a estado listo 
             examen.cambiarEstado("listo");
             let exito = await Cl_sLaboratorio.actualizarEnNube(examen.id, examen);
             if (exito.ok) {
-                alert(` Orden de ${examen.nombrePaciente} completada`);
+                alert(`✅ Orden de ${examen.nombrePaciente} completada exitosamente.`);
                 await this.cargarExamenes();
             }
+            else {
+                alert("❌ Error al finalizar la orden.");
+            }
+        }
+    }
+    async registrarNuevoEstudio(estudio) {
+        let exito = await Cl_sEstudio.guardarNuevoEstudio(estudio);
+        if (exito) {
+            alert(`✅ Estudio "${estudio.nombre}" registrado exitosamente en el catálogo.`);
+            await Cl_sEstudio.cargarCatálogo();
+            await this.cargarExamenes();
+        }
+        else {
+            alert("❌ Error: No se pudo almacenar el estudio en la nube.");
         }
     }
 }

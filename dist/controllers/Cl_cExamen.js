@@ -8,11 +8,7 @@ export default class Cl_cExamen {
         let yoMismo = this;
         this.pantallaExamen.cuandoDenCancelar(() => yoMismo.alCancelar());
         this.pantallaExamen.cuandoDenAceptar((datos) => yoMismo.alAceptar(datos));
-        if (this.pantallaExamen.cuandoRegistrenNuevoEstudio) {
-            this.pantallaExamen.cuandoRegistrenNuevoEstudio((nuevoEstudio) => {
-                yoMismo.alRegistrarEstudioCatalogo(nuevoEstudio);
-            });
-        }
+        // Eliminado: ya no hay cuandoRegistrenNuevoEstudio aquí
     }
     async pedirDatosExamen(avisar) {
         this.avisar = avisar;
@@ -36,26 +32,6 @@ export default class Cl_cExamen {
             this.avisar(nuevoExamen);
         }
         this.pantallaExamen.ocultar();
-    }
-    async alRegistrarEstudioCatalogo(estudio) {
-        let exito = await Cl_sEstudio.guardarNuevoEstudio(estudio);
-        if (exito) {
-            alert(`estudio "${estudio.nombre}" registrado con éxito `);
-            await Cl_sEstudio.cargarCatálogo();
-            let inputNombre = document.getElementById("modal_nombre")?.value;
-            let inputCedula = document.getElementById("modal_cedula")?.value;
-            let inputTelef = document.getElementById("modal_telefono")?.value;
-            this.pantallaExamen.mostrar();
-            if (inputNombre)
-                document.getElementById("modal_nombre").value = inputNombre;
-            if (inputCedula)
-                document.getElementById("modal_cedula").value = inputCedula;
-            if (inputTelef)
-                document.getElementById("modal_telefono").value = inputTelef;
-        }
-        else {
-            alert("error no se pudo almacenar el estudio .");
-        }
     }
 }
 //# sourceMappingURL=Cl_cExamen.js.map

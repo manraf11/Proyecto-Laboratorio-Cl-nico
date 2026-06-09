@@ -14,7 +14,6 @@ export default class Cl_vExamen implements I_vExamen {
     formaPago: string;
   }) => void) | null = null;
   private avisarCancelar: (() => void) | null = null;
-  private avisarNuevoEstudio: ((estudio: Cl_mEstudio) => void) | null = null;
 
   constructor() {
     this.modal = document.getElementById("modalExamen");
@@ -45,12 +44,54 @@ export default class Cl_vExamen implements I_vExamen {
           estudiosMarcados.push((checkboxes[i] as HTMLInputElement).value);
         }
 
-        if (nombre.trim() === "" || cedula.trim() === "") {
-          alert("debe ingresar obligatoriamente el nombre y la cedula del paciente.");
+        // Validación de nombre
+        if (nombre.trim() === "") {
+          alert("⚠️ El nombre del paciente es obligatorio.");
+          const inputNombre = document.getElementById("modal_nombre");
+          if (inputNombre) {
+            inputNombre.classList.add("error");
+            inputNombre.focus();
+          }
           return;
         }
+        
+        // Validación de cédula
+        if (cedula.trim() === "") {
+          alert("⚠️ La cédula del paciente es obligatoria.");
+          const inputCedula = document.getElementById("modal_cedula");
+          if (inputCedula) {
+            inputCedula.classList.add("error");
+            inputCedula.focus();
+          }
+          return;
+        }
+        
+        // Validación de teléfono - AHORA ES REQUERIDO
+        if (telefono.trim() === "") {
+          alert("⚠️ El número de teléfono es obligatorio.");
+          const inputTelefono = document.getElementById("modal_telefono");
+          if (inputTelefono) {
+            inputTelefono.classList.add("error");
+            inputTelefono.focus();
+          }
+          return;
+        }
+        
+        // Validación de formato de teléfono venezolano (acepta 0 al principio)
+        const telefonoValido = yoMismo.validarTelefonoVenezuela(telefono);
+        if (!telefonoValido.valido) {
+          alert(telefonoValido.mensaje);
+          const inputTelefono = document.getElementById("modal_telefono");
+          if (inputTelefono) {
+            inputTelefono.classList.add("error");
+            inputTelefono.focus();
+          }
+          return;
+        }
+        
+        // Validación de estudios seleccionados
         if (estudiosMarcados.length === 0) {
-          alert("debe marcar al menos un estudio clinico para el paciente.");
+          alert("⚠️ Debe seleccionar al menos un estudio clínico para el paciente.");
           return;
         }
 
@@ -67,21 +108,92 @@ export default class Cl_vExamen implements I_vExamen {
     }
   }
 
-  public cuandoDenCancelar(callback: () => void): void { this.avisarCancelar = callback; }
+  /**
+   * Valida números de teléfono venezolanos
+   * Acepta formatos:
+   * - 0412XXXXXXX
+   * - 412XXXXXXX 
+   * - +58412XXXXXXX 
+   * - 58412XXXXXXX 
+   */
+  private validarTelefonoVenezuela(telefono: string): { valido: boolean; mensaje: string } {
+    if (!telefono || telefono.trim() === "") {
+      return { valido: false, mensaje: "El número de teléfono es obligatorio." };
+    }
+    
+    // Limpiar espacios, guiones y puntos
+    let telefonoLimpio = telefono.trim().replace(/[\s\-\.]/g, "");
+    
+    // Quitar prefijo +58 o 58 si existe
+    let numeroLimpio = telefonoLimpio;
+    if (telefonoLimpio.startsWith("+58")) {
+      numeroLimpio = telefonoLimpio.substring(3);
+    } else if (telefonoLimpio.startsWith("58")) {
+      numeroLimpio = telefonoLimpio.substring(2);
+    }
+    
+    // Verificar que solo tenga números
+    if (!/^\d+$/.test(numeroLimpio)) {
+      return { valido: false, mensaje: "El teléfono solo debe contener números y opcionalmente el prefijo +58" };
+    }
+    
+    // Prefijos válidos de Venezuela (3 dígitos sin el 0)
+    const prefijosValidos = ["412", "414", "424", "426", "416", "422"];
+    
+    // Caso 1: 10 dígitos (412 + 7 números) - formato sin 0
+    if (numeroLimpio.length === 10) {
+      const prefijo = numeroLimpio.substring(0, 3);
+      if (prefijosValidos.includes(prefijo)) {
+        return { valido: true, mensaje: "" };
+      }
+      return { valido: false, mensaje: "Prefijo no válido. Use: 0412, 0414, 0424, 0426, 0416 o 0422" };
+    }
+    
+    // Caso 2: 11 dígitos (0412 + 7 números) - formato con 0 inicial (el más común en Venezuela)
+    if (numeroLimpio.length === 11 && numeroLimpio.startsWith("0")) {
+      const prefijo = numeroLimpio.substring(1, 4); // Toma los 3 dígitos después del 0
+      if (prefijosValidos.includes(prefijo)) {
+        return { valido: true, mensaje: "" };
+      }
+      return { valido: false, mensaje: "numero no válido. Use: 0412, 0414, 0424, 0426, 0416 o 0422" };
+    }
+    
+    // Caso 3: 7 dígitos (solo números, sin prefijo)
+    if (numeroLimpio.length === 7) {
+      return { valido: true, mensaje: "" };
+    }
+    
+    return { 
+      valido: false, 
+      mensaje: "Telefono invalido. Use: 0412XXXXXXX  o 412XXXXXXX" 
+    };
+  }
+
+  public cuandoDenCancelar(callback: () => void): void { 
+    this.avisarCancelar = callback; 
+  }
+  
   public cuandoDenAceptar(callback: (datos: {
     nombrePaciente: string;
     cedulaPaciente: string;
     telefonoPaciente?: string;
     estudiosSeleccionados: string[];
     formaPago: string;
-  }) => void): void { this.avisarAceptar = callback; }
-  
-  public cuandoRegistrenNuevoEstudio(callback: (estudio: Cl_mEstudio) => void): void {
-    this.avisarNuevoEstudio = callback;
+  }) => void): void { 
+    this.avisarAceptar = callback; 
   }
 
   public mostrar(): void {
     if (!this.contenidoModal || !this.modal) return;
+
+    // Limpiar clases de error
+    const inputNombre = document.getElementById("modal_nombre");
+    const inputCedula = document.getElementById("modal_cedula");
+    const inputTelefono = document.getElementById("modal_telefono");
+    
+    if (inputNombre) inputNombre.classList.remove("error");
+    if (inputCedula) inputCedula.classList.remove("error");
+    if (inputTelefono) inputTelefono.classList.remove("error");
 
     let checkboxesHtml = "";
     let estudios = Cl_mEstudio.obtenerTodos();
@@ -102,35 +214,21 @@ export default class Cl_vExamen implements I_vExamen {
 
     this.contenidoModal.innerHTML = `
       <div style="margin-bottom: 12px;">
-        <label style="display:block; margin-bottom:4px; font-weight:bold;">Nombre Completo:</label>
+        <label style="display:block; margin-bottom:4px; font-weight:bold;">Nombre Completo: <span style="color:#c0392b;">*</span></label>
         <input type="text" id="modal_nombre" placeholder="Ej: Manuel Flores" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
       </div>
       <div style="margin-bottom: 12px;">
-        <label style="display:block; margin-bottom:4px; font-weight:bold;">Cédula de Identidad:</label>
+        <label style="display:block; margin-bottom:4px; font-weight:bold;">Cédula de Identidad: <span style="color:#c0392b;">*</span></label>
         <input type="text" id="modal_cedula" placeholder="Ej: V-12345678" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
       </div>
       <div style="margin-bottom: 12px;">
-        <label style="display:block; margin-bottom:4px; font-weight:bold;">Teléfono:</label>
-        <input type="text" id="modal_telefono" placeholder="Ej: 0412-1234567" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+        <label style="display:block; margin-bottom:4px; font-weight:bold;">Teléfono: <span style="color:#c0392b;">*</span></label>
+        <input type="tel" id="modal_telefono" placeholder="Ej: 04121234567" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
+        <small style="color: #6c757d; font-size: 0.7rem;">numeros validos: 0412, 0414, 0424, 0426, 0416, 0422 </small>
       </div>
       
       <div style="margin-bottom: 12px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-          <label style="font-weight:bold;">Estudios Solicitados:</label>
-          <a href="#" id="linkToggleEstudio" style="font-size:0.85rem; color:#764ba2; font-weight:bold; text-decoration:none;">[+] Crear Nuevo Estudio</a>
-        </div>
-        
-        <div id="seccionNuevoEstudio" style="display:none; background:#f0ebf7; padding:12px; border:1px solid #764ba2; border-radius:6px; margin-bottom:10px;">
-          <h4 style="margin:0 0 8px 0; color:#764ba2; font-size:0.9rem;">Nuevo Tipo de Estudio Clínico</h4>
-          <input type="text" id="add_est_nombre" placeholder="Nombre (Ej: Perfil 20)" style="width:100%; padding:6px; margin-bottom:6px; border:1px solid #ccc; border-radius:4px; font-size:0.85rem;">
-          <div style="display:flex; gap:6px; margin-bottom:6px;">
-            <input type="number" id="add_est_precio" placeholder="Precio $" style="flex:1; padding:6px; border:1px solid #ccc; border-radius:4px; font-size:0.85rem;">
-            <input type="text" id="add_est_unidad" placeholder="Unidad (mg/dL)" style="flex:1; padding:6px; border:1px solid #ccc; border-radius:4px; font-size:0.85rem;">
-          </div>
-          <input type="text" id="add_est_referencia" placeholder="Valores de Referencia (Ej: 70 - 110)" style="width:100%; padding:6px; margin-bottom:8px; border:1px solid #ccc; border-radius:4px; font-size:0.85rem;">
-          <button type="button" id="btnGuardarEstudioCatalogo" style="width:100%; padding:6px; background:#764ba2; color:white; border:none; border-radius:4px; font-weight:bold; cursor:pointer; font-size:0.85rem;">Guardar en Catálogo</button>
-        </div>
-
+        <label style="display:block; margin-bottom:4px; font-weight:bold;">Estudios Solicitados: <span style="color:#c0392b;">*</span></label>
         <div style="background:#f9f9f9; padding:10px; border:1px solid #ddd; border-radius:6px; max-height:130px; overflow-y:auto;">
           ${checkboxesHtml}
         </div>
@@ -142,7 +240,7 @@ export default class Cl_vExamen implements I_vExamen {
       </div>
       
       <div style="margin-bottom: 12px;">
-        <label style="display:block; margin-bottom:4px; font-weight:bold;">Método de Pago:</label>
+        <label style="display:block; margin-bottom:4px; font-weight:bold;">Método de Pago: <span style="color:#c0392b;">*</span></label>
         <select id="modal_metodoPago" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; background:white; box-sizing:border-box;">
           <option value="Efectivo">Efectivo</option>
           <option value="Transferencia">Transferencia</option>
@@ -150,40 +248,6 @@ export default class Cl_vExamen implements I_vExamen {
         </select>
       </div>
     `;
-
-    let linkToggle = document.getElementById("linkToggleEstudio");
-    let seccionNuevo = document.getElementById("seccionNuevoEstudio");
-    if (linkToggle && seccionNuevo) {
-      linkToggle.onclick = function(e) {
-        e.preventDefault();
-        seccionNuevo.style.display = seccionNuevo.style.display === "none" ? "block" : "none";
-      };
-    }
-
-    let btnGuardarEstudio = document.getElementById("btnGuardarEstudioCatalogo");
-    let yoMismo = this;
-    if (btnGuardarEstudio) {
-      btnGuardarEstudio.onclick = function() {
-        let nomEst = (document.getElementById("add_est_nombre") as HTMLInputElement).value;
-        let preEst = parseFloat((document.getElementById("add_est_precio") as HTMLInputElement).value);
-        let uniEst = (document.getElementById("add_est_unidad") as HTMLInputElement).value;
-        let refEst = (document.getElementById("add_est_referencia") as HTMLInputElement).value;
-
-        if (!nomEst.trim() || isNaN(preEst) || !uniEst.trim() || !refEst.trim()) {
-          alert("debe rellenar todos los campos del nuevo estudio correctamente.");
-          return;
-        }
-
-        if (yoMismo.avisarNuevoEstudio) {
-          yoMismo.avisarNuevoEstudio(new Cl_mEstudio({
-            nombre: nomEst,
-            precio: preEst,
-            unidad: uniEst,
-            valoresReferencia: refEst
-          }));
-        }
-      };
-    }
 
     let inputPrecio = document.getElementById("modal_precio") as HTMLInputElement;
     let checkboxes = document.querySelectorAll(".modal-check-estudio");
