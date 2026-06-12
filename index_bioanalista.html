@@ -4,178 +4,280 @@
   <meta charset="UTF-8">
   <title>Laboratorio Clínico - Bioanalista</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif; 
-      background: #eef2f7; 
-      min-height: 100vh; 
-      padding: 20px; 
-    }
-    .container { max-width: 800px; margin: 0 auto; }
-    .panel { 
-      background: white; 
-      border-radius: 12px; 
-      box-shadow: 0 8px 30px rgba(0,0,0,0.08); 
-      overflow: hidden; 
-      border: 1px solid #dce4ec;
-    }
-    .panel-header { 
-      background: #1a5f7a; 
-      color: white; 
-      padding: 20px 24px; 
-      text-align: center; 
-      border-bottom: 3px solid #ffc107;
-    }
-    .panel-header h1 { 
-      font-size: 1.8rem; 
-      font-weight: 600;
-      letter-spacing: -0.3px;
-    }
-    .panel-header p { 
-      font-size: 0.9rem; 
-      margin-top: 6px; 
-      opacity: 0.9;
-      font-weight: 400;
-    }
-    .panel-content { padding: 28px; }
-    .mensaje-vacio { 
-      text-align: center; 
-      color: #7f8c8d; 
-      padding: 32px; 
-      background: #f9fafb;
-      border-radius: 10px;
-      font-size: 0.9rem;
-    }
-    
-    /* Spinner de carga - institucional */
-    .loader {
-      border: 4px solid #e0e7ed;
-      border-top: 4px solid #1a5f7a;
-      border-radius: 50%;
-      width: 42px;
-      height: 42px;
-      animation: spin 0.9s linear infinite;
-      margin: 20px auto;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .cargando-mensaje {
-      text-align: center;
-      color: #1a5f7a;
-      padding: 24px;
-      font-weight: 500;
-      background: #f0f6fa;
-      border-radius: 12px;
-      margin: 16px 0;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    /* Estilos para la lista de órdenes pendientes */
-    .lista-pendientes {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #eef2f7;
+      padding: 20px;
     }
-    .orden-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 14px;
-      padding: 18px;
-      transition: all 0.2s ease;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
     }
-    .orden-card:hover {
-      border-color: #bdd4e7;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-      background: #fefefc;
+
+    .panel {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      overflow: hidden;
     }
-    .orden-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-      border-bottom: 1px solid #e9f0f5;
-      padding-bottom: 10px;
+
+    .panel-header {
+      background: #1a5f7a;
+      color: white;
+      padding: 20px;
+      text-align: center;
     }
-    .orden-paciente {
-      font-weight: 700;
-      color: #0b3b4f;
-      font-size: 1.1rem;
+
+    .panel-header h1 {
+      font-size: 1.8rem;
     }
-    .orden-id {
-      font-size: 0.7rem;
-      color: #5e7a93;
-      background: #ecf5f9;
-      padding: 3px 10px;
-      border-radius: 30px;
-      font-family: monospace;
+
+    .panel-header p {
+      font-size: 0.9rem;
+      margin-top: 5px;
     }
-    .orden-fecha {
-      font-size: 0.75rem;
-      color: #2c6e8f;
-      display: flex;
-      align-items: center;
-      gap: 5px;
+
+    .panel-content {
+      padding: 25px;
     }
-    .estudios-lista {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 14px 0;
-    }
-    .estudio-tag {
-      background: #eef3fc;
-      padding: 5px 12px;
+
+    /* Botones */
+    .btn-gestionar {
+      background: #764ba2;
+      color: white;
+      border: none;
+      padding: 10px 20px;
       border-radius: 25px;
-      font-size: 0.8rem;
-      color: #1f6e8c;
-      font-weight: 500;
+      cursor: pointer;
+      font-weight: bold;
+      margin-bottom: 20px;
+      float: right;
     }
-    .orden-acciones {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 14px;
-      border-top: 1px solid #f0f4f9;
-      padding-top: 14px;
-    }
-    .btn-registrar {
+
+    .btn-azul {
       background: #2c9cd4;
       color: white;
       border: none;
-      padding: 8px 20px;
-      border-radius: 40px;
+      padding: 5px 12px;
+      border-radius: 5px;
       cursor: pointer;
-      font-weight: 600;
-      font-size: 0.85rem;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
     }
-    .btn-registrar:hover {
-      background: #1f7aa8;
-      transform: translateY(-1px);
-      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+
+    .btn-verde {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 5px;
+      cursor: pointer;
     }
-    .sin-ordenes {
-      text-align: center;
-      padding: 48px 20px;
-      background: #fafcfd;
-      border-radius: 16px;
-      color: #6c8da3;
-      font-size: 0.95rem;
-      border: 1px dashed #cbdde9;
-    }
-    .badge-pendiente {
+
+    .btn-amarillo {
       background: #ffc107;
-      color: #1a3e4c;
-      font-size: 0.7rem;
+      color: #333;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .btn-rojo {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .btn-cerrar {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    .btn-guardar {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    /* Filtros */
+    .filtros {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .filtro-estado {
+      display: inline-block;
+      margin-right: 20px;
+    }
+
+    .buscador {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .buscador input {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+    }
+
+    .buscador button {
+      padding: 8px 15px;
+    }
+
+    /* Tabla */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: #1a5f7a;
+      color: white;
+      padding: 10px;
+      text-align: left;
+    }
+
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    tr:hover {
+      background: #f5f5f5;
+    }
+
+    .badge-preparacion {
+      background: #ffc107;
+      color: #333;
+      padding: 3px 10px;
+      border-radius: 15px;
+      font-size: 0.75rem;
       font-weight: bold;
-      padding: 2px 10px;
-      border-radius: 30px;
-      margin-left: 10px;
+    }
+
+    .badge-pendiente {
+      background: #17a2b8;
+      color: white;
+      padding: 3px 10px;
+      border-radius: 15px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    /* Modales */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-contenido {
+      background: white;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-contenido-grande {
+      max-width: 1000px;
+    }
+
+    .modal-header {
+      padding: 15px 20px;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .modal-footer {
+      padding: 15px 20px;
+      border-top: 1px solid #ddd;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    /* Formularios */
+    .campo {
+      margin-bottom: 15px;
+    }
+
+    .campo label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .campo input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .error {
+      color: #dc3545;
+      background: #ffe8e5;
+      padding: 8px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      display: none;
+    }
+
+    .mensaje-vacio {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+
+    .clearfix::after {
+      content: "";
+      clear: both;
+      display: table;
+    }
+
+    .resumen {
+      background: #e8f5e9;
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 0.85rem;
     }
   </style>
 </head>
@@ -183,69 +285,169 @@
   <div class="container">
     <div class="panel">
       <div class="panel-header">
-        <h1>🔬 Laboratorio Clínico </h1>
-        <p>BIOANÁLISIS</p>
+        <h1>🔬 Laboratorio Clínico</h1>
+        <p>BIOANÁLISIS - Gestión de Resultados</p>
       </div>
       <div class="panel-content">
-        <div id="cargando" class="cargando-mensaje">
-          <div class="loader"></div>
-          Cargando catálogo de estudios...
+        <div id="cargando" style="text-align: center; padding: 40px;">
+          <div style="border: 4px solid #f3f3f3; border-top: 4px solid #1a5f7a; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+          <p style="margin-top: 10px;">Cargando...</p>
         </div>
-        <div id="listaPendientes" style="display: none;"></div>
+        <div id="contenido" style="display: none;">
+          <div class="clearfix">
+            <button id="btnGestionarEstudios" class="btn-gestionar">📚 Gestionar Estudios</button>
+          </div>
+
+          <div class="filtros">
+            <div class="filtro-estado">
+              <label>Filtrar por estado:</label>
+              <select id="selectEstado">
+                <option value="todos">📋 Todos</option>
+                <option value="preparacion">⚙️ En Preparación</option>
+                <option value="pendiente">⏳ Pendiente</option>
+              </select>
+            </div>
+            <div class="buscador">
+              <span>🔎 Buscar por ID:</span>
+              <input type="text" id="inputBuscarId" placeholder="Ej: a1b2c3">
+              <button id="btnBuscar" class="btn-azul">Buscar</button>
+              <button id="btnLimpiar" class="btn-cerrar">Limpiar</button>
+            </div>
+          </div>
+
+          <div id="listaPendientes"></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <div id="modalResultados" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000;">
-    <div style="background: white; border-radius: 20px; padding: 28px; width: 520px; max-width: 92%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 35px rgba(0,0,0,0.2);">
-      <h3 style="margin-bottom: 20px; color: #1a5f7a; border-left: 5px solid #ffc107; padding-left: 14px; font-weight: 600;">📊 Registrar Resultados Clínicos</h3>
-      <div id="modalResultadosContenido"></div>
-      <div style="display: flex; gap: 12px; margin-top: 28px;">
-        <button id="modalResultadosCancelar" style="flex:1; padding: 10px; background: #eef2f7; border: 1px solid #cbd5e1; border-radius: 40px; cursor: pointer; font-weight: 600; color: #2c3e50;">Cancelar</button>
-        <button id="modalResultadosGuardar" style="flex:1; padding: 10px; background: #1a5f7a; color: white; border: none; border-radius: 40px; cursor: pointer; font-weight: 600; transition: 0.2s;">Guardar Resultados</button>
+  <!-- MODAL GESTIONAR ESTUDIOS -->
+  <div id="modalEstudios" class="modal">
+    <div class="modal-contenido modal-contenido-grande">
+      <div class="modal-header" style="background: #764ba2; color: white;">
+        <h3>📚 Gestión de Estudios</h3>
+        <button id="cerrarModalEstudios" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">✖️</button>
+      </div>
+      <div class="modal-body">
+        <div style="text-align: right; margin-bottom: 15px;">
+          <button id="btnAbrirNuevoEstudio" class="btn-verde">➕ Nuevo Estudio</button>
+        </div>
+        <div id="tablaEstudios"></div>
       </div>
     </div>
   </div>
+
+  <!-- MODAL NUEVO ESTUDIO -->
+  <div id="modalNuevoEstudio" class="modal">
+    <div class="modal-contenido">
+      <div class="modal-header" style="background: #764ba2; color: white;">
+        <h3>🧪 Nuevo Estudio</h3>
+        <button id="cerrarNuevoEstudio" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">✖️</button>
+      </div>
+      <div class="modal-body">
+        <div id="errorNuevo" class="error"></div>
+        <div class="campo">
+          <label>Nombre del estudio:</label>
+          <input type="text" id="nuevoNombre" placeholder="Ej: Hemoglobina">
+        </div>
+        <div class="campo">
+          <label>Precio ($):</label>
+          <input type="number" id="nuevoPrecio" placeholder="Ej: 25">
+        </div>
+        <div class="campo">
+          <label>Unidad de medida:</label>
+          <input type="text" id="nuevoUnidad" placeholder="Ej: mg/dL">
+        </div>
+        <div class="campo">
+          <label>Valores de referencia:</label>
+          <input type="text" id="nuevoReferencia" placeholder="Ej: 4.0 - 5.6">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelarNuevo" class="btn-cerrar">Cancelar</button>
+        <button id="guardarNuevo" class="btn-guardar">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL EDITAR ESTUDIO -->
+  <div id="modalEditarEstudio" class="modal">
+    <div class="modal-contenido">
+      <div class="modal-header" style="background: #ffc107; color: #333;">
+        <h3>✏️ Editar Estudio</h3>
+        <button id="cerrarEditar" style="background: none; border: none; font-size: 20px; cursor: pointer;">✖️</button>
+      </div>
+      <div class="modal-body">
+        <div id="errorEditar" class="error"></div>
+        <div class="campo">
+          <label>Nombre del estudio:</label>
+          <input type="text" id="editarNombre">
+        </div>
+        <div class="campo">
+          <label>Precio ($):</label>
+          <input type="number" id="editarPrecio">
+        </div>
+        <div class="campo">
+          <label>Unidad de medida:</label>
+          <input type="text" id="editarUnidad">
+        </div>
+        <div class="campo">
+          <label>Valores de referencia:</label>
+          <input type="text" id="editarReferencia">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="cancelarEditar" class="btn-cerrar">Cancelar</button>
+        <button id="guardarEditar" class="btn-guardar">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL RESULTADOS -->
+  <div id="modalResultados" class="modal">
+    <div class="modal-contenido" style="max-width: 550px;">
+      <div class="modal-header" style="background: #1a5f7a; color: white;">
+        <h3>📋 Cargar Resultados</h3>
+        <button id="cerrarResultados" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">✖️</button>
+      </div>
+      <div class="modal-body" id="resultadosBody"></div>
+      <div class="modal-footer">
+        <button id="cancelarResultados" class="btn-cerrar">Cancelar</button>
+        <button id="guardarResultados" class="btn-guardar">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 
   <script type="module">
     import Cl_vBioanalista from "./dist/views/Cl_vBioanalista.js";
     import Cl_cLaboratorioBio from "./dist/controllers/Cl_cLaboratorioBio.js";
-    import Cl_mEstudio from "./dist/models/Cl_mEstudio.js";
     import Cl_sEstudio from "./dist/services/Cl_sEstudio.js";
 
-    async function iniciarAplicacion() {
+    async function iniciar() {
       try {
-        console.log("🔄 Cargando catálogo para Bioanalista...");
         await Cl_sEstudio.cargarCatálogo();
         
-        const cargandoDiv = document.getElementById("cargando");
-        const listaPendientes = document.getElementById("listaPendientes");
+        document.getElementById("cargando").style.display = "none";
+        document.getElementById("contenido").style.display = "block";
         
-        if (cargandoDiv) cargandoDiv.style.display = "none";
-        if (listaPendientes) listaPendientes.style.display = "block";
+        const vista = new Cl_vBioanalista();
+        const controlador = new Cl_cLaboratorioBio(vista);
         
-        const vBio = new Cl_vBioanalista();
-        const cLaboratorioBio = new Cl_cLaboratorioBio(vBio);
-        
-        console.log("🚀 Aplicación de Bioanalista iniciada correctamente");
+        console.log("Aplicación iniciada");
       } catch (error) {
         console.error("Error:", error);
-        const cargandoDiv = document.getElementById("cargando");
-        if (cargandoDiv) {
-          cargandoDiv.innerHTML = `
-            <div style="color: #a1220a; background: #ffe8e5; padding: 20px; border-radius: 12px; border-left: 5px solid #c0392b;">
-              <strong>⚠️ Error al cargar la aplicación:</strong><br>
-              ${error.message}<br><br>
-              <button onclick="location.reload()" style="padding: 8px 20px; background: #1a5f7a; color: white; border: none; border-radius: 40px; cursor: pointer; font-weight: 500;">
-                Reintentar
-              </button>
-            </div>
-          `;
-        }
+        document.getElementById("cargando").innerHTML = '<p style="color: red;">Error al cargar. <button onclick="location.reload()">Reintentar</button></p>';
       }
     }
     
-    iniciarAplicacion();
+    iniciar();
   </script>
 </body>
 </html>

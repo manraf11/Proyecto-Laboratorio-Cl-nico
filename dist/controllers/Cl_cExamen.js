@@ -8,7 +8,6 @@ export default class Cl_cExamen {
         let yoMismo = this;
         this.pantallaExamen.cuandoDenCancelar(() => yoMismo.alCancelar());
         this.pantallaExamen.cuandoDenAceptar((datos) => yoMismo.alAceptar(datos));
-        // Eliminado: ya no hay cuandoRegistrenNuevoEstudio aquí
     }
     async pedirDatosExamen(avisar) {
         this.avisar = avisar;
@@ -27,7 +26,8 @@ export default class Cl_cExamen {
                 cedulaPaciente: datos.cedulaPaciente,
                 telefonoPaciente: datos.telefonoPaciente,
                 estudiosSeleccionados: datos.estudiosSeleccionados,
-                formaPago: datos.formaPago
+                formaPago: datos.formaPago,
+                referencia: datos.referencia || ""
             });
             this.avisar(nuevoExamen);
         }

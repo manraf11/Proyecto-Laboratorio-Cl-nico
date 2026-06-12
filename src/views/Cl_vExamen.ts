@@ -1,9 +1,11 @@
+// views/Cl_vExamen.ts
 import { I_vExamen } from "../interfaces/I_vExamen.js";
 import Cl_mEstudio from "../models/Cl_mEstudio.js";
+import Cl_sLaboratorio from "../services/Cl_sLaboratorio.js";
+import Cl_sCedula from "../services/Cl_sCedula.js";
 
 export default class Cl_vExamen implements I_vExamen {
   private modal: HTMLElement | null;
-  private contenidoModal: HTMLElement | null;
   private botonCancelar: HTMLButtonElement | null;
   private botonAceptar: HTMLButtonElement | null;
   private avisarAceptar: ((datos: {
@@ -12,86 +14,88 @@ export default class Cl_vExamen implements I_vExamen {
     telefonoPaciente?: string;
     estudiosSeleccionados: string[];
     formaPago: string;
+    referencia?: string;
   }) => void) | null = null;
   private avisarCancelar: (() => void) | null = null;
 
+  private inputCedula: HTMLInputElement | null;
+  private inputNombre: HTMLInputElement | null;
+  private inputTelefono: HTMLInputElement | null;
+  private inputReferencia: HTMLInputElement | null;
+  private selectMetodoPago: HTMLSelectElement | null;
+  private campoReferencia: HTMLElement | null;
+  private inputPrecio: HTMLInputElement | null;
+  private checkboxesContainer: HTMLElement | null;
+
   constructor() {
     this.modal = document.getElementById("modalExamen");
-    this.contenidoModal = document.getElementById("modal_contenido");
     this.botonCancelar = document.getElementById("modal_btnCancelar") as HTMLButtonElement;
     this.botonAceptar = document.getElementById("modal_btnAceptar") as HTMLButtonElement;
+    
+    this.inputCedula = document.getElementById("modal_cedula") as HTMLInputElement;
+    this.inputNombre = document.getElementById("modal_nombre") as HTMLInputElement;
+    this.inputTelefono = document.getElementById("modal_telefono") as HTMLInputElement;
+    this.inputReferencia = document.getElementById("modal_referencia") as HTMLInputElement;
+    this.selectMetodoPago = document.getElementById("modal_metodoPago") as HTMLSelectElement;
+    this.campoReferencia = document.getElementById("campo_referencia");
+    this.inputPrecio = document.getElementById("modal_precio") as HTMLInputElement;
+    this.checkboxesContainer = document.getElementById("modal_checkboxes");
 
     if (this.modal) this.modal.style.display = "none";
 
     let yoMismo = this;
+    
     if (this.botonCancelar) {
-      this.botonCancelar.onclick = function() {
+      this.botonCancelar.onclick = () => {
         if (yoMismo.avisarCancelar) yoMismo.avisarCancelar();
         yoMismo.ocultar();
       };
     }
 
     if (this.botonAceptar) {
-      this.botonAceptar.onclick = function() {
-        let nombre = (document.getElementById("modal_nombre") as HTMLInputElement)?.value || "";
-        let cedula = (document.getElementById("modal_cedula") as HTMLInputElement)?.value || "";
-        let telefono = (document.getElementById("modal_telefono") as HTMLInputElement)?.value || "";
-        let metodoPago = (document.getElementById("modal_metodoPago") as HTMLSelectElement)?.value || "";
+      this.botonAceptar.onclick = () => {
+        const nombre = yoMismo.inputNombre?.value || "";
+        const cedula = yoMismo.inputCedula?.value || "";
+        const telefono = yoMismo.inputTelefono?.value || "";
+        const metodoPago = yoMismo.selectMetodoPago?.value || "";
+        const referencia = yoMismo.inputReferencia?.value || "";
 
-        let estudiosMarcados: string[] = [];
-        let checkboxes = document.querySelectorAll(".modal-check-estudio:checked");
-        for (let i = 0; i < checkboxes.length; i++) {
-          estudiosMarcados.push((checkboxes[i] as HTMLInputElement).value);
-        }
-
-        // Validación de nombre
-        if (nombre.trim() === "") {
-          alert("⚠️ El nombre del paciente es obligatorio.");
-          const inputNombre = document.getElementById("modal_nombre");
-          if (inputNombre) {
-            inputNombre.classList.add("error");
-            inputNombre.focus();
+        const estudiosMarcados: string[] = [];
+        if (yoMismo.checkboxesContainer) {
+          const checkboxes = yoMismo.checkboxesContainer.querySelectorAll(".modal-check-estudio:checked");
+          for (let i = 0; i < checkboxes.length; i++) {
+            estudiosMarcados.push((checkboxes[i] as HTMLInputElement).value);
           }
-          return;
         }
-        
-        // Validación de cédula
+
         if (cedula.trim() === "") {
           alert("⚠️ La cédula del paciente es obligatoria.");
-          const inputCedula = document.getElementById("modal_cedula");
-          if (inputCedula) {
-            inputCedula.classList.add("error");
-            inputCedula.focus();
-          }
           return;
         }
         
-        // Validación de teléfono - AHORA ES REQUERIDO
+        if (nombre.trim() === "") {
+          alert("⚠️ El nombre del paciente es obligatorio.");
+          return;
+        }
+        
         if (telefono.trim() === "") {
           alert("⚠️ El número de teléfono es obligatorio.");
-          const inputTelefono = document.getElementById("modal_telefono");
-          if (inputTelefono) {
-            inputTelefono.classList.add("error");
-            inputTelefono.focus();
-          }
           return;
         }
         
-        // Validación de formato de teléfono venezolano (acepta 0 al principio)
         const telefonoValido = yoMismo.validarTelefonoVenezuela(telefono);
         if (!telefonoValido.valido) {
           alert(telefonoValido.mensaje);
-          const inputTelefono = document.getElementById("modal_telefono");
-          if (inputTelefono) {
-            inputTelefono.classList.add("error");
-            inputTelefono.focus();
-          }
+          return;
+        }
+
+        if ((metodoPago === "Transferencia" || metodoPago === "Pago Móvil") && referencia.trim() === "") {
+          alert("⚠️ El número de referencia es obligatorio para el método de pago seleccionado.");
           return;
         }
         
-        // Validación de estudios seleccionados
         if (estudiosMarcados.length === 0) {
-          alert("⚠️ Debe seleccionar al menos un estudio clínico para el paciente.");
+          alert("⚠️ Debe seleccionar al menos un estudio.");
           return;
         }
 
@@ -101,72 +105,170 @@ export default class Cl_vExamen implements I_vExamen {
             cedulaPaciente: cedula,
             telefonoPaciente: telefono,
             estudiosSeleccionados: estudiosMarcados,
-            formaPago: metodoPago
+            formaPago: metodoPago,
+            referencia: referencia
           });
         }
       };
     }
+
+    this.configurarEventListeners();
   }
 
-  /**
-   * Valida números de teléfono venezolanos
-   * Acepta formatos:
-   * - 0412XXXXXXX
-   * - 412XXXXXXX 
-   * - +58412XXXXXXX 
-   * - 58412XXXXXXX 
-   */
+  private configurarEventListeners(): void {
+    if (this.checkboxesContainer) {
+      this.checkboxesContainer.addEventListener("change", (e) => {
+        const target = e.target as HTMLInputElement;
+        if (target.classList.contains("modal-check-estudio")) {
+          this.actualizarTotal();
+        }
+      });
+    }
+
+    if (this.selectMetodoPago) {
+      this.selectMetodoPago.onchange = () => {
+        const v = this.selectMetodoPago?.value;
+        if (v === "Transferencia" || v === "Pago Móvil") {
+          if (this.campoReferencia) this.campoReferencia.style.display = "block";
+        } else {
+          if (this.campoReferencia) this.campoReferencia.style.display = "none";
+          if (this.inputReferencia) this.inputReferencia.value = "";
+        }
+      };
+    }
+
+    if (this.inputCedula) {
+      this.inputCedula.addEventListener('keydown', async (ev) => {
+        if (ev.key === 'Enter') {
+          const ced = this.inputCedula?.value.trim() || "";
+          if (!ced) return;
+          
+          // Guardar placeholder original
+          const originalPlaceholder = this.inputNombre?.placeholder || "";
+          if (this.inputNombre) {
+            this.inputNombre.value = "";
+            this.inputNombre.placeholder = "🔍 Buscando...";
+          }
+          
+          try {
+            // PASO 1: Buscar en mockapi (exámenes existentes)
+            const resMockApi = await Cl_sLaboratorio.buscarPorCedula(ced);
+            
+            if (resMockApi.ok && resMockApi.registro) {
+              const r = resMockApi.registro;
+              if (this.inputNombre && r.nombrePaciente) this.inputNombre.value = r.nombrePaciente;
+              if (this.inputTelefono && r.telefonoPaciente) this.inputTelefono.value = r.telefonoPaciente;
+              alert("✅ Datos del paciente cargados automáticamente (desde registros anteriores).");
+            } else {
+              // PASO 2: Consultar API externa a través del proxy
+              if (this.inputNombre) this.inputNombre.placeholder = "🌐 Consultando API...";
+              
+              const resultadoApi = await Cl_sCedula.consultarPorCedula(ced);
+              
+              if (resultadoApi.exito && resultadoApi.nombreCompleto) {
+                if (this.inputNombre) this.inputNombre.value = resultadoApi.nombreCompleto;
+                alert(`✅ Datos obtenidos del CNE:\n👤 ${resultadoApi.nombreCompleto}`);
+              } else {
+                alert(`ℹ️ ${resultadoApi.mensaje}\nComplete los datos manualmente.`);
+                if (this.inputNombre) this.inputNombre.focus();
+              }
+            }
+          } catch (error) {
+            console.error("Error en búsqueda de cédula:", error);
+            alert("⚠️ Error al consultar. Complete los datos manualmente.");
+          } finally {
+            if (this.inputNombre) this.inputNombre.placeholder = originalPlaceholder;
+          }
+        }
+      });
+    }
+  }
+
+  private actualizarTotal(): void {
+    if (!this.checkboxesContainer || !this.inputPrecio) return;
+    
+    let total = 0;
+    const checkboxes = this.checkboxesContainer.querySelectorAll(".modal-check-estudio:checked");
+    for (let i = 0; i < checkboxes.length; i++) {
+      const chk = checkboxes[i] as HTMLInputElement;
+      const precio = parseFloat(chk.getAttribute("data-precio") || "0");
+      total += precio;
+    }
+    this.inputPrecio.value = total.toString();
+  }
+
   private validarTelefonoVenezuela(telefono: string): { valido: boolean; mensaje: string } {
     if (!telefono || telefono.trim() === "") {
-      return { valido: false, mensaje: "El número de teléfono es obligatorio." };
+      return { valido: false, mensaje: "El teléfono es obligatorio." };
     }
     
-    // Limpiar espacios, guiones y puntos
     let telefonoLimpio = telefono.trim().replace(/[\s\-\.]/g, "");
-    
-    // Quitar prefijo +58 o 58 si existe
     let numeroLimpio = telefonoLimpio;
-    if (telefonoLimpio.startsWith("+58")) {
-      numeroLimpio = telefonoLimpio.substring(3);
-    } else if (telefonoLimpio.startsWith("58")) {
-      numeroLimpio = telefonoLimpio.substring(2);
-    }
     
-    // Verificar que solo tenga números
+    if (telefonoLimpio.startsWith("+58")) numeroLimpio = telefonoLimpio.substring(3);
+    else if (telefonoLimpio.startsWith("58")) numeroLimpio = telefonoLimpio.substring(2);
+    
     if (!/^\d+$/.test(numeroLimpio)) {
-      return { valido: false, mensaje: "El teléfono solo debe contener números y opcionalmente el prefijo +58" };
+      return { valido: false, mensaje: "Solo números y opcionalmente +58" };
     }
     
-    // Prefijos válidos de Venezuela (3 dígitos sin el 0)
     const prefijosValidos = ["412", "414", "424", "426", "416", "422"];
     
-    // Caso 1: 10 dígitos (412 + 7 números) - formato sin 0
     if (numeroLimpio.length === 10) {
       const prefijo = numeroLimpio.substring(0, 3);
-      if (prefijosValidos.includes(prefijo)) {
-        return { valido: true, mensaje: "" };
-      }
-      return { valido: false, mensaje: "Prefijo no válido. Use: 0412, 0414, 0424, 0426, 0416 o 0422" };
+      if (prefijosValidos.includes(prefijo)) return { valido: true, mensaje: "" };
+      return { valido: false, mensaje: "Prefijo inválido" };
     }
     
-    // Caso 2: 11 dígitos (0412 + 7 números) - formato con 0 inicial (el más común en Venezuela)
     if (numeroLimpio.length === 11 && numeroLimpio.startsWith("0")) {
-      const prefijo = numeroLimpio.substring(1, 4); // Toma los 3 dígitos después del 0
-      if (prefijosValidos.includes(prefijo)) {
-        return { valido: true, mensaje: "" };
+      const prefijo = numeroLimpio.substring(1, 4);
+      if (prefijosValidos.includes(prefijo)) return { valido: true, mensaje: "" };
+      return { valido: false, mensaje: "Prefijo inválido" };
+    }
+    
+    if (numeroLimpio.length === 7) return { valido: true, mensaje: "" };
+    
+    return { valido: false, mensaje: "Teléfono inválido. Ej: 04121234567" };
+  }
+
+  public cargarCatalogoEstudios(): void {
+    if (!this.checkboxesContainer) return;
+
+    const estudios = Cl_mEstudio.obtenerTodos();
+    
+    if (estudios.length === 0) {
+      this.checkboxesContainer.innerHTML = "<p>Cargando catálogo...</p>";
+      return;
+    }
+
+    let checkboxesHtml = "";
+    for (let i = 0; i < estudios.length; i++) {
+      const est = estudios[i];
+      checkboxesHtml += `
+        <div class="checkbox-item">
+          <input type="checkbox" class="modal-check-estudio" id="mod_est_${est.id}" value="${est.nombre}" data-precio="${est.precio}">
+          <label for="mod_est_${est.id}">${this.escapeHtml(est.nombre)} ($${est.precio})</label>
+        </div>
+      `;
+    }
+    this.checkboxesContainer.innerHTML = checkboxesHtml;
+  }
+
+  public limpiarFormulario(): void {
+    if (this.inputCedula) this.inputCedula.value = "";
+    if (this.inputNombre) this.inputNombre.value = "";
+    if (this.inputTelefono) this.inputTelefono.value = "";
+    if (this.inputReferencia) this.inputReferencia.value = "";
+    if (this.inputPrecio) this.inputPrecio.value = "0";
+    if (this.selectMetodoPago) this.selectMetodoPago.value = "Efectivo";
+    if (this.campoReferencia) this.campoReferencia.style.display = "none";
+    
+    if (this.checkboxesContainer) {
+      const checkboxes = this.checkboxesContainer.querySelectorAll(".modal-check-estudio");
+      for (let i = 0; i < checkboxes.length; i++) {
+        (checkboxes[i] as HTMLInputElement).checked = false;
       }
-      return { valido: false, mensaje: "numero no válido. Use: 0412, 0414, 0424, 0426, 0416 o 0422" };
     }
-    
-    // Caso 3: 7 dígitos (solo números, sin prefijo)
-    if (numeroLimpio.length === 7) {
-      return { valido: true, mensaje: "" };
-    }
-    
-    return { 
-      valido: false, 
-      mensaje: "Telefono invalido. Use: 0412XXXXXXX  o 412XXXXXXX" 
-    };
   }
 
   public cuandoDenCancelar(callback: () => void): void { 
@@ -179,96 +281,27 @@ export default class Cl_vExamen implements I_vExamen {
     telefonoPaciente?: string;
     estudiosSeleccionados: string[];
     formaPago: string;
+    referencia?: string;
   }) => void): void { 
     this.avisarAceptar = callback; 
   }
 
   public mostrar(): void {
-    if (!this.contenidoModal || !this.modal) return;
-
-    // Limpiar clases de error
-    const inputNombre = document.getElementById("modal_nombre");
-    const inputCedula = document.getElementById("modal_cedula");
-    const inputTelefono = document.getElementById("modal_telefono");
-    
-    if (inputNombre) inputNombre.classList.remove("error");
-    if (inputCedula) inputCedula.classList.remove("error");
-    if (inputTelefono) inputTelefono.classList.remove("error");
-
-    let checkboxesHtml = "";
-    let estudios = Cl_mEstudio.obtenerTodos();
-    
-    for (let i = 0; i < estudios.length; i++) {
-      let est = estudios[i];
-      checkboxesHtml += `
-        <div style="margin-bottom: 8px;">
-          <input type="checkbox" class="modal-check-estudio" id="mod_est_${est.id}" value="${est.nombre}" data-precio="${est.precio}" style="margin-right: 8px; cursor: pointer;">
-          <label for="mod_est_${est.id}" style="cursor: pointer;">${est.nombre} ($${est.precio})</label>
-        </div>
-      `;
-    }
-
-    if (estudios.length === 0) {
-      checkboxesHtml = "<p style='color:#999; font-size:0.9rem;'>Cargando catálogo desde la nube...</p>";
-    }
-
-    this.contenidoModal.innerHTML = `
-      <div style="margin-bottom: 12px;">
-        <label style="display:block; margin-bottom:4px; font-weight:bold;">Nombre Completo: <span style="color:#c0392b;">*</span></label>
-        <input type="text" id="modal_nombre" placeholder="Ej: Manuel Flores" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
-      </div>
-      <div style="margin-bottom: 12px;">
-        <label style="display:block; margin-bottom:4px; font-weight:bold;">Cédula de Identidad: <span style="color:#c0392b;">*</span></label>
-        <input type="text" id="modal_cedula" placeholder="Ej: V-12345678" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
-      </div>
-      <div style="margin-bottom: 12px;">
-        <label style="display:block; margin-bottom:4px; font-weight:bold;">Teléfono: <span style="color:#c0392b;">*</span></label>
-        <input type="tel" id="modal_telefono" placeholder="Ej: 04121234567" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;">
-        <small style="color: #6c757d; font-size: 0.7rem;">numeros validos: 0412, 0414, 0424, 0426, 0416, 0422 </small>
-      </div>
-      
-      <div style="margin-bottom: 12px;">
-        <label style="display:block; margin-bottom:4px; font-weight:bold;">Estudios Solicitados: <span style="color:#c0392b;">*</span></label>
-        <div style="background:#f9f9f9; padding:10px; border:1px solid #ddd; border-radius:6px; max-height:130px; overflow-y:auto;">
-          ${checkboxesHtml}
-        </div>
-      </div>
-
-      <div style="margin-bottom: 12px;">
-        <label style="display:block; margin-bottom:4px; font-weight:bold;">Total Provisional ($):</label>
-        <input type="number" id="modal_precio" value="0" readonly style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; background:#f0f0f0; font-weight:bold; color:#2e7d32; box-sizing:border-box;">
-      </div>
-      
-      <div style="margin-bottom: 12px;">
-        <label style="display:block; margin-bottom:4px; font-weight:bold;">Método de Pago: <span style="color:#c0392b;">*</span></label>
-        <select id="modal_metodoPago" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px; background:white; box-sizing:border-box;">
-          <option value="Efectivo">Efectivo</option>
-          <option value="Transferencia">Transferencia</option>
-          <option value="Pago Móvil">Pago Móvil</option>
-        </select>
-      </div>
-    `;
-
-    let inputPrecio = document.getElementById("modal_precio") as HTMLInputElement;
-    let checkboxes = document.querySelectorAll(".modal-check-estudio");
-    
-    for (let i = 0; i < checkboxes.length; i++) {
-      let chk = checkboxes[i] as HTMLInputElement;
-      chk.onchange = function() {
-        let totalAcumulado = 0;
-        let marcados = document.querySelectorAll(".modal-check-estudio:checked");
-        for (let j = 0; j < marcados.length; j++) {
-          let chkMarcado = marcados[j] as HTMLInputElement;
-          totalAcumulado += parseFloat(chkMarcado.getAttribute("data-precio") || "0");
-        }
-        if (inputPrecio) inputPrecio.value = totalAcumulado.toString();
-      };
-    }
-
-    this.modal.style.display = "flex";
+    this.limpiarFormulario();
+    this.cargarCatalogoEstudios();
+    if (this.modal) this.modal.style.display = "flex";
+    // Enfocar en la cédula al abrir el modal
+    setTimeout(() => this.inputCedula?.focus(), 100);
   }
 
   public ocultar(): void {
     if (this.modal) this.modal.style.display = "none";
+  }
+
+  private escapeHtml(text: string): string {
+    if (!text) return "";
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 }

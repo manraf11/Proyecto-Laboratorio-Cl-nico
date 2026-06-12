@@ -18,7 +18,8 @@ export default class Cl_sLaboratorio {
           resultadoExamen: examen.resultadoExamen,
           precioEstudio: examen.precioEstudio,
           formaPago: examen.formaPago,
-          estado: examen.estado,  // cambiado  estado en lugar de estaFinalizado
+          referencia: examen.referencia || "",
+          estado: examen.estado,
           fechaRegistro: examen.fechaRegistro
         })
       });
@@ -41,13 +42,18 @@ export default class Cl_sLaboratorio {
         for (let i = 0; i < arregloCrudo.length; i++) {
           let c = arregloCrudo[i];
           
-          
           let estadoExamen: "preparacion" | "pendiente" | "listo" = "preparacion";
-          if (c.estado) {
-            estadoExamen = c.estado;
-          } else if (c.estaFinalizado !== undefined) {
-            
-            estadoExamen = c.estaFinalizado ? "listo" : "pendiente";
+          if (c.estado !== undefined && c.estado !== null) {
+            const s = String(c.estado).toLowerCase();
+            if (s === "listo" || s.includes("listo") || s.includes("finalizado")) {
+              estadoExamen = "listo";
+            } else if (s === "pendiente" || s.includes("pendiente")) {
+              estadoExamen = "pendiente";
+            } else if (s === "preparacion" || s.includes("preparaci")) {
+              estadoExamen = "preparacion";
+            } else {
+              estadoExamen = "preparacion";
+            }
           }
           
           let examen = new Cl_mExamen({
@@ -59,9 +65,11 @@ export default class Cl_sLaboratorio {
             resultadoExamen: c.resultadoExamen,
             precioEstudio: c.precioEstudio,
             formaPago: c.formaPago,
-            estado: estadoExamen,  //  estado
+            referencia: c.referencia || "",
+            estado: estadoExamen,
             fechaRegistro: c.fechaRegistro
           });
+          
           laboratorio.agregarExamen(examen);
         }
         return { ok: true, laboratorio: laboratorio };
@@ -85,7 +93,8 @@ export default class Cl_sLaboratorio {
           resultadoExamen: examen.resultadoExamen,
           precioEstudio: examen.precioEstudio,
           formaPago: examen.formaPago,
-          estado: examen.estado,  // usa estado
+          referencia: examen.referencia || "",
+          estado: examen.estado,
           fechaRegistro: examen.fechaRegistro
         })
       });
@@ -95,52 +104,20 @@ export default class Cl_sLaboratorio {
     }
   }
 
-  static async contarEstudiosPorTipoYFecha(tipoEstudio: string, fechaSeleccionada: string): Promise<{ ok: boolean; cantidad: number; mensaje?: string }> {
+  static async buscarPorCedula(cedula: string): Promise<{ ok: boolean; registro?: any }> {
     try {
       let respuesta = await fetch(this.direccionWeb);
-      if (!respuesta.ok) {
-        return { ok: false, cantidad: 0, mensaje: "no se pudo obtener los registros desde MockAPI." };
-      }
-
-      let datosCrudos = await respuesta.json();
-      let fechaBusqueda = fechaSeleccionada.trim().slice(0, 10);
-      let tipoBusqueda = tipoEstudio.trim().toLowerCase();
-      let cantidad = 0;
-
-      for (let i = 0; i < datosCrudos.length; i++) {
-        let registro = datosCrudos[i];
-        if (!registro.fechaRegistro || !registro.nombreEstudio) {
-          continue;
-        }
-
-        let fechaRegistro = this.obtenerFechaISO(registro.fechaRegistro);
-        if (fechaRegistro !== fechaBusqueda) {
-          continue;
-        }
-
-        let estudios = String(registro.nombreEstudio)
-          .split(",")
-          .map((item: string) => item.trim())
-          .filter((item: string) => item.length > 0);
-
-        for (let j = 0; j < estudios.length; j++) {
-          if (estudios[j].toLowerCase() === tipoBusqueda) {
-            cantidad++;
-          }
+      if (!respuesta.ok) return { ok: false };
+      let datos = await respuesta.json();
+      for (let i = 0; i < datos.length; i++) {
+        let r = datos[i];
+        if (String(r.cedulaPaciente).trim() === String(cedula).trim()) {
+          return { ok: true, registro: r };
         }
       }
-
-      return { ok: true, cantidad };
+      return { ok: true };
     } catch {
-      return { ok: false, cantidad: 0, mensaje: "error de MockAPI." };
-    }
-  }
-
-  private static obtenerFechaISO(valor: string): string {
-    try {
-      return new Date(valor).toISOString().slice(0, 10);
-    } catch {
-      return "";
+      return { ok: false };
     }
   }
 }

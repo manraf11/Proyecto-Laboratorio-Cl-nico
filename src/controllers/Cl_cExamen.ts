@@ -18,8 +18,9 @@ export default class Cl_cExamen {
       telefonoPaciente?: string;
       estudiosSeleccionados: string[];
       formaPago: string;
+      referencia?: string;
     }) => yoMismo.alAceptar(datos));
-    // Eliminado: ya no hay cuandoRegistrenNuevoEstudio aquí
+    
   }
 
   public async pedirDatosExamen(avisar: (examen: Cl_mExamen | null) => void) {
@@ -39,6 +40,7 @@ export default class Cl_cExamen {
     telefonoPaciente?: string;
     estudiosSeleccionados: string[];
     formaPago: string;
+    referencia?: string;
   }) {
     if (this.avisar) {
       let nuevoExamen = new Cl_mExamen({
@@ -47,6 +49,7 @@ export default class Cl_cExamen {
         telefonoPaciente: datos.telefonoPaciente,
         estudiosSeleccionados: datos.estudiosSeleccionados,
         formaPago: datos.formaPago
+        , referencia: datos.referencia || ""
       });
       this.avisar(nuevoExamen);
     }

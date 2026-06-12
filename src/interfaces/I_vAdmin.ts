@@ -6,8 +6,12 @@ export interface I_vAdmin {
   cuandoClicEnImprimir(callback: (idExamen: string) => void): void;
   cuandoClicEnEnviarWhatsApp(callback: (idExamen: string) => void): void;
   cuandoClicEnFiltrarEstudios(callback: (tipoEstudio: string, fechaSeleccionada: string) => void): void;
+  cuandoClicEnCalcularPorcentaje(callback: (tipoEstudio: string) => void): void;
+  cuandoCLicEnObtenerNombres(callback: (tipoEstudio: string) => void): void;
+  cuandoClicEnObtenerTotalPorEstudio(callback: (tipoEstudio: string) => void): void;
   mostrarFinalizados(datos: { examenes: Cl_mExamen[] }): void;
   mostrarResultadoFiltro(cantidad: number, tipoEstudio: string, fechaSeleccionada: string): void;
+  mostrarResultadoPorcentaje(porcentaje: number, tipoEstudio: string): void;   mostrarResultadoTotalPorEstudio(resultado: string): void;  mostrarResultadosobtenerNombrePacientesPorEstudio(datos: { nombres: string[], tipoEstudio: string }): void;
   mostrarReporte(reporte: string): void;
   actualizarListaEstudios?(): void; 
 }

@@ -1,3 +1,4 @@
+// services/Cl_sEstudio.ts
 import Cl_mEstudio from "../models/Cl_mEstudio.js";
 
 export default class Cl_sEstudio {
@@ -40,6 +41,35 @@ export default class Cl_sEstudio {
           unidad: estudio.unidad,
           valoresReferencia: estudio.valoresReferencia
         })
+      });
+      return respuesta.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  static async actualizarEstudio(estudio: Cl_mEstudio): Promise<boolean> {
+    try {
+      let respuesta = await fetch(`${this.direccionWeb}/${estudio.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre: estudio.nombre,
+          precio: estudio.precio,
+          unidad: estudio.unidad,
+          valoresReferencia: estudio.valoresReferencia
+        })
+      });
+      return respuesta.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  static async eliminarEstudio(id: string): Promise<boolean> {
+    try {
+      let respuesta = await fetch(`${this.direccionWeb}/${id}`, {
+        method: "DELETE"
       });
       return respuesta.ok;
     } catch {

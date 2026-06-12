@@ -12,7 +12,7 @@
       min-height: 100vh; 
       padding: 20px; 
     }
-    .container { max-width: 1000px; margin: 0 auto; }
+    .container { max-width: 1200px; margin: 0 auto; }
     .panel { 
       background: white; 
       border-radius: 12px; 
@@ -28,17 +28,8 @@
       border-bottom: 3px solid #ffc107;
       position: relative;
     }
-    .panel-header h1 { 
-      font-size: 1.8rem; 
-      font-weight: 600;
-      letter-spacing: -0.3px;
-    }
-    .panel-header p { 
-      font-size: 0.9rem; 
-      margin-top: 6px; 
-      opacity: 0.9;
-      font-weight: 400;
-    }
+    .panel-header h1 { font-size: 1.8rem; font-weight: 600; }
+    .panel-header p { font-size: 0.9rem; margin-top: 6px; opacity: 0.9; }
     .btn-cambiar-rol {
       position: absolute;
       top: 20px;
@@ -52,7 +43,6 @@
       font-weight: 600;
       font-size: 0.85rem;
       transition: all 0.3s ease;
-      backdrop-filter: blur(5px);
     }
     .btn-cambiar-rol:hover {
       background: rgba(255,255,255,0.3);
@@ -60,7 +50,54 @@
       border-color: #ffc107;
     }
     .panel-content { padding: 28px; }
-    .seccion { margin-bottom: 32px; }
+
+    .navbar-reportes {
+      background: #f0f6fa;
+      border-radius: 50px;
+      padding: 8px;
+      margin-bottom: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      border: 1px solid #cbdde9;
+    }
+    .nav-item {
+      background: transparent;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #1a5f7a;
+      font-family: inherit;
+    }
+    .nav-item:hover {
+      background: #e2eaf1;
+    }
+    .nav-item.active {
+      background: #1a5f7a;
+      color: white;
+      box-shadow: 0 2px 8px rgba(26,95,122,0.3);
+    }
+    
+    .modulo-filtro, .modulo-porcentaje, .modulo-nombres, .modulo-total {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+    .modulo-filtro.active-modulo, 
+    .modulo-porcentaje.active-modulo, 
+    .modulo-nombres.active-modulo, 
+    .modulo-total.active-modulo {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .seccion-titulo { 
       font-size: 1.2rem; 
       color: #1a5f7a; 
@@ -75,9 +112,7 @@
       padding: 32px; 
       background: #f9fafb;
       border-radius: 10px;
-      font-size: 0.9rem;
     }
-    
     .loader {
       border: 4px solid #e0e7ed;
       border-top: 4px solid #1a5f7a;
@@ -98,99 +133,6 @@
       font-weight: 500;
       background: #f0f6fa;
       border-radius: 12px;
-      margin: 16px 0;
-    }
-
-    .admin-lista-ordenes {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .orden-item {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 16px;
-      transition: all 0.2s ease;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    }
-    .orden-item:hover {
-      border-color: #bdd4e7;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-    .orden-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      flex-wrap: wrap;
-      margin-bottom: 10px;
-      border-bottom: 1px dashed #e2edf2;
-      padding-bottom: 8px;
-    }
-    .orden-paciente {
-      font-weight: 700;
-      color: #0b3b4f;
-      font-size: 1.05rem;
-    }
-    .orden-fecha {
-      font-size: 0.75rem;
-      color: #5e7a93;
-      background: #ecf5f9;
-      padding: 3px 8px;
-      border-radius: 20px;
-    }
-    .orden-estudios {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 12px 0;
-    }
-    .estudio-badge {
-      background: #eef3fc;
-      padding: 5px 12px;
-      border-radius: 25px;
-      font-size: 0.8rem;
-      color: #1f6e8c;
-      font-weight: 500;
-    }
-    .orden-acciones {
-      display: flex;
-      gap: 12px;
-      justify-content: flex-end;
-      margin-top: 12px;
-      border-top: 1px solid #f0f4f9;
-      padding-top: 12px;
-    }
-    .btn-finalizar, .btn-detalle, .btn-facturar {
-      border: none;
-      padding: 6px 14px;
-      border-radius: 30px;
-      cursor: pointer;
-      font-weight: 500;
-      font-size: 0.8rem;
-      transition: all 0.2s;
-    }
-    .btn-finalizar {
-      background: #2c9cd4;
-      color: white;
-    }
-    .btn-finalizar:hover {
-      background: #1f7aa8;
-      transform: translateY(-1px);
-    }
-    .btn-detalle {
-      background: #e9ecef;
-      color: #2c3e50;
-    }
-    .btn-detalle:hover {
-      background: #dee2e6;
-    }
-    .btn-facturar {
-      background: #2c6e49;
-      color: white;
-    }
-    .btn-facturar:hover {
-      background: #1f5738;
     }
     .resultado-item {
       background: #f9fdf9;
@@ -198,23 +140,6 @@
       border-radius: 10px;
       padding: 16px;
       margin-bottom: 12px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-    }
-    .resultado-paciente {
-      font-weight: 700;
-      color: #1a5f7a;
-    }
-    .btn-imprimir {
-      background: #4b6e8a;
-      color: white;
-      border: none;
-      padding: 6px 16px;
-      border-radius: 30px;
-      font-size: 0.8rem;
-      cursor: pointer;
-    }
-    .btn-imprimir:hover {
-      background: #2c4d6e;
     }
     .admin-botones {
       display: flex;
@@ -230,12 +155,8 @@
       border-radius: 40px;
       font-weight: 600;
       cursor: pointer;
-      font-size: 0.9rem;
-      transition: background 0.2s;
     }
-    .btn-primario:hover {
-      background: #104a60;
-    }
+    .btn-primario:hover { background: #104a60; }
     .btn-secundario {
       background: #eef2f7;
       color: #1f5e7a;
@@ -245,17 +166,24 @@
       font-weight: 500;
       cursor: pointer;
     }
-    .btn-secundario:hover {
-      background: #e2eaf1;
-    }
-    .badge-cantidad {
-      background: #ffc107;
-      color: #1a3e4c;
-      border-radius: 30px;
-      padding: 2px 10px;
+    .btn-secundario:hover { background: #e2eaf1; }
+    .btn-imprimir {
+      background: #764ba2;
+      color: white;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
       font-size: 0.75rem;
-      font-weight: bold;
-      margin-left: 8px;
+    }
+    .btn-whatsapp {
+      background: #25D366;
+      color: white;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.75rem;
     }
     .aviso-cambio {
       position: fixed;
@@ -265,21 +193,151 @@
       color: white;
       padding: 12px 20px;
       border-radius: 40px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       animation: slideIn 0.3s ease;
       z-index: 1000;
     }
     @keyframes slideIn {
-      from {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th {
+      background: #1a5f7a;
+      color: white;
+      padding: 12px;
+      text-align: left;
+    }
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+    }
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    /* MODAL MÁS GRANDE */
+    .modal-contenido {
+      background: white;
+      border-radius: 20px;
+      width: 750px;           /* ← aumentado de 480px a 750px */
+      max-width: 95%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid #ddd;
+      position: sticky;
+      top: 0;
+      background: white;
+      border-radius: 20px 20px 0 0;
+      z-index: 10;
+    }
+    .modal-body {
+      padding: 20px;
+    }
+    .modal-footer {
+      padding: 15px 20px;
+      border-top: 1px solid #ddd;
+      display: flex;
+      gap: 12px;
+      position: sticky;
+      bottom: 0;
+      background: white;
+      border-radius: 0 0 20px 20px;
+    }
+    .campo {
+      margin-bottom: 18px;
+    }
+    .campo label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #1a5f7a;
+    }
+    .campo input, .campo select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .campo input:focus, .campo select:focus {
+      outline: none;
+      border-color: #1a5f7a;
+      box-shadow: 0 0 0 2px rgba(26,95,122,0.2);
+    }
+    .error-input {
+      border: 2px solid #c0392b !important;
+      background: #ffe8e5 !important;
+    }
+    /* CHECKBOX GROUP MEJORADO - DOS COLUMNAS */
+    .checkbox-group {
+      background: #f9f9f9;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      max-height: 280px;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 6px;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: white;
+      transition: all 0.2s ease;
+    }
+    .checkbox-item:hover {
+      background: #e8f0fe;
+    }
+    .checkbox-item input {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      cursor: pointer;
+      flex-shrink: 0;
+      accent-color: #1a5f7a;
+    }
+    .checkbox-item label {
+      margin: 0;
+      cursor: pointer;
+      font-weight: normal;
+      flex: 1;
+      font-size: 14px;
+      color: #2c3e50;
+    }
+    .modulo-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 4px 0 0 0;
+    }
+    small {
+      display: block;
+      margin-top: 4px;
+      color: #6c757d;
+      font-size: 11px;
+    }
+    hr {
+      margin: 15px 0;
+      border: none;
+      border-top: 1px solid #e0e7ed;
     }
   </style>
 </head>
@@ -287,47 +345,99 @@
   <div class="container">
     <div class="panel">
       <div class="panel-header">
-        <button id="btnCambiarARolBioanalista" class="btn-cambiar-rol">
-          🔬 Cambiar a Bioanalista
-        </button>
-        <h1>🏥 Laboratorio Clínico </h1>
+        <button id="btnCambiarARolBioanalista" class="btn-cambiar-rol">🔬 Cambiar a Bioanalista</button>
+        <h1>🏥 Laboratorio Clínico</h1>
         <p>SISTEMA ADMINISTRATIVO - Gestión de Órdenes</p>
       </div>
       <div class="panel-content">
         <div id="cargando" class="cargando-mensaje">
           <div class="loader"></div>
-          Cargando catálogo de estudios desde la nube...
+          Cargando...
         </div>
         
         <div id="contenidoPrincipal" style="display: none;">
-          <div class="seccion">
-            <div class="seccion-titulo">📋 Opciones Generales</div>
-            <div id="admin_formulario">
-              <div class="admin-botones">
-                <button id="botonAbrirModal" class="btn-primario">
-                  + Registrar Orden de Examen
-                </button>
-              </div>
-              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff; margin-top: 16px;">
-                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">Filtrar estudios por fecha</div>
+          <div class="navbar-reportes">
+            <button class="nav-item active" data-modulo="filtros">🔍 Filtro por Fecha/Estudio</button>
+            <button class="nav-item" data-modulo="porcentaje">📊 Porcentaje de Estudio</button>
+            <button class="nav-item" data-modulo="nombres">📋 Nombres por Estudio</button>
+            <button class="nav-item" data-modulo="total">💰 Total por Estudio</button>
+          </div>
+          
+          <div class="admin-botones" style="margin-bottom: 20px;">
+            <button id="botonAbrirModal" class="btn-primario">+ Registrar Orden de Examen</button>
+          </div>
+
+          <div id="admin_formulario">
+            <div id="modulo-filtros" class="modulo-filtro active-modulo modulo-card">
+              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
+                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">🔍 Filtrar estudios por fecha</div>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
-                  <label style="display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem; color: #2b4363;">
+                  <label style="display: flex; flex-direction: column; gap: 6px;">
                     Fecha
-                    <input id="filtro_fecha" type="date" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;" />
+                    <input id="filtro_fecha" type="date" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
                   </label>
-<label style="display: flex; flex-direction: column; gap: 6px; font-size: 0.9rem; color: #2b4363;">
-  Estudio
-  <select id="filtro_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1; background: white;">
-    <option value="">-- Seleccione un estudio --</option>
-  </select>
-</label>
+                  <label style="display: flex; flex-direction: column; gap: 6px;">
+                    Estudio
+                    <select id="filtro_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
+                      <option value="">-- Seleccione un estudio --</option>
+                    </select>
+                  </label>
                 </div>
-                <button id="botonFiltrarEstudios" class="btn-secundario" style="width: 100%; max-width: 320px;">Buscar cantidad</button>
+                <button id="botonFiltrarEstudios" class="btn-secundario">🔎 Buscar cantidad</button>
                 <div id="resultadoFiltroEstudios" style="margin-top: 18px;"></div>
               </div>
             </div>
+
+            <div id="modulo-porcentaje" class="modulo-porcentaje modulo-card">
+              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
+                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">📊 Porcentaje de estudio sobre el total</div>
+                <div style="margin-bottom: 14px;">
+                  <label style="display: flex; flex-direction: column; gap: 6px;">
+                    Estudio a analizar
+                    <select id="porcentaje_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
+                      <option value="">-- Seleccione un estudio --</option>
+                    </select>
+                  </label>
+                </div>
+                <button id="botonCalcularPorcentaje" class="btn-secundario" style="background: #764ba2; color: white;">📊 Calcular porcentaje</button>
+                <div id="resultadoPorcentajeEstudios" style="margin-top: 18px;"></div>
+              </div>
+            </div>
+
+            <div id="modulo-nombres" class="modulo-nombres modulo-card">
+              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
+                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">📋 Nombres de pacientes por estudio</div>
+                <div style="margin-bottom: 14px;">
+                  <label style="display: flex; flex-direction: column; gap: 6px;">
+                    Estudio a analizar
+                    <select id="nombre_pacientes_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
+                      <option value="">-- Seleccione un estudio --</option>
+                    </select>
+                  </label>
+                </div>
+                <button id="botonObtenerNombres" class="btn-secundario" style="background: #764ba2; color: white;">📋 Obtener nombres</button>
+                <div id="resultadoNombrePacientesPorEstudio" style="margin-top: 18px;"></div>
+              </div>
+            </div>
+
+            <div id="modulo-total" class="modulo-total modulo-card">
+              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
+                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">💰 Total recaudado por estudio</div>
+                <div style="margin-bottom: 14px;">
+                  <label style="display: flex; flex-direction: column; gap: 6px;">
+                    Estudio a analizar
+                    <select id="total_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
+                      <option value="">-- Seleccione un estudio --</option>
+                    </select>
+                  </label>
+                </div>
+                <button id="botonObtenerTotalPorEstudio" class="btn-secundario" style="background: #764ba2; color: white;">💰 Calcular total</button>
+                <div id="resultadoTotalPorEstudio" style="margin-top: 18px;"></div>
+              </div>
+            </div>
           </div>
-          <div class="seccion">
+          
+          <div class="seccion" style="margin-top: 32px;">
             <div class="seccion-titulo">🖨️ Resultados Listos para Impresión</div>
             <div id="admin_finalizados"></div>
           </div>
@@ -336,15 +446,53 @@
     </div>
   </div>
 
-  <div id="modalExamen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000;">
-    <div style="background: white; border-radius: 20px; padding: 28px; width: 480px; max-width: 92%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 35px rgba(0,0,0,0.2);">
-      <h3 style="margin-bottom: 20px; color: #1a5f7a; border-left: 5px solid #ffc107; padding-left: 14px; font-weight: 600;">📝 Registrar Orden Médica</h3>
-      
-      <div id="modal_contenido"></div>
-      
-      <div style="display: flex; gap: 12px; margin-top: 28px;">
-        <button id="modal_btnCancelar" style="flex:1; padding: 10px; background: #eef2f7; border: 1px solid #cbd5e1; border-radius: 40px; cursor: pointer; font-weight: 600; color: #2c3e50;">Cancelar</button>
-        <button id="modal_btnAceptar" style="flex:1; padding: 10px; background: #1a5f7a; color: white; border: none; border-radius: 40px; cursor: pointer; font-weight: 600; transition: 0.2s;">Registrar Orden</button>
+  <!-- MODAL REGISTRAR EXAMEN - MÁS GRANDE -->
+  <div id="modalExamen" class="modal">
+    <div class="modal-contenido">
+      <div class="modal-header" style="background: #1a5f7a; color: white; border-radius: 20px 20px 0 0;">
+        <h3>📝 Registrar Orden Médica</h3>
+      </div>
+      <div class="modal-body">
+        <div class="campo">
+          <label>Cédula de Identidad: <span style="color:#c0392b;">*</span></label>
+          <input type="text" id="modal_cedula" placeholder="Ej: V-12345678">
+          <small>Presione Enter para buscar</small>
+        </div>
+        <div class="campo">
+          <label>Nombre Completo: <span style="color:#c0392b;">*</span></label>
+          <input type="text" id="modal_nombre" placeholder="Ej: Manuel Flores">
+        </div>
+        <div class="campo">
+          <label>Teléfono: <span style="color:#c0392b;">*</span></label>
+          <input type="tel" id="modal_telefono" placeholder="Ej: 04121234567">
+          <small>Válidos: 0412, 0414, 0424, 0426, 0416, 0422</small>
+        </div>
+        <div class="campo">
+          <label>Estudios Solicitados: <span style="color:#c0392b;">*</span></label>
+          <div id="modal_checkboxes" class="checkbox-group">
+            <!-- Los checkboxes se llenan dinámicamente desde Cl_vExamen -->
+          </div>
+        </div>
+        <div class="campo">
+          <label>Total Provisional ($):</label>
+          <input type="number" id="modal_precio" value="0" readonly style="background:#f0f0f0; font-weight:bold; color:#2e7d32;">
+        </div>
+        <div class="campo">
+          <label>Método de Pago: <span style="color:#c0392b;">*</span></label>
+          <select id="modal_metodoPago">
+            <option value="Efectivo">💵 Efectivo</option>
+            <option value="Transferencia">🏦 Transferencia</option>
+            <option value="Pago Móvil">📱 Pago Móvil</option>
+          </select>
+        </div>
+        <div class="campo" id="campo_referencia" style="display:none;">
+          <label>Número de referencia: <span style="color:#c0392b;">*</span></label>
+          <input type="text" id="modal_referencia" placeholder="Ej: 1234567890">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="modal_btnCancelar" class="btn-secundario" style="flex:1;">❌ Cancelar</button>
+        <button id="modal_btnAceptar" class="btn-primario" style="flex:1;">✅ Registrar Orden</button>
       </div>
     </div>
   </div>
@@ -356,105 +504,90 @@
     import Cl_cLaboratorioAdmin from "./dist/controllers/Cl_cLaboratorioAdmin.js";
     import Cl_sEstudio from "./dist/services/Cl_sEstudio.js";
     import Cl_mEstudio from "./dist/models/Cl_mEstudio.js";
-    // aviso temporal
+    
     function mostrarAviso(mensaje, esError = false) {
       const aviso = document.createElement('div');
       aviso.className = 'aviso-cambio';
       aviso.textContent = mensaje;
       aviso.style.background = esError ? '#c0392b' : '#2c6e49';
       document.body.appendChild(aviso);
-      
-      setTimeout(() => {
-        aviso.remove();
-      }, 3000);
+      setTimeout(() => aviso.remove(), 3000);
     }
 
-    // cambiar al  bioanalista
     function cambiarABioanalista() {
-      console.log("🔄 Intentando cambiar a vista de Bioanalista...");
-      
-      // verifica sio existe antes de intentar la navegación
       fetch('index_bioanalista.html', { method: 'HEAD' })
         .then(response => {
           if (response.ok) {
-            console.log("✅ Redirigiendo a index_bioanalista.html");
             mostrarAviso("🔬 Cambiando al panel de Bioanalista...");
-            
-            // retraso para que el usuario vea el aviso
-            setTimeout(() => {
-              window.location.href = 'index_bioanalista.html';
-            }, 500);
+            setTimeout(() => window.location.href = 'index_bioanalista.html', 500);
           } else {
-            console.warn("⚠️ El archivo index_bioanalista.html no existe");
-            mostrarAviso("⚠️ El módulo de Bioanalista no está disponible aún", true);
-            
-            //  mensaje detallado en la consola
-            console.warn("Para habilitar esta funcionalidad, crea el archivo index_bioanalista.html");
-            console.warn("O ajusta la ruta en el botón si el archivo tiene otro nombre");
+            mostrarAviso("⚠️ El módulo de Bioanalista no está disponible", true);
           }
         })
-        .catch(error => {
-          console.error("❌ Error al verificar index_bioanalista.html:", error);
-          mostrarAviso("❌ Error al cambiar de módulo. Verifica la consola.", true);
-        });
+        .catch(() => mostrarAviso("❌ Error al cambiar de módulo", true));
     }
     
+    function inicializarNavegacionPorTabs() {
+      const botonesNav = document.querySelectorAll('.nav-item');
+      const moduloFiltros = document.getElementById('modulo-filtros');
+      const moduloPorcentaje = document.getElementById('modulo-porcentaje');
+      const moduloNombres = document.getElementById('modulo-nombres');
+      const moduloTotal = document.getElementById('modulo-total');
+      
+      function activarModulo(moduloId) {
+        if (moduloFiltros) moduloFiltros.classList.remove('active-modulo');
+        if (moduloPorcentaje) moduloPorcentaje.classList.remove('active-modulo');
+        if (moduloNombres) moduloNombres.classList.remove('active-modulo');
+        if (moduloTotal) moduloTotal.classList.remove('active-modulo');
+        
+        if (moduloId === 'filtros' && moduloFiltros) moduloFiltros.classList.add('active-modulo');
+        if (moduloId === 'porcentaje' && moduloPorcentaje) moduloPorcentaje.classList.add('active-modulo');
+        if (moduloId === 'nombres' && moduloNombres) moduloNombres.classList.add('active-modulo');
+        if (moduloId === 'total' && moduloTotal) moduloTotal.classList.add('active-modulo');
+        
+        botonesNav.forEach(btn => {
+          const btnModulo = btn.getAttribute('data-modulo');
+          if (btnModulo === moduloId) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+      }
+      
+      botonesNav.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const moduloId = btn.getAttribute('data-modulo');
+          if (moduloId) activarModulo(moduloId);
+        });
+      });
+      
+      activarModulo('filtros');
+    }
+
     async function iniciarAplicacion() {
       try {
-        console.log("🔄 Cargando catálogo de estudios desde MockAPI...");
-        const exito = await Cl_sEstudio.cargarCatálogo();
+        await Cl_sEstudio.cargarCatálogo();
         
-        if (exito) {
-          const cantidad = Cl_mEstudio.obtenerTodos().length;
-          console.log(`✅ Catálogo cargado exitosamente: ${cantidad} estudios disponibles`);
-        } else {
-          console.warn("⚠️ No se pudo cargar el catálogo desde la nube. Verifica tu conexión a internet.");
-          alert("Advertencia: No se pudo cargar el catálogo de estudios. Los valores de referencia podrían no mostrarse correctamente.");
-        }
+        document.getElementById("cargando").style.display = "none";
+        document.getElementById("contenidoPrincipal").style.display = "block";
         
-        const cargandoDiv = document.getElementById("cargando");
-        const contenidoPrincipal = document.getElementById("contenidoPrincipal");
-        
-        if (cargandoDiv) cargandoDiv.style.display = "none";
-        if (contenidoPrincipal) contenidoPrincipal.style.display = "block";
+        inicializarNavegacionPorTabs();
         
         const vAdmin = new Cl_vAdmin();
         const vExamen = new Cl_vExamen();
         const cExamen = new Cl_cExamen(vExamen);
         const cLaboratorioAdmin = new Cl_cLaboratorioAdmin(vAdmin, cExamen);
         
-        console.log("🚀 Aplicación de Administración iniciada correctamente");
-        
-        //  cambio de rol después de que la UI está lista
         const btnCambioRol = document.getElementById("btnCambiarARolBioanalista");
         if (btnCambioRol) {
-          // elimina eventos listeners si existen
           const nuevoBoton = btnCambioRol.cloneNode(true);
           btnCambioRol.parentNode.replaceChild(nuevoBoton, btnCambioRol);
-          
-          // agrega el nuevo evento listener
           nuevoBoton.addEventListener("click", cambiarABioanalista);
-          console.log("✅ Botón 'Cambiar a Bioanalista' configurado correctamente");
-        } else {
-          console.error("❌ No se encontró el botón con id 'btnCambiarARolBioanalista'");
         }
-        
       } catch (error) {
-        console.error("❌ Error fatal al iniciar la aplicación:", error);
-        
-        // muestra mensaje de error al usuario
-        const cargandoDiv = document.getElementById("cargando");
-        if (cargandoDiv) {
-          cargandoDiv.innerHTML = `
-            <div style="color: #a1220a; background: #ffe8e5; padding: 20px; border-radius: 12px; border-left: 5px solid #c0392b;">
-              <strong>⚠️ Error al cargar la aplicación:</strong><br>
-              ${error.message}<br><br>
-              <button onclick="location.reload()" style="padding: 8px 20px; background: #1a5f7a; color: white; border: none; border-radius: 40px; cursor: pointer; font-weight: 500;">
-                Reintentar
-              </button>
-            </div>
-          `;
-        }
+        console.error(error);
+        document.getElementById("cargando").innerHTML = '<p style="color:red;">Error al cargar. <button onclick="location.reload()">Reintentar</button></p>';
       }
     }
     

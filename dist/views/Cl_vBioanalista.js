@@ -1,276 +1,384 @@
 import Cl_mEstudio from "../models/Cl_mEstudio.js";
 export default class Cl_vBioanalista {
-    divPendientes;
-    avisarCargar = null;
+    avisarCargarResultados = null;
     avisarFinalizar = null;
+    avisarFiltrar = null;
+    avisarBuscar = null;
     avisarNuevoEstudio = null;
+    avisarEditarEstudio = null;
+    avisarEliminarEstudio = null;
+    examenes = [];
+    estudios = [];
+    examenActual = null;
+    estudioActual = null;
+    filtroEstadoActual = "todos";
     constructor() {
-        this.divPendientes = document.getElementById("listaPendientes");
-        this.crearBotonNuevoEstudio();
+        this.inicializarEventos();
     }
-    crearBotonNuevoEstudio() {
-        // Crear contenedor para el botón
-        const headerContainer = document.createElement("div");
-        headerContainer.style.display = "flex";
-        headerContainer.style.justifyContent = "flex-end";
-        headerContainer.style.marginBottom = "20px";
-        const btnNuevoEstudio = document.createElement("button");
-        btnNuevoEstudio.textContent = "➕ Agregar Nuevo Estudio";
-        btnNuevoEstudio.style.background = "#764ba2";
-        btnNuevoEstudio.style.color = "white";
-        btnNuevoEstudio.style.border = "none";
-        btnNuevoEstudio.style.padding = "10px 20px";
-        btnNuevoEstudio.style.borderRadius = "40px";
-        btnNuevoEstudio.style.cursor = "pointer";
-        btnNuevoEstudio.style.fontWeight = "600";
-        btnNuevoEstudio.style.fontSize = "0.9rem";
-        btnNuevoEstudio.style.transition = "all 0.2s";
-        btnNuevoEstudio.onmouseenter = () => {
-            btnNuevoEstudio.style.background = "#5a367a";
-            btnNuevoEstudio.style.transform = "translateY(-1px)";
-        };
-        btnNuevoEstudio.onmouseleave = () => {
-            btnNuevoEstudio.style.background = "#764ba2";
-            btnNuevoEstudio.style.transform = "translateY(0)";
-        };
-        btnNuevoEstudio.onclick = () => this.mostrarModalNuevoEstudio();
-        headerContainer.appendChild(btnNuevoEstudio);
-        // Insertar al inicio del divPendientes
-        if (this.divPendientes) {
-            this.divPendientes.parentNode?.insertBefore(headerContainer, this.divPendientes);
-        }
-    }
-    mostrarModalNuevoEstudio() {
-        // Crear modal si no existe
-        let modal = document.getElementById("modalNuevoEstudioBio");
-        if (!modal) {
-            modal = document.createElement("div");
-            modal.id = "modalNuevoEstudioBio";
-            modal.style.position = "fixed";
-            modal.style.top = "0";
-            modal.style.left = "0";
-            modal.style.width = "100%";
-            modal.style.height = "100%";
-            modal.style.background = "rgba(0,0,0,0.5)";
-            modal.style.display = "none";
-            modal.style.alignItems = "center";
-            modal.style.justifyContent = "center";
-            modal.style.zIndex = "1001";
-            modal.innerHTML = `
-        <div style="background: white; border-radius: 20px; padding: 28px; width: 450px; max-width: 92%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 35px rgba(0,0,0,0.2);">
-          <h3 style="margin-bottom: 20px; color: #764ba2; border-left: 5px solid #ffc107; padding-left: 14px; font-weight: 600;">🧪 Registrar Nuevo Estudio Clínico</h3>
-          
-          <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #2c3e50;">Nombre del Estudio:</label>
-            <input type="text" id="nuevoEstudioNombre" placeholder="Ej: Hemoglobina" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
-          </div>
-          
-          <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #2c3e50;">Precio ($):</label>
-            <input type="number" id="nuevoEstudioPrecio" placeholder="Ej: 25" step="0.01" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
-          </div>
-          
-          <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #2c3e50;">Unidad de Medida:</label>
-            <input type="text" id="nuevoEstudioUnidad" placeholder="Ej: %, mg/dL, mmol/L" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
-          </div>
-          
-          <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: 600; margin-bottom: 5px; color: #2c3e50;">Valores de Referencia:</label>
-            <input type="text" id="nuevoEstudioReferencia" placeholder="Ej: 4.0 - 5.6 %" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;">
-          </div>
-          
-          <div id="estudioErrorBio" class="error-message" style="display: none; color: #c0392b; margin-bottom: 15px;"></div>
-          
-          <div style="display: flex; gap: 12px; margin-top: 10px;">
-            <button id="modalEstudioCancelarBio" style="flex:1; padding: 10px; background: #eef2f7; border: 1px solid #cbd5e1; border-radius: 40px; cursor: pointer; font-weight: 600; color: #2c3e50;">Cancelar</button>
-            <button id="modalEstudioGuardarBio" style="flex:1; padding: 10px; background: #764ba2; color: white; border: none; border-radius: 40px; cursor: pointer; font-weight: 600; transition: 0.2s;">Guardar Estudio</button>
-          </div>
-        </div>
-      `;
-            document.body.appendChild(modal);
-        }
-        // Limpiar formulario
-        const nombreInput = document.getElementById("nuevoEstudioNombre");
-        const precioInput = document.getElementById("nuevoEstudioPrecio");
-        const unidadInput = document.getElementById("nuevoEstudioUnidad");
-        const referenciaInput = document.getElementById("nuevoEstudioReferencia");
-        const errorDiv = document.getElementById("estudioErrorBio");
-        if (nombreInput)
-            nombreInput.value = "";
-        if (precioInput)
-            precioInput.value = "";
-        if (unidadInput)
-            unidadInput.value = "";
-        if (referenciaInput)
-            referenciaInput.value = "";
-        if (errorDiv)
-            errorDiv.style.display = "none";
-        modal.style.display = "flex";
-        // Configurar eventos
-        const btnCancelar = document.getElementById("modalEstudioCancelarBio");
-        const btnGuardar = document.getElementById("modalEstudioGuardarBio");
-        const cerrarModal = () => { modal.style.display = "none"; };
-        if (btnCancelar) {
-            btnCancelar.onclick = cerrarModal;
-        }
-        if (btnGuardar) {
-            btnGuardar.onclick = () => {
-                const nombre = document.getElementById("nuevoEstudioNombre")?.value.trim() || "";
-                const precio = parseFloat(document.getElementById("nuevoEstudioPrecio")?.value || "0");
-                const unidad = document.getElementById("nuevoEstudioUnidad")?.value.trim() || "";
-                const referencia = document.getElementById("nuevoEstudioReferencia")?.value.trim() || "";
-                if (!nombre) {
-                    if (errorDiv) {
-                        errorDiv.textContent = "El nombre del estudio es obligatorio";
-                        errorDiv.style.display = "block";
-                    }
-                    return;
-                }
-                if (isNaN(precio) || precio <= 0) {
-                    if (errorDiv) {
-                        errorDiv.textContent = "El precio debe ser un número mayor a 0";
-                        errorDiv.style.display = "block";
-                    }
-                    return;
-                }
-                if (!unidad) {
-                    if (errorDiv) {
-                        errorDiv.textContent = "La unidad de medida es obligatoria";
-                        errorDiv.style.display = "block";
-                    }
-                    return;
-                }
-                if (!referencia) {
-                    if (errorDiv) {
-                        errorDiv.textContent = "Los valores de referencia son obligatorios";
-                        errorDiv.style.display = "block";
-                    }
-                    return;
-                }
-                if (this.avisarNuevoEstudio) {
-                    const nuevoEstudio = new Cl_mEstudio({
-                        nombre: nombre,
-                        precio: precio,
-                        unidad: unidad,
-                        valoresReferencia: referencia
-                    });
-                    this.avisarNuevoEstudio(nuevoEstudio);
-                    cerrarModal();
-                }
+    inicializarEventos() {
+        // Filtro por estado
+        const selectEstado = document.getElementById("selectEstado");
+        if (selectEstado) {
+            selectEstado.onchange = () => {
+                this.filtroEstadoActual = selectEstado.value;
+                if (this.avisarFiltrar)
+                    this.avisarFiltrar(selectEstado.value);
             };
         }
-        // Cerrar al hacer clic fuera del modal
-        modal.onclick = (e) => {
-            if (e.target === modal)
-                cerrarModal();
-        };
+        // Buscar por ID
+        const btnBuscar = document.getElementById("btnBuscar");
+        const btnLimpiar = document.getElementById("btnLimpiar");
+        const inputBuscar = document.getElementById("inputBuscarId");
+        if (btnBuscar) {
+            btnBuscar.onclick = () => {
+                if (this.avisarBuscar)
+                    this.avisarBuscar(inputBuscar.value);
+            };
+        }
+        if (btnLimpiar) {
+            btnLimpiar.onclick = () => {
+                inputBuscar.value = "";
+                if (this.avisarBuscar)
+                    this.avisarBuscar("");
+            };
+        }
+        // Modal Estudios
+        const btnGestionar = document.getElementById("btnGestionarEstudios");
+        const modalEstudios = document.getElementById("modalEstudios");
+        const cerrarEstudios = document.getElementById("cerrarModalEstudios");
+        if (btnGestionar)
+            btnGestionar.onclick = () => this.mostrarModal("modalEstudios");
+        if (cerrarEstudios)
+            cerrarEstudios.onclick = () => this.ocultarModal("modalEstudios");
+        if (modalEstudios)
+            modalEstudios.onclick = (e) => { if (e.target === modalEstudios)
+                this.ocultarModal("modalEstudios"); };
+        // Modal Nuevo Estudio
+        const btnAbrirNuevo = document.getElementById("btnAbrirNuevoEstudio");
+        const modalNuevo = document.getElementById("modalNuevoEstudio");
+        const cerrarNuevo = document.getElementById("cerrarNuevoEstudio");
+        const cancelarNuevo = document.getElementById("cancelarNuevo");
+        const guardarNuevo = document.getElementById("guardarNuevo");
+        if (btnAbrirNuevo)
+            btnAbrirNuevo.onclick = () => this.mostrarModal("modalNuevoEstudio");
+        if (cerrarNuevo)
+            cerrarNuevo.onclick = () => this.ocultarModal("modalNuevoEstudio");
+        if (cancelarNuevo)
+            cancelarNuevo.onclick = () => this.ocultarModal("modalNuevoEstudio");
+        if (modalNuevo)
+            modalNuevo.onclick = (e) => { if (e.target === modalNuevo)
+                this.ocultarModal("modalNuevoEstudio"); };
+        if (guardarNuevo)
+            guardarNuevo.onclick = () => this.guardarNuevoEstudio();
+        // Modal Editar Estudio
+        const modalEditar = document.getElementById("modalEditarEstudio");
+        const cerrarEditar = document.getElementById("cerrarEditar");
+        const cancelarEditar = document.getElementById("cancelarEditar");
+        const guardarEditar = document.getElementById("guardarEditar");
+        if (cerrarEditar)
+            cerrarEditar.onclick = () => this.ocultarModal("modalEditarEstudio");
+        if (cancelarEditar)
+            cancelarEditar.onclick = () => this.ocultarModal("modalEditarEstudio");
+        if (modalEditar)
+            modalEditar.onclick = (e) => { if (e.target === modalEditar)
+                this.ocultarModal("modalEditarEstudio"); };
+        if (guardarEditar)
+            guardarEditar.onclick = () => this.guardarEditarEstudio();
+        // Modal Resultados
+        const modalResultados = document.getElementById("modalResultados");
+        const cerrarResultados = document.getElementById("cerrarResultados");
+        const cancelarResultados = document.getElementById("cancelarResultados");
+        const guardarResultados = document.getElementById("guardarResultados");
+        if (cerrarResultados)
+            cerrarResultados.onclick = () => this.ocultarModal("modalResultados");
+        if (cancelarResultados)
+            cancelarResultados.onclick = () => this.ocultarModal("modalResultados");
+        if (modalResultados)
+            modalResultados.onclick = (e) => { if (e.target === modalResultados)
+                this.ocultarModal("modalResultados"); };
+        if (guardarResultados)
+            guardarResultados.onclick = () => this.guardarResultados();
     }
+    mostrarModal(id) {
+        const modal = document.getElementById(id);
+        if (modal)
+            modal.style.display = "flex";
+    }
+    ocultarModal(id) {
+        const modal = document.getElementById(id);
+        if (modal)
+            modal.style.display = "none";
+    }
+    guardarNuevoEstudio() {
+        const nombre = document.getElementById("nuevoNombre").value.trim();
+        const precio = parseFloat(document.getElementById("nuevoPrecio").value);
+        const unidad = document.getElementById("nuevoUnidad").value.trim();
+        const referencia = document.getElementById("nuevoReferencia").value.trim();
+        const errorDiv = document.getElementById("errorNuevo");
+        if (!nombre || isNaN(precio) || precio <= 0 || !unidad || !referencia) {
+            if (errorDiv) {
+                errorDiv.textContent = "❌ Todos los campos son obligatorios";
+                errorDiv.style.display = "block";
+            }
+            return;
+        }
+        if (errorDiv)
+            errorDiv.style.display = "none";
+        if (this.avisarNuevoEstudio) {
+            this.avisarNuevoEstudio(new Cl_mEstudio({
+                nombre, precio, unidad, valoresReferencia: referencia
+            }));
+        }
+        // Limpiar campos
+        document.getElementById("nuevoNombre").value = "";
+        document.getElementById("nuevoPrecio").value = "";
+        document.getElementById("nuevoUnidad").value = "";
+        document.getElementById("nuevoReferencia").value = "";
+        this.ocultarModal("modalNuevoEstudio");
+    }
+    guardarEditarEstudio() {
+        const nombre = document.getElementById("editarNombre").value.trim();
+        const precio = parseFloat(document.getElementById("editarPrecio").value);
+        const unidad = document.getElementById("editarUnidad").value.trim();
+        const referencia = document.getElementById("editarReferencia").value.trim();
+        const errorDiv = document.getElementById("errorEditar");
+        if (!nombre || isNaN(precio) || precio <= 0 || !unidad || !referencia) {
+            if (errorDiv) {
+                errorDiv.textContent = "❌ Todos los campos son obligatorios";
+                errorDiv.style.display = "block";
+            }
+            return;
+        }
+        if (errorDiv)
+            errorDiv.style.display = "none";
+        if (this.avisarEditarEstudio && this.estudioActual) {
+            const estudioEditado = new Cl_mEstudio({
+                id: this.estudioActual.id,
+                nombre, precio, unidad, valoresReferencia: referencia
+            });
+            this.avisarEditarEstudio(estudioEditado);
+            this.estudioActual = null;
+        }
+        this.ocultarModal("modalEditarEstudio");
+    }
+    guardarResultados() {
+        if (!this.examenActual)
+            return;
+        const estudios = this.examenActual.obtenerArregloEstudios();
+        const resultados = [];
+        for (let i = 0; i < estudios.length; i++) {
+            const input = document.getElementById(`res_${i}`);
+            resultados.push(input?.value.trim() || "");
+        }
+        if (this.avisarCargarResultados) {
+            this.avisarCargarResultados(this.examenActual.id, resultados);
+        }
+        this.examenActual = null;
+        this.ocultarModal("modalResultados");
+    }
+    mostrarPendientes(datos) {
+        this.examenes = datos.examenes;
+        this.pintarTabla();
+    }
+    mostrarListaEstudios(estudios) {
+        this.estudios = estudios;
+        this.pintarTablaEstudios();
+    }
+    pintarTabla() {
+        const contenedor = document.getElementById("listaPendientes");
+        if (!contenedor)
+            return;
+        if (this.examenes.length === 0) {
+            let mensaje = "";
+            if (this.filtroEstadoActual === "preparacion") {
+                mensaje = "📭 No hay órdenes en estado PREPARACIÓN";
+            }
+            else if (this.filtroEstadoActual === "pendiente") {
+                mensaje = "📭 No hay órdenes en estado PENDIENTE";
+            }
+            else {
+                mensaje = "📭 No hay órdenes pendientes (PREPARACIÓN o PENDIENTE)";
+            }
+            contenedor.innerHTML = `<div class="mensaje-vacio">${mensaje}</div>`;
+            return;
+        }
+        let html = '<table style="width:100%; border-collapse:collapse;">';
+        html += '<thead><tr style="background:#1a5f7a; color:white;">';
+        html += '<th style="padding:12px;">ID</th>';
+        html += '<th style="padding:12px;">Paciente</th>';
+        html += '<th style="padding:12px;">Cédula</th>';
+        html += '<th style="padding:12px;">Estudios</th>';
+        html += '<th style="padding:12px;">Estado</th>';
+        html += '<th style="padding:12px;">Fecha</th>';
+        html += '<th style="padding:12px;">Acciones</th>';
+        html += '</tr></thead><tbody>';
+        for (const ex of this.examenes) {
+            const idMostrar = ex.id ? ex.id : "N/A";
+            const estadoClass = ex.estado === "preparacion" ? "badge-preparacion" : "badge-pendiente";
+            const estadoTexto = ex.estado === "preparacion" ? "PREPARACIÓN" : "PENDIENTE";
+            let estudiosHtml = "";
+            for (const est of ex.obtenerArregloEstudios()) {
+                estudiosHtml += `<span style="background:#eef3fc; padding:3px 8px; border-radius:12px; font-size:0.7rem; margin:2px; display:inline-block;">${this.escapeHtml(est)}</span>`;
+            }
+            // Para estado PREPARACIÓN: el botón Finalizar debe estar deshabilitado (no hay resultados)
+            // Para estado PENDIENTE: el botón Finalizar debe estar habilitado (ya tiene resultados)
+            const puedeFinalizar = ex.puedeFinalizar();
+            const mostrarBotonFinalizar = ex.estado === "pendiente" && puedeFinalizar;
+            html += `<tr style="border-bottom:1px solid #eee;">
+        <td style="padding:12px; font-family:monospace;">${idMostrar}</td>
+        <td style="padding:12px;">${this.escapeHtml(ex.nombrePaciente)}</td>
+        <td style="padding:12px;">${this.escapeHtml(ex.cedulaPaciente)}</td>
+        <td style="padding:12px;">${estudiosHtml}</td>
+        <td style="padding:12px;"><span class="${estadoClass}">${estadoTexto}</span></td>
+        <td style="padding:12px;">${new Date(ex.fechaRegistro).toLocaleDateString()}</td>
+        <td style="padding:12px;">
+          <button class="btn-azul btn-cargar" data-id="${ex.id}">📝 Resultados</button>
+          ${mostrarBotonFinalizar ? `<button class="btn-verde btn-finalizar" data-id="${ex.id}">✅ Finalizar</button>` : ''}
+          ${ex.estado === "preparacion" ? '<button class="btn-finalizar" disabled style="opacity:0.5; background:#ccc;" title="Debe cargar resultados primero">✅ Finalizar</button>' : ''}
+        </td>
+      </tr>`;
+        }
+        html += '</tbody></table>';
+        contenedor.innerHTML = html;
+        // Eventos de los botones
+        document.querySelectorAll(".btn-cargar").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const id = e.target.getAttribute("data-id");
+                const examen = this.examenes.find(ex => ex.id === id);
+                if (examen) {
+                    this.examenActual = examen;
+                    this.cargarModalResultados(examen);
+                    this.mostrarModal("modalResultados");
+                }
+            });
+        });
+        document.querySelectorAll(".btn-finalizar").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const id = e.target.getAttribute("data-id");
+                if (confirm("¿Finalizar esta orden? El examen pasará a estado LISTO y estará disponible para impresión.")) {
+                    if (this.avisarFinalizar && id)
+                        this.avisarFinalizar(id);
+                }
+            });
+        });
+    }
+    cargarModalResultados(examen) {
+        const body = document.getElementById("resultadosBody");
+        if (!body)
+            return;
+        const estudios = examen.obtenerArregloEstudios();
+        const resultadosGuardados = examen.obtenerArregloResultados();
+        let html = `<p><strong>👤 Paciente:</strong> ${this.escapeHtml(examen.nombrePaciente)}</p>`;
+        html += `<p><strong>🆔 Cédula:</strong> ${this.escapeHtml(examen.cedulaPaciente)}</p><hr>`;
+        for (let i = 0; i < estudios.length; i++) {
+            const estudio = estudios[i];
+            const referencia = Cl_mEstudio.obtenerValoresReferencia(estudio);
+            const unidad = Cl_mEstudio.obtenerUnidad(estudio);
+            const valorPrevio = resultadosGuardados[i] || "";
+            html += `
+        <div style="margin-bottom: 15px; padding: 10px; background: #f9f9f9; border-left: 3px solid #2c9cd4;">
+          <label><strong>🔬 ${this.escapeHtml(estudio)}</strong></label>
+          <div style="display: flex; gap: 10px; margin-top: 5px;">
+            <input type="text" id="res_${i}" value="${this.escapeHtml(valorPrevio)}" placeholder="Resultado" style="flex:1; padding: 8px; border:1px solid #ddd; border-radius:5px;">
+            <span style="padding: 8px;">${unidad}</span>
+          </div>
+          <small style="color:#666;">Referencia: ${referencia}</small>
+        </div>
+      `;
+        }
+        body.innerHTML = html;
+    }
+    pintarTablaEstudios() {
+        const contenedor = document.getElementById("tablaEstudios");
+        if (!contenedor)
+            return;
+        if (this.estudios.length === 0) {
+            contenedor.innerHTML = '<div class="mensaje-vacio">📭 No hay estudios registrados</div>';
+            return;
+        }
+        let html = '<table style="width:100%; border-collapse:collapse;">';
+        html += '<thead><tr style="background:#764ba2; color:white;">';
+        html += '<th style="padding:12px;">ID</th>';
+        html += '<th style="padding:12px;">Nombre</th>';
+        html += '<th style="padding:12px;">Precio</th>';
+        html += '<th style="padding:12px;">Unidad</th>';
+        html += '<th style="padding:12px;">Referencia</th>';
+        html += '<th style="padding:12px;">Acciones</th>';
+        html += '</tr></thead><tbody>';
+        for (const est of this.estudios) {
+            const idFormateado = est.id ? `E${est.id.padStart(2, '0')}` : "N/A";
+            html += `<tr style="border-bottom:1px solid #eee;">
+        <td style="padding:12px; font-family:monospace;">${idFormateado}</td>
+        <td style="padding:12px;">${this.escapeHtml(est.nombre)}</td>
+        <td style="padding:12px;">$${est.precio}</td>
+        <td style="padding:12px;">${this.escapeHtml(est.unidad)}</td>
+        <td style="padding:12px;">${this.escapeHtml(est.valoresReferencia)}</td>
+        <td style="padding:12px;">
+          <button class="btn-amarillo btn-editar" data-id="${est.id}">✏️ Editar</button>
+          <button class="btn-rojo btn-eliminar" data-id="${est.id}">🗑️ Eliminar</button>
+        </td>
+      <tr>`;
+        }
+        html += '</tbody></table>';
+        contenedor.innerHTML = html;
+        // Eventos editar
+        document.querySelectorAll(".btn-editar").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const id = e.target.getAttribute("data-id");
+                const estudio = this.estudios.find(e => e.id === id);
+                if (estudio) {
+                    this.estudioActual = estudio;
+                    this.cargarModalEditar(estudio);
+                    this.mostrarModal("modalEditarEstudio");
+                }
+            });
+        });
+        // Eventos eliminar
+        document.querySelectorAll(".btn-eliminar").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const id = e.target.getAttribute("data-id");
+                if (confirm("¿Eliminar este estudio?")) {
+                    if (this.avisarEliminarEstudio && id)
+                        this.avisarEliminarEstudio(id);
+                }
+            });
+        });
+    }
+    cargarModalEditar(estudio) {
+        document.getElementById("editarNombre").value = estudio.nombre;
+        document.getElementById("editarPrecio").value = estudio.precio.toString();
+        document.getElementById("editarUnidad").value = estudio.unidad;
+        document.getElementById("editarReferencia").value = estudio.valoresReferencia;
+        const errorDiv = document.getElementById("errorEditar");
+        if (errorDiv)
+            errorDiv.style.display = "none";
+    }
+    // Callbacks
     cuandoCargarResultados(callback) {
-        this.avisarCargar = callback;
+        this.avisarCargarResultados = callback;
     }
     cuandoFinalizarExamen(callback) {
         this.avisarFinalizar = callback;
     }
+    cuandoCambiarFiltroEstado(callback) {
+        this.avisarFiltrar = callback;
+    }
+    cuandoBuscarPorId(callback) {
+        this.avisarBuscar = callback;
+    }
     cuandoRegistrenNuevoEstudio(callback) {
         this.avisarNuevoEstudio = callback;
     }
-    mostrarPendientes(datos) {
-        if (!this.divPendientes)
-            return;
-        if (datos.examenes.length === 0) {
-            this.divPendientes.innerHTML = '<div class="mensaje-vacio">No hay muestras analíticas pendientes en cola.</div>';
-            return;
-        }
-        this.divPendientes.innerHTML = "";
-        for (let i = 0; i < datos.examenes.length; i++) {
-            let examen = datos.examenes[i];
-            let listaEstudios = examen.obtenerArregloEstudios();
-            let listaResultadosGuardados = examen.obtenerArregloResultados();
-            let card = document.createElement("div");
-            card.className = "orden-card";
-            card.style.background = "white";
-            card.style.border = "1px solid #e1e4e6";
-            card.style.borderRadius = "12px";
-            card.style.padding = "20px";
-            card.style.marginBottom = "20px";
-            card.style.boxShadow = "0 4px 12px rgba(0,0,0,0.05)";
-            let htmlCamposEstudios = "";
-            for (let j = 0; j < listaEstudios.length; j++) {
-                let nombreEstudio = listaEstudios[j];
-                let valorPrevio = listaResultadosGuardados[j] || "";
-                htmlCamposEstudios += `
-          <div style="margin-bottom: 12px; display: grid; grid-template-columns: 140px 1fr; align-items: center; gap: 10px;">
-            <label style="font-weight: bold; color: #495057;">${this.escapeHtml(nombreEstudio)}:</label>
-            <input type="text" class="resultado-input-${examen.id}" data-indice="${j}" value="${this.escapeHtml(valorPrevio)}" placeholder="Ingrese valor analítico obtenido" style="padding: 8px 12px; border: 1px solid #ced4da; border-radius: 6px; width: 100%; box-sizing: border-box;">
-          </div>
-        `;
-            }
-            let estadoBadge = "";
-            if (examen.estado === "preparacion") {
-                estadoBadge = '<span class="badge-pendiente" style="background:#ffc107; color:#1a3e4c;">PREPARACIÓN</span>';
-            }
-            else if (examen.estado === "pendiente") {
-                estadoBadge = '<span class="badge-pendiente" style="background:#17a2b8; color:white;">PENDIENTE</span>';
-            }
-            card.innerHTML = `
-        <div class="orden-header" style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; margin-bottom: 12px; border-bottom: 1px solid #e9f0f5; padding-bottom: 10px;">
-          <div>
-            <span class="orden-paciente" style="font-weight: 700; color: #0b3b4f; font-size: 1.1rem;">👤 ${this.escapeHtml(examen.nombrePaciente)}</span>
-            ${estadoBadge}
-          </div>
-          <div class="orden-fecha" style="font-size: 0.75rem; color: #2c6e8f;">📅 ${new Date(examen.fechaRegistro).toLocaleDateString()}</div>
-        </div>
-        <div style="margin-bottom: 8px; font-size: 0.85rem; color: #5e7a93;">
-          <strong>Cédula:</strong> ${this.escapeHtml(examen.cedulaPaciente)} | 
-          <strong>Teléfono:</strong> ${this.escapeHtml(examen.telefonoPaciente || "No registrado")}
-        </div>
-        
-        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #f1f3f5; margin-bottom: 15px;">
-          <h4 style="margin: 0 0 12px 0; color: #495057; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;">📊 Carga de Resultados Clínicos</h4>
-          ${htmlCamposEstudios}
-        </div>
-
-        <div class="orden-acciones" style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 14px; border-top: 1px solid #f0f4f9; padding-top: 14px;">
-          <button class="btn-cargar" data-id="${examen.id}" style="flex: 1; padding: 10px; background: #007bff; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
-            💾 Guardar Progreso
-          </button>
-          <button class="btn-finalizar" data-id="${examen.id}" style="flex: 1; padding: 10px; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
-            ✅ Finalizar Orden
-          </button>
-        </div>
-      `;
-            this.divPendientes.appendChild(card);
-            let btnCargar = card.querySelector(".btn-cargar");
-            let btnFinalizar = card.querySelector(".btn-finalizar");
-            let yoMismo = this;
-            btnCargar.onclick = function () {
-                let inputs = card.querySelectorAll(`.resultado-input-${examen.id}`);
-                let resultadosArreglo = [];
-                for (let k = 0; k < inputs.length; k++) {
-                    let inp = inputs[k];
-                    resultadosArreglo.push(inp.value.trim() || "No realizado");
-                }
-                if (yoMismo.avisarCargar)
-                    yoMismo.avisarCargar(examen.id, resultadosArreglo);
-            };
-            btnFinalizar.onclick = function () {
-                let inputs = card.querySelectorAll(`.resultado-input-${examen.id}`);
-                for (let k = 0; k < inputs.length; k++) {
-                    if (inputs[k].value.trim() === "") {
-                        alert(" rellenar todos los resultados antes finalizar.");
-                        return;
-                    }
-                }
-                if (confirm(`¿Está seguro de finalizar la orden de ${examen.nombrePaciente}?`)) {
-                    if (yoMismo.avisarFinalizar)
-                        yoMismo.avisarFinalizar(examen.id);
-                }
-            };
-        }
+    cuandoEditarEstudio(callback) {
+        this.avisarEditarEstudio = callback;
+    }
+    cuandoEliminarEstudio(callback) {
+        this.avisarEliminarEstudio = callback;
     }
     escapeHtml(text) {
-        const div = document.createElement('div');
+        if (!text)
+            return "";
+        const div = document.createElement("div");
         div.textContent = text;
         return div.innerHTML;
     }
