@@ -25,10 +25,10 @@ export default class Cl_cLaboratorioAdmin {
     this.pantallaAdmin.cuandoCLicEnObtenerNombres((tipo) => yoMismo.obtenerNombresPacientes(tipo));
     this.pantallaAdmin.cuandoClicEnObtenerTotalPorEstudio((tipo) => yoMismo.obtenertotalportestudio(tipo));
     this.pantallaAdmin.cuandoClicEnEnviarWhatsApp((id) => yoMismo.enviarWhatsApp(id));
-    this.pantallaAdmin.cuandoClicEnImprimir((id) => yoMismo.imprimirReporte(id)); this.pantallaAdmin.cuandoClicEnVerEstadisticasEstudio((tipo) => yoMismo.verEstadisticasEstudio(tipo));
+    this.pantallaAdmin.cuandoClicEnImprimir((id) => yoMismo.imprimirReporte(id));
+    this.pantallaAdmin.cuandoClicEnVerEstadisticasEstudio((tipo) => yoMismo.verEstadisticasEstudio(tipo));
     this.pantallaAdmin.cuandoClicEnCalcularPorcentajeFinalizados(() => yoMismo.calcularPorcentajeFinalizados());
     this.pantallaAdmin.cuandoClicEnCalcularPromedioEstudio((tipo) => yoMismo.calcularPromedioEstudio(tipo));
-    
   }
 
   private async cargarExamenes() {
@@ -43,7 +43,6 @@ export default class Cl_cLaboratorioAdmin {
   }
 
   private actualizarSelectsEstudios(): void {
-    // Forzar actualización de los selects en la vista
     if (this.pantallaAdmin.actualizarListaEstudios) {
       this.pantallaAdmin.actualizarListaEstudios();
     }
@@ -51,7 +50,6 @@ export default class Cl_cLaboratorioAdmin {
 
   private refrescarPantalla() {
     this.pantallaAdmin.mostrarFinalizados({ examenes: this.laboratorio.obtenerFinalizados() });
-    // Actualizar también los selects después de refrescar
     this.actualizarSelectsEstudios();
   }
 
@@ -69,7 +67,6 @@ export default class Cl_cLaboratorioAdmin {
           alert("✅ Examen registrado con éxito");
           await yoMismo.cargarExamenes();
           
-          // Refrescar los selects después de registrar un nuevo examen
           setTimeout(() => {
             yoMismo.actualizarSelectsEstudios();
           }, 500);
@@ -80,10 +77,13 @@ export default class Cl_cLaboratorioAdmin {
     });
   }
 
+  // ============ MÉTODOS CON VALIDACIONES EN EL CONTROLADOR ============
+  
   private filtrarEstudios(tipoEstudio: string, fechaSeleccionada: string) {
     const tipo = tipoEstudio ? tipoEstudio.trim() : "";
     const fecha = fechaSeleccionada ? fechaSeleccionada.trim() : "";
 
+    // VALIDACIÓN EN EL CONTROLADOR
     if (!tipo && !fecha) {
       alert("⚠️ Debe ingresar al menos un estudio o una fecha para filtrar.");
       return;
@@ -102,6 +102,7 @@ export default class Cl_cLaboratorioAdmin {
   }
 
   private calcularPorcentaje(tipoEstudio: string) {
+    // VALIDACIÓN EN EL CONTROLADOR
     if (!tipoEstudio || tipoEstudio.trim() === "") {
       alert("⚠️ Debe seleccionar un tipo de estudio");
       return;
@@ -112,19 +113,21 @@ export default class Cl_cLaboratorioAdmin {
   }
 
   private obtenerNombresPacientes(tipoEstudio: string) {
+    // VALIDACIÓN EN EL CONTROLADOR
     if (!tipoEstudio || tipoEstudio.trim() === "") {
       alert("⚠️ Debe seleccionar un tipo de estudio");
       return;
     }
 
     const nombres = this.laboratorio.nombrepacientesporestudio(tipoEstudio);
-    this.pantallaAdmin.mostrarResultadosobtenerNombrePacientesPorEstudio({
+    this.pantallaAdmin.mostrarResultadosobtener9yMnTm4NSzvG9rrwjM2ec8xZgh1cafXH8({
       nombres: nombres,
       tipoEstudio: tipoEstudio
     });
   }
 
   private obtenertotalportestudio(tipoEstudio: string) {
+    // VALIDACIÓN EN EL CONTROLADOR
     if (!tipoEstudio || tipoEstudio.trim() === "") {
       alert("⚠️ Debe seleccionar un tipo de estudio");
       return;
@@ -134,6 +137,46 @@ export default class Cl_cLaboratorioAdmin {
     this.pantallaAdmin.mostrarResultadoTotalPorEstudio(`El total recaudado por el estudio "${tipoEstudio}" es: $${total.toFixed(2)}`);
   }
 
+  private verEstadisticasEstudio(tipoEstudio: string): void {
+    // VALIDACIÓN EN EL CONTROLADOR
+    if (!tipoEstudio || tipoEstudio.trim() === "") {
+      alert("⚠️ Debe seleccionar un tipo de estudio");
+      return;
+    }
+    
+    const estadisticas = this.laboratorio.obtenerEstadisticasEstudio(tipoEstudio);
+    this.pantallaAdmin.mostrarEstadisticasEstudio({
+      tipoEstudio: tipoEstudio,
+      cantidad: estadisticas.cantidad,
+      total: estadisticas.total
+    });
+  }
+
+  private calcularPorcentajeFinalizados(): void {
+    // No necesita validación adicional, siempre es válido
+    const porcentaje = this.laboratorio.calcularPorcentajeFinalizados();
+    this.pantallaAdmin.mostrarPorcentajeFinalizados(porcentaje);
+  }
+
+  private calcularPromedioEstudio(tipoEstudio: string): void {
+    // VALIDACIÓN EN EL CONTROLADOR
+    if (!tipoEstudio || tipoEstudio.trim() === "") {
+      alert("⚠️ Debe seleccionar un tipo de estudio");
+      return;
+    }
+    
+    const promedio = this.laboratorio.calcularPromedioEstudio(tipoEstudio);
+    const cantidad = this.laboratorio.contarEstudiosPorTipo(tipoEstudio);
+    
+    this.pantallaAdmin.mostrarPromedioEstudio({
+      tipoEstudio: tipoEstudio,
+      promedio: promedio,
+      cantidad: cantidad
+    });
+  }
+
+  // ============ MÉTODOS EXISTENTES SIN CAMBIOS ============
+  
   private imprimirReporte(idExamen: string) {
     let examen = this.laboratorio.buscarPorId(idExamen);
     if (!examen) {
@@ -209,7 +252,7 @@ export default class Cl_cLaboratorioAdmin {
               <th style="padding: 12px; border-top-left-radius: 6px;">Estudio Clinico</th>
               <th style="padding: 12px;">Resultado Obtenido</th>
               <th style="padding: 12px; border-top-right-radius: 6px;">Valores de Referencia</th>
-             </>
+             </tr>
           </thead>
           <tbody>
             ${filasHtml}
@@ -264,39 +307,5 @@ export default class Cl_cLaboratorioAdmin {
     } else {
       alert(`❌ Error: ${resultado.mensaje}`);
     }
-  }
-   private verEstadisticasEstudio(tipoEstudio: string): void {
-    if (!tipoEstudio || tipoEstudio.trim() === "") {
-      alert("⚠️ Debe seleccionar un tipo de estudio");
-      return;
-    }
-    
-    const estadisticas = this.laboratorio.obtenerEstadisticasEstudio(tipoEstudio);
-    this.pantallaAdmin.mostrarEstadisticasEstudio({
-      tipoEstudio: tipoEstudio,
-      cantidad: estadisticas.cantidad,
-      total: estadisticas.total
-    });
-  }
-
-  private calcularPorcentajeFinalizados(): void {
-    const porcentaje = this.laboratorio.calcularPorcentajeFinalizados();
-    this.pantallaAdmin.mostrarPorcentajeFinalizados(porcentaje);
-  }
-
-  private calcularPromedioEstudio(tipoEstudio: string): void {
-    if (!tipoEstudio || tipoEstudio.trim() === "") {
-      alert("⚠️ Debe seleccionar un tipo de estudio");
-      return;
-    }
-    
-    const promedio = this.laboratorio.calcularPromedioEstudio(tipoEstudio);
-    const cantidad = this.laboratorio.contarEstudiosPorTipo(tipoEstudio);
-    
-    this.pantallaAdmin.mostrarPromedioEstudio({
-      tipoEstudio: tipoEstudio,
-      promedio: promedio,
-      cantidad: cantidad
-    });
   }
 }

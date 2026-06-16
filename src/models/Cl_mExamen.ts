@@ -50,6 +50,107 @@ export default class Cl_mExamen {
     }
   }
 
+  
+  public validarNombre(nombre: string): { valido: boolean; mensaje: string } {
+    if (!nombre || nombre.trim() === "") {
+      return { valido: false, mensaje: "El nombre del paciente es obligatorio." };
+    }
+    return { valido: true, mensaje: "" };
+  }
+
+  public validarCedula(cedula: string): { valido: boolean; mensaje: string } {
+    if (!cedula || cedula.trim() === "") {
+      return { valido: false, mensaje: "La cédula del paciente es obligatoria." };
+    }
+    
+    const limpia = cedula.trim().toUpperCase();
+    const regex = /^([VEJPG])\-?(\d{6,8})$/i;
+    
+    if (regex.test(limpia) || /^\d{6,8}$/.test(limpia)) {
+      return { valido: true, mensaje: "" };
+    }
+    
+    return { valido: false, mensaje: "Formato de cédula inválido. Use V-12345678 o 12345678" };
+  }
+
+  public validarTelefono(telefono: string): { valido: boolean; mensaje: string } {
+    if (!telefono || telefono.trim() === "") {
+      return { valido: false, mensaje: "El número de teléfono es obligatorio." };
+    }
+    
+    let telefonoLimpio = telefono.trim().replace(/[\s\-\.]/g, "");
+    let numeroLimpio = telefonoLimpio;
+    
+    if (telefonoLimpio.startsWith("+58")) numeroLimpio = telefonoLimpio.substring(3);
+    else if (telefonoLimpio.startsWith("58")) numeroLimpio = telefonoLimpio.substring(2);
+    
+    if (!/^\d+$/.test(numeroLimpio)) {
+      return { valido: false, mensaje: "Solo números y opcionalmente +58" };
+    }
+    
+    const prefijosValidos = ["412", "414", "424", "426", "416", "422"];
+    
+    if (numeroLimpio.length === 10) {
+      const prefijo = numeroLimpio.substring(0, 3);
+      if (prefijosValidos.includes(prefijo)) return { valido: true, mensaje: "" };
+      return { valido: false, mensaje: "Prefijo inválido. Use 0412, 0414, 0424, 0426, 0416 o 0422" };
+    }
+    
+    if (numeroLimpio.length === 11 && numeroLimpio.startsWith("0")) {
+      const prefijo = numeroLimpio.substring(1, 4);
+      if (prefijosValidos.includes(prefijo)) return { valido: true, mensaje: "" };
+      return { valido: false, mensaje: "Prefijo inválido. Use 0412, 0414, 0424, 0426, 0416 o 0422" };
+    }
+    
+    return { valido: false, mensaje: "Teléfono inválido. Ej: 04121234567" };
+  }
+
+  public validarEstudios(estudios: string[]): { valido: boolean; mensaje: string } {
+    if (!estudios || estudios.length === 0) {
+      return { valido: false, mensaje: "Debe seleccionar al menos un estudio." };
+    }
+    return { valido: true, mensaje: "" };
+  }
+
+  public validarReferencia(metodoPago: string, referencia: string): { valido: boolean; mensaje: string } {
+    if ((metodoPago === "Transferencia" || metodoPago === "Pago Móvil") && (!referencia || referencia.trim() === "")) {
+      return { valido: false, mensaje: "El número de referencia es obligatorio para Transferencia o Pago Móvil." };
+    }
+    return { valido: true, mensaje: "" };
+  }
+
+  public validarTodosLosDatos(datos: {
+    nombre: string;
+    cedula: string;
+    telefono: string;
+    estudios: string[];
+    metodoPago: string;
+    referencia?: string;
+  }): { valido: boolean; errores: string[] } {
+    const errores: string[] = [];
+    
+    const nombreVal = this.validarNombre(datos.nombre);
+    if (!nombreVal.valido) errores.push(nombreVal.mensaje);
+    
+    const cedulaVal = this.validarCedula(datos.cedula);
+    if (!cedulaVal.valido) errores.push(cedulaVal.mensaje);
+    
+    const telefonoVal = this.validarTelefono(datos.telefono);
+    if (!telefonoVal.valido) errores.push(telefonoVal.mensaje);
+    
+    const estudiosVal = this.validarEstudios(datos.estudios);
+    if (!estudiosVal.valido) errores.push(estudiosVal.mensaje);
+    
+    const referenciaVal = this.validarReferencia(datos.metodoPago, datos.referencia || "");
+    if (!referenciaVal.valido) errores.push(referenciaVal.mensaje);
+    
+    return {
+      valido: errores.length === 0,
+      errores: errores
+    };
+  }
+
+
   public obtenerArregloEstudios(): string[] {
     if (!this.nombreEstudio.trim()) return [];
     return this.nombreEstudio.split(", ").map(item => item.trim());
@@ -122,9 +223,9 @@ export default class Cl_mExamen {
         const evaluacion = Cl_mEstudio.evaluarResultado(estudio, valNum);
         
         if (evaluacion.esAlto) {
-          alerta = ` ⚠️ *${evaluacion.mensaje}* ⚠️`;
+          alerta = `  *${evaluacion.mensaje}* `;
         } else if (evaluacion.esBajo) {
-          alerta = ` ⚠️ *${evaluacion.mensaje}* ⚠️`;
+          alerta = `  *${evaluacion.mensaje}* `;
         }
       }
 
@@ -152,7 +253,6 @@ export default class Cl_mExamen {
     }
     let resultados = this.obtenerArregloResultados();
     let estudios = this.obtenerArregloEstudios();
-    // Considerar como no válidos ciertos placeholders comunes que significan "sin resultado"
     const placeholders = ["pendiente", "no realizado", "no realizado", "nr", "-", "n/a", "na"]; 
 
     const resultadosValidos = resultados.filter(r => {

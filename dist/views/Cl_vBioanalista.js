@@ -16,7 +16,7 @@ export default class Cl_vBioanalista {
         this.inicializarEventos();
     }
     inicializarEventos() {
-        // Filtro por estado
+        // Filtro por estado - SOLO pasa el valor al Controlador
         const selectEstado = document.getElementById("selectEstado");
         if (selectEstado) {
             selectEstado.onchange = () => {
@@ -25,7 +25,7 @@ export default class Cl_vBioanalista {
                     this.avisarFiltrar(selectEstado.value);
             };
         }
-        // Buscar por ID
+        // Buscar por ID - SOLO pasa el valor al Controlador
         const btnBuscar = document.getElementById("btnBuscar");
         const btnLimpiar = document.getElementById("btnLimpiar");
         const inputBuscar = document.getElementById("inputBuscarId");
@@ -53,7 +53,7 @@ export default class Cl_vBioanalista {
         if (modalEstudios)
             modalEstudios.onclick = (e) => { if (e.target === modalEstudios)
                 this.ocultarModal("modalEstudios"); };
-        // Modal Nuevo Estudio
+        // Modal Nuevo Estudio - SOLO recolecta datos
         const btnAbrirNuevo = document.getElementById("btnAbrirNuevoEstudio");
         const modalNuevo = document.getElementById("modalNuevoEstudio");
         const cerrarNuevo = document.getElementById("cerrarNuevoEstudio");
@@ -109,24 +109,16 @@ export default class Cl_vBioanalista {
         if (modal)
             modal.style.display = "none";
     }
+    // ============ MÉTODOS QUE RECOLECTAN DATOS Y PASAN AL CONTROLADOR ============
     guardarNuevoEstudio() {
-        const nombre = document.getElementById("nuevoNombre").value.trim();
-        const precio = parseFloat(document.getElementById("nuevoPrecio").value);
-        const unidad = document.getElementById("nuevoUnidad").value.trim();
-        const referencia = document.getElementById("nuevoReferencia").value.trim();
-        const errorDiv = document.getElementById("errorNuevo");
-        if (!nombre || isNaN(precio) || precio <= 0 || !unidad || !referencia) {
-            if (errorDiv) {
-                errorDiv.textContent = "❌ Todos los campos son obligatorios";
-                errorDiv.style.display = "block";
-            }
-            return;
-        }
-        if (errorDiv)
-            errorDiv.style.display = "none";
+        // SOLO recolecta datos, NO valida
+        const datos = this.obtenerDatosNuevoEstudio();
         if (this.avisarNuevoEstudio) {
             this.avisarNuevoEstudio(new Cl_mEstudio({
-                nombre, precio, unidad, valoresReferencia: referencia
+                nombre: datos.nombre,
+                precio: datos.precio,
+                unidad: datos.unidad,
+                valoresReferencia: datos.referencia
             }));
         }
         // Limpiar campos
@@ -136,46 +128,59 @@ export default class Cl_vBioanalista {
         document.getElementById("nuevoReferencia").value = "";
         this.ocultarModal("modalNuevoEstudio");
     }
+    obtenerDatosNuevoEstudio() {
+        return {
+            nombre: document.getElementById("nuevoNombre").value.trim(),
+            precio: parseFloat(document.getElementById("nuevoPrecio").value),
+            unidad: document.getElementById("nuevoUnidad").value.trim(),
+            referencia: document.getElementById("nuevoReferencia").value.trim()
+        };
+    }
     guardarEditarEstudio() {
-        const nombre = document.getElementById("editarNombre").value.trim();
-        const precio = parseFloat(document.getElementById("editarPrecio").value);
-        const unidad = document.getElementById("editarUnidad").value.trim();
-        const referencia = document.getElementById("editarReferencia").value.trim();
-        const errorDiv = document.getElementById("errorEditar");
-        if (!nombre || isNaN(precio) || precio <= 0 || !unidad || !referencia) {
-            if (errorDiv) {
-                errorDiv.textContent = "❌ Todos los campos son obligatorios";
-                errorDiv.style.display = "block";
-            }
-            return;
-        }
-        if (errorDiv)
-            errorDiv.style.display = "none";
+        const datos = this.obtenerDatosEditarEstudio();
         if (this.avisarEditarEstudio && this.estudioActual) {
             const estudioEditado = new Cl_mEstudio({
                 id: this.estudioActual.id,
-                nombre, precio, unidad, valoresReferencia: referencia
+                nombre: datos.nombre,
+                precio: datos.precio,
+                unidad: datos.unidad,
+                valoresReferencia: datos.referencia
             });
             this.avisarEditarEstudio(estudioEditado);
             this.estudioActual = null;
         }
         this.ocultarModal("modalEditarEstudio");
     }
+    obtenerDatosEditarEstudio() {
+        return {
+            nombre: document.getElementById("editarNombre").value.trim(),
+            precio: parseFloat(document.getElementById("editarPrecio").value),
+            unidad: document.getElementById("editarUnidad").value.trim(),
+            referencia: document.getElementById("editarReferencia").value.trim()
+        };
+    }
     guardarResultados() {
         if (!this.examenActual)
             return;
-        const estudios = this.examenActual.obtenerArregloEstudios();
-        const resultados = [];
-        for (let i = 0; i < estudios.length; i++) {
-            const input = document.getElementById(`res_${i}`);
-            resultados.push(input?.value.trim() || "");
-        }
+        const resultados = this.obtenerResultadosDelModal();
         if (this.avisarCargarResultados) {
             this.avisarCargarResultados(this.examenActual.id, resultados);
         }
         this.examenActual = null;
         this.ocultarModal("modalResultados");
     }
+    obtenerResultadosDelModal() {
+        if (!this.examenActual)
+            return [];
+        const estudios = this.examenActual.obtenerArregloEstudios();
+        const resultados = [];
+        for (let i = 0; i < estudios.length; i++) {
+            const input = document.getElementById(`res_${i}`);
+            resultados.push(input?.value.trim() || "");
+        }
+        return resultados;
+    }
+    // ============ MÉTODOS DE RENDERIZADO ============
     mostrarPendientes(datos) {
         this.examenes = datos.examenes;
         this.pintarTabla();
@@ -220,8 +225,6 @@ export default class Cl_vBioanalista {
             for (const est of ex.obtenerArregloEstudios()) {
                 estudiosHtml += `<span style="background:#eef3fc; padding:3px 8px; border-radius:12px; font-size:0.7rem; margin:2px; display:inline-block;">${this.escapeHtml(est)}</span>`;
             }
-            // Para estado PREPARACIÓN: el botón Finalizar debe estar deshabilitado (no hay resultados)
-            // Para estado PENDIENTE: el botón Finalizar debe estar habilitado (ya tiene resultados)
             const puedeFinalizar = ex.puedeFinalizar();
             const mostrarBotonFinalizar = ex.estado === "pendiente" && puedeFinalizar;
             html += `<tr style="border-bottom:1px solid #eee;">
@@ -255,6 +258,7 @@ export default class Cl_vBioanalista {
         document.querySelectorAll(".btn-finalizar").forEach(btn => {
             btn.addEventListener("click", (e) => {
                 const id = e.target.getAttribute("data-id");
+                // La confirmación es UI, está bien en la Vista
                 if (confirm("¿Finalizar esta orden? El examen pasará a estado LISTO y estará disponible para impresión.")) {
                     if (this.avisarFinalizar && id)
                         this.avisarFinalizar(id);
@@ -317,7 +321,7 @@ export default class Cl_vBioanalista {
           <button class="btn-amarillo btn-editar" data-id="${est.id}">✏️ Editar</button>
           <button class="btn-rojo btn-eliminar" data-id="${est.id}">🗑️ Eliminar</button>
         </td>
-      <tr>`;
+      </tr>`;
         }
         html += '</tbody></table>';
         contenedor.innerHTML = html;
@@ -337,6 +341,7 @@ export default class Cl_vBioanalista {
         document.querySelectorAll(".btn-eliminar").forEach(btn => {
             btn.addEventListener("click", (e) => {
                 const id = e.target.getAttribute("data-id");
+                // La confirmación es UI, está bien en la Vista
                 if (confirm("¿Eliminar este estudio?")) {
                     if (this.avisarEliminarEstudio && id)
                         this.avisarEliminarEstudio(id);
@@ -349,11 +354,8 @@ export default class Cl_vBioanalista {
         document.getElementById("editarPrecio").value = estudio.precio.toString();
         document.getElementById("editarUnidad").value = estudio.unidad;
         document.getElementById("editarReferencia").value = estudio.valoresReferencia;
-        const errorDiv = document.getElementById("errorEditar");
-        if (errorDiv)
-            errorDiv.style.display = "none";
     }
-    // Callbacks
+    // ============ CALLBACKS ============
     cuandoCargarResultados(callback) {
         this.avisarCargarResultados = callback;
     }
