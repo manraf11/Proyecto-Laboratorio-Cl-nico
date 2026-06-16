@@ -13,6 +13,7 @@ export default class Cl_vExamen {
     campoReferencia;
     inputPrecio;
     checkboxesContainer;
+    placeholderOriginal = "";
     constructor() {
         this.modal = document.getElementById("modalExamen");
         this.botonCancelar = document.getElementById("modal_btnCancelar");
@@ -27,6 +28,9 @@ export default class Cl_vExamen {
         this.checkboxesContainer = document.getElementById("modal_checkboxes");
         if (this.modal)
             this.modal.style.display = "none";
+        if (this.inputNombre) {
+            this.placeholderOriginal = this.inputNombre.placeholder;
+        }
         this.configurarEventListeners();
     }
     obtenerDatosFormulario() {
@@ -53,6 +57,41 @@ export default class Cl_vExamen {
         if (errores.length === 0)
             return;
         alert("⚠️ " + errores.join("\n"));
+    }
+    mostrarBuscandoCedula() {
+        if (this.inputNombre) {
+            this.inputNombre.value = "";
+            this.inputNombre.placeholder = "🔍 Buscando...";
+        }
+    }
+    mostrarConsultandoAPI() {
+        if (this.inputNombre) {
+            this.inputNombre.placeholder = "🌐 Consultando API...";
+        }
+    }
+    mostrarDatosPaciente(datos) {
+        if (this.inputNombre && datos.nombre) {
+            this.inputNombre.value = datos.nombre;
+        }
+        if (this.inputTelefono && datos.telefono) {
+            this.inputTelefono.value = datos.telefono;
+        }
+    }
+    mostrarMensajeExito(mensaje) {
+        alert(mensaje);
+    }
+    mostrarErrorBusqueda(mensaje) {
+        alert(mensaje);
+    }
+    enfocarCampoNombre() {
+        if (this.inputNombre) {
+            this.inputNombre.focus();
+        }
+    }
+    restaurarPlaceholder() {
+        if (this.inputNombre) {
+            this.inputNombre.placeholder = this.placeholderOriginal;
+        }
     }
     configurarEventListeners() {
         let yoMismo = this;
@@ -95,12 +134,11 @@ export default class Cl_vExamen {
             };
         }
         if (this.inputCedula) {
-            this.inputCedula.addEventListener('keydown', async (ev) => {
+            this.inputCedula.addEventListener('keydown', (ev) => {
                 if (ev.key === 'Enter') {
                     const ced = this.inputCedula?.value.trim() || "";
                     if (!ced)
                         return;
-                    // Notificar al Controlador que se presionó Enter en la cédula
                     if (this.avisarBuscarCedula) {
                         this.avisarBuscarCedula(ced);
                     }
@@ -147,8 +185,10 @@ export default class Cl_vExamen {
     limpiarFormulario() {
         if (this.inputCedula)
             this.inputCedula.value = "";
-        if (this.inputNombre)
+        if (this.inputNombre) {
             this.inputNombre.value = "";
+            this.inputNombre.placeholder = this.placeholderOriginal;
+        }
         if (this.inputTelefono)
             this.inputTelefono.value = "";
         if (this.inputReferencia)

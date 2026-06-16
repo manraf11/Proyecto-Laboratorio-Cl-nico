@@ -77,13 +77,11 @@ export default class Cl_cLaboratorioAdmin {
     });
   }
 
-  // ============ MÉTODOS CON VALIDACIONES EN EL CONTROLADOR ============
   
   private filtrarEstudios(tipoEstudio: string, fechaSeleccionada: string) {
     const tipo = tipoEstudio ? tipoEstudio.trim() : "";
     const fecha = fechaSeleccionada ? fechaSeleccionada.trim() : "";
 
-    // VALIDACIÓN EN EL CONTROLADOR
     if (!tipo && !fecha) {
       alert("⚠️ Debe ingresar al menos un estudio o una fecha para filtrar.");
       return;
@@ -102,7 +100,6 @@ export default class Cl_cLaboratorioAdmin {
   }
 
   private calcularPorcentaje(tipoEstudio: string) {
-    // VALIDACIÓN EN EL CONTROLADOR
     if (!tipoEstudio || tipoEstudio.trim() === "") {
       alert("⚠️ Debe seleccionar un tipo de estudio");
       return;
@@ -113,21 +110,19 @@ export default class Cl_cLaboratorioAdmin {
   }
 
   private obtenerNombresPacientes(tipoEstudio: string) {
-    // VALIDACIÓN EN EL CONTROLADOR
     if (!tipoEstudio || tipoEstudio.trim() === "") {
       alert("⚠️ Debe seleccionar un tipo de estudio");
       return;
     }
 
     const nombres = this.laboratorio.nombrepacientesporestudio(tipoEstudio);
-    this.pantallaAdmin.mostrarResultadosobtener9yMnTm4NSzvG9rrwjM2ec8xZgh1cafXH8({
+    this.pantallaAdmin.mostrarResultadosobteneNombrePacientesPorEstudio({
       nombres: nombres,
       tipoEstudio: tipoEstudio
     });
   }
 
   private obtenertotalportestudio(tipoEstudio: string) {
-    // VALIDACIÓN EN EL CONTROLADOR
     if (!tipoEstudio || tipoEstudio.trim() === "") {
       alert("⚠️ Debe seleccionar un tipo de estudio");
       return;
@@ -138,7 +133,6 @@ export default class Cl_cLaboratorioAdmin {
   }
 
   private verEstadisticasEstudio(tipoEstudio: string): void {
-    // VALIDACIÓN EN EL CONTROLADOR
     if (!tipoEstudio || tipoEstudio.trim() === "") {
       alert("⚠️ Debe seleccionar un tipo de estudio");
       return;
@@ -159,7 +153,6 @@ export default class Cl_cLaboratorioAdmin {
   }
 
   private calcularPromedioEstudio(tipoEstudio: string): void {
-    // VALIDACIÓN EN EL CONTROLADOR
     if (!tipoEstudio || tipoEstudio.trim() === "") {
       alert("⚠️ Debe seleccionar un tipo de estudio");
       return;
@@ -175,7 +168,6 @@ export default class Cl_cLaboratorioAdmin {
     });
   }
 
-  // ============ MÉTODOS EXISTENTES SIN CAMBIOS ============
   
   private imprimirReporte(idExamen: string) {
     let examen = this.laboratorio.buscarPorId(idExamen);

@@ -65,11 +65,9 @@ export default class Cl_cLaboratorioAdmin {
             }
         });
     }
-    // ============ MÉTODOS CON VALIDACIONES EN EL CONTROLADOR ============
     filtrarEstudios(tipoEstudio, fechaSeleccionada) {
         const tipo = tipoEstudio ? tipoEstudio.trim() : "";
         const fecha = fechaSeleccionada ? fechaSeleccionada.trim() : "";
-        // VALIDACIÓN EN EL CONTROLADOR
         if (!tipo && !fecha) {
             alert("⚠️ Debe ingresar al menos un estudio o una fecha para filtrar.");
             return;
@@ -87,7 +85,6 @@ export default class Cl_cLaboratorioAdmin {
         this.pantallaAdmin.mostrarResultadoFiltro(cantidad, tipo || "(todos)", fecha || "(todas)");
     }
     calcularPorcentaje(tipoEstudio) {
-        // VALIDACIÓN EN EL CONTROLADOR
         if (!tipoEstudio || tipoEstudio.trim() === "") {
             alert("⚠️ Debe seleccionar un tipo de estudio");
             return;
@@ -96,19 +93,17 @@ export default class Cl_cLaboratorioAdmin {
         this.pantallaAdmin.mostrarResultadoPorcentaje(porcentaje, tipoEstudio);
     }
     obtenerNombresPacientes(tipoEstudio) {
-        // VALIDACIÓN EN EL CONTROLADOR
         if (!tipoEstudio || tipoEstudio.trim() === "") {
             alert("⚠️ Debe seleccionar un tipo de estudio");
             return;
         }
         const nombres = this.laboratorio.nombrepacientesporestudio(tipoEstudio);
-        this.pantallaAdmin.mostrarResultadosobtener9yMnTm4NSzvG9rrwjM2ec8xZgh1cafXH8({
+        this.pantallaAdmin.mostrarResultadosobteneNombrePacientesPorEstudio({
             nombres: nombres,
             tipoEstudio: tipoEstudio
         });
     }
     obtenertotalportestudio(tipoEstudio) {
-        // VALIDACIÓN EN EL CONTROLADOR
         if (!tipoEstudio || tipoEstudio.trim() === "") {
             alert("⚠️ Debe seleccionar un tipo de estudio");
             return;
@@ -117,7 +112,6 @@ export default class Cl_cLaboratorioAdmin {
         this.pantallaAdmin.mostrarResultadoTotalPorEstudio(`El total recaudado por el estudio "${tipoEstudio}" es: $${total.toFixed(2)}`);
     }
     verEstadisticasEstudio(tipoEstudio) {
-        // VALIDACIÓN EN EL CONTROLADOR
         if (!tipoEstudio || tipoEstudio.trim() === "") {
             alert("⚠️ Debe seleccionar un tipo de estudio");
             return;
@@ -135,7 +129,6 @@ export default class Cl_cLaboratorioAdmin {
         this.pantallaAdmin.mostrarPorcentajeFinalizados(porcentaje);
     }
     calcularPromedioEstudio(tipoEstudio) {
-        // VALIDACIÓN EN EL CONTROLADOR
         if (!tipoEstudio || tipoEstudio.trim() === "") {
             alert("⚠️ Debe seleccionar un tipo de estudio");
             return;
@@ -148,7 +141,6 @@ export default class Cl_cLaboratorioAdmin {
             cantidad: cantidad
         });
     }
-    // ============ MÉTODOS EXISTENTES SIN CAMBIOS ============
     imprimirReporte(idExamen) {
         let examen = this.laboratorio.buscarPorId(idExamen);
         if (!examen) {

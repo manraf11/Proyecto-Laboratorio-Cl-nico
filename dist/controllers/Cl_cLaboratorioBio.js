@@ -59,11 +59,9 @@ export default class Cl_cLaboratorioBio {
         this.busquedaIdActual = id;
         this.refrescarPantalla();
     }
-    // ============ MÉTODO CON VALIDACIÓN EN EL CONTROLADOR ============
     async guardarResultados(idExamen, resultados) {
         let examen = this.laboratorio.buscarPorId(idExamen);
         if (examen && examen.id) {
-            // VALIDACIÓN: Verificar que todos los resultados estén completos
             const estudios = examen.obtenerArregloEstudios();
             const placeholders = ["pendiente", "no realizado", "nr", "-", "n/a", "na"];
             let hayResultadosVacios = false;
@@ -81,7 +79,6 @@ export default class Cl_cLaboratorioBio {
                     return;
             }
             examen.resultadoExamen = resultados.join(", ");
-            // Si todos los resultados están completos, pasar a PENDIENTE
             if (!hayResultadosVacios && resultados.length === estudios.length) {
                 examen.cambiarEstado("pendiente");
                 alert("✅ Resultados guardados correctamente. El examen ahora está en estado PENDIENTE.");
@@ -102,7 +99,6 @@ export default class Cl_cLaboratorioBio {
     async terminarExamen(idExamen) {
         let examen = this.laboratorio.buscarPorId(idExamen);
         if (examen && examen.id) {
-            // VALIDACIÓN EN EL CONTROLADOR: Usar el modelo para verificar
             if (!examen.puedeFinalizar()) {
                 alert("⚠️ Debe cargar todos los resultados antes de finalizar.");
                 return;
@@ -118,9 +114,7 @@ export default class Cl_cLaboratorioBio {
             }
         }
     }
-    // ============ MÉTODOS DE ESTUDIOS CON VALIDACIONES ============
     async registrarNuevoEstudio(estudio) {
-        // VALIDACIÓN EN EL CONTROLADOR
         if (!estudio.nombre || estudio.nombre.trim() === "") {
             alert("❌ El nombre del estudio es obligatorio.");
             return;
@@ -137,7 +131,6 @@ export default class Cl_cLaboratorioBio {
             alert("❌ Los valores de referencia son obligatorios.");
             return;
         }
-        // Verificar duplicados
         const existente = Cl_mEstudio.buscarPorNombre(estudio.nombre);
         if (existente) {
             alert(`❌ Ya existe un estudio con el nombre "${estudio.nombre}".`);
@@ -154,7 +147,6 @@ export default class Cl_cLaboratorioBio {
         }
     }
     async editarEstudio(estudio) {
-        // VALIDACIÓN EN EL CONTROLADOR
         if (!estudio.nombre || estudio.nombre.trim() === "") {
             alert("❌ El nombre del estudio es obligatorio.");
             return;
@@ -182,18 +174,15 @@ export default class Cl_cLaboratorioBio {
         }
     }
     async eliminarEstudio(id) {
-        // VALIDACIÓN EN EL CONTROLADOR
         if (!id) {
             alert("❌ ID de estudio inválido.");
             return;
         }
-        // Verificar si el estudio está siendo usado
         const estudio = Cl_mEstudio.buscarPorId(id);
         if (!estudio) {
             alert("❌ El estudio no existe.");
             return;
         }
-        // Verificar si hay exámenes que usan este estudio
         const todosLosExamenes = this.laboratorio.obtenerPorEstadosYId(["preparacion", "pendiente", "listo"]);
         let estaEnUso = false;
         for (const ex of todosLosExamenes) {

@@ -1,8 +1,6 @@
 // views/Cl_vExamen.ts
 import { I_vExamen } from "../interfaces/I_vExamen.js";
 import Cl_mEstudio from "../models/Cl_mEstudio.js";
-import Cl_sLaboratorio from "../services/Cl_sLaboratorio.js";
-import Cl_sCedula from "../services/Cl_sCedula.js";
 
 export default class Cl_vExamen implements I_vExamen {
   private modal: HTMLElement | null;
@@ -26,6 +24,8 @@ export default class Cl_vExamen implements I_vExamen {
   private campoReferencia: HTMLElement | null;
   private inputPrecio: HTMLInputElement | null;
   private checkboxesContainer: HTMLElement | null;
+  
+  private placeholderOriginal: string = "";
 
   constructor() {
     this.modal = document.getElementById("modalExamen");
@@ -42,6 +42,10 @@ export default class Cl_vExamen implements I_vExamen {
     this.checkboxesContainer = document.getElementById("modal_checkboxes");
 
     if (this.modal) this.modal.style.display = "none";
+
+    if (this.inputNombre) {
+      this.placeholderOriginal = this.inputNombre.placeholder;
+    }
 
     this.configurarEventListeners();
   }
@@ -76,12 +80,52 @@ export default class Cl_vExamen implements I_vExamen {
     return seleccionados;
   }
 
-  
   public mostrarErrores(errores: string[]): void {
     if (errores.length === 0) return;
     alert("⚠️ " + errores.join("\n"));
   }
+  
+  public mostrarBuscandoCedula(): void {
+    if (this.inputNombre) {
+      this.inputNombre.value = "";
+      this.inputNombre.placeholder = "🔍 Buscando...";
+    }
+  }
 
+  public mostrarConsultandoAPI(): void {
+    if (this.inputNombre) {
+      this.inputNombre.placeholder = "🌐 Consultando API...";
+    }
+  }
+
+  public mostrarDatosPaciente(datos: { nombre: string; telefono: string; origen: string }): void {
+    if (this.inputNombre && datos.nombre) {
+      this.inputNombre.value = datos.nombre;
+    }
+    if (this.inputTelefono && datos.telefono) {
+      this.inputTelefono.value = datos.telefono;
+    }
+  }
+
+  public mostrarMensajeExito(mensaje: string): void {
+    alert(mensaje);
+  }
+
+  public mostrarErrorBusqueda(mensaje: string): void {
+    alert(mensaje);
+  }
+
+  public enfocarCampoNombre(): void {
+    if (this.inputNombre) {
+      this.inputNombre.focus();
+    }
+  }
+
+  public restaurarPlaceholder(): void {
+    if (this.inputNombre) {
+      this.inputNombre.placeholder = this.placeholderOriginal;
+    }
+  }
   
   private configurarEventListeners(): void {
     let yoMismo = this;
@@ -111,7 +155,6 @@ export default class Cl_vExamen implements I_vExamen {
       });
     }
 
-    
     if (this.selectMetodoPago) {
       this.selectMetodoPago.onchange = () => {
         const v = this.selectMetodoPago?.value;
@@ -125,12 +168,11 @@ export default class Cl_vExamen implements I_vExamen {
     }
 
     if (this.inputCedula) {
-      this.inputCedula.addEventListener('keydown', async (ev) => {
+      this.inputCedula.addEventListener('keydown', (ev) => {
         if (ev.key === 'Enter') {
           const ced = this.inputCedula?.value.trim() || "";
           if (!ced) return;
           
-          // Notificar al Controlador que se presionó Enter en la cédula
           if (this.avisarBuscarCedula) {
             this.avisarBuscarCedula(ced);
           }
@@ -139,7 +181,6 @@ export default class Cl_vExamen implements I_vExamen {
     }
   }
 
- 
   
   private avisarBuscarCedula: ((cedula: string) => void) | null = null;
 
@@ -147,7 +188,6 @@ export default class Cl_vExamen implements I_vExamen {
     this.avisarBuscarCedula = callback;
   }
 
- 
   
   private actualizarTotal(): void {
     if (!this.checkboxesContainer || !this.inputPrecio) return;
@@ -187,7 +227,10 @@ export default class Cl_vExamen implements I_vExamen {
 
   public limpiarFormulario(): void {
     if (this.inputCedula) this.inputCedula.value = "";
-    if (this.inputNombre) this.inputNombre.value = "";
+    if (this.inputNombre) {
+      this.inputNombre.value = "";
+      this.inputNombre.placeholder = this.placeholderOriginal;
+    }
     if (this.inputTelefono) this.inputTelefono.value = "";
     if (this.inputReferencia) this.inputReferencia.value = "";
     if (this.inputPrecio) this.inputPrecio.value = "0";

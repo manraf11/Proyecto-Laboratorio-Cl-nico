@@ -16,7 +16,6 @@ export default class Cl_vBioanalista {
         this.inicializarEventos();
     }
     inicializarEventos() {
-        // Filtro por estado - SOLO pasa el valor al Controlador
         const selectEstado = document.getElementById("selectEstado");
         if (selectEstado) {
             selectEstado.onchange = () => {
@@ -25,7 +24,6 @@ export default class Cl_vBioanalista {
                     this.avisarFiltrar(selectEstado.value);
             };
         }
-        // Buscar por ID - SOLO pasa el valor al Controlador
         const btnBuscar = document.getElementById("btnBuscar");
         const btnLimpiar = document.getElementById("btnLimpiar");
         const inputBuscar = document.getElementById("inputBuscarId");
@@ -42,7 +40,6 @@ export default class Cl_vBioanalista {
                     this.avisarBuscar("");
             };
         }
-        // Modal Estudios
         const btnGestionar = document.getElementById("btnGestionarEstudios");
         const modalEstudios = document.getElementById("modalEstudios");
         const cerrarEstudios = document.getElementById("cerrarModalEstudios");
@@ -53,7 +50,6 @@ export default class Cl_vBioanalista {
         if (modalEstudios)
             modalEstudios.onclick = (e) => { if (e.target === modalEstudios)
                 this.ocultarModal("modalEstudios"); };
-        // Modal Nuevo Estudio - SOLO recolecta datos
         const btnAbrirNuevo = document.getElementById("btnAbrirNuevoEstudio");
         const modalNuevo = document.getElementById("modalNuevoEstudio");
         const cerrarNuevo = document.getElementById("cerrarNuevoEstudio");
@@ -70,7 +66,6 @@ export default class Cl_vBioanalista {
                 this.ocultarModal("modalNuevoEstudio"); };
         if (guardarNuevo)
             guardarNuevo.onclick = () => this.guardarNuevoEstudio();
-        // Modal Editar Estudio
         const modalEditar = document.getElementById("modalEditarEstudio");
         const cerrarEditar = document.getElementById("cerrarEditar");
         const cancelarEditar = document.getElementById("cancelarEditar");
@@ -84,7 +79,6 @@ export default class Cl_vBioanalista {
                 this.ocultarModal("modalEditarEstudio"); };
         if (guardarEditar)
             guardarEditar.onclick = () => this.guardarEditarEstudio();
-        // Modal Resultados
         const modalResultados = document.getElementById("modalResultados");
         const cerrarResultados = document.getElementById("cerrarResultados");
         const cancelarResultados = document.getElementById("cancelarResultados");
@@ -109,9 +103,7 @@ export default class Cl_vBioanalista {
         if (modal)
             modal.style.display = "none";
     }
-    // ============ MÉTODOS QUE RECOLECTAN DATOS Y PASAN AL CONTROLADOR ============
     guardarNuevoEstudio() {
-        // SOLO recolecta datos, NO valida
         const datos = this.obtenerDatosNuevoEstudio();
         if (this.avisarNuevoEstudio) {
             this.avisarNuevoEstudio(new Cl_mEstudio({
@@ -180,7 +172,6 @@ export default class Cl_vBioanalista {
         }
         return resultados;
     }
-    // ============ MÉTODOS DE RENDERIZADO ============
     mostrarPendientes(datos) {
         this.examenes = datos.examenes;
         this.pintarTabla();
@@ -243,7 +234,6 @@ export default class Cl_vBioanalista {
         }
         html += '</tbody></table>';
         contenedor.innerHTML = html;
-        // Eventos de los botones
         document.querySelectorAll(".btn-cargar").forEach(btn => {
             btn.addEventListener("click", (e) => {
                 const id = e.target.getAttribute("data-id");
@@ -325,7 +315,6 @@ export default class Cl_vBioanalista {
         }
         html += '</tbody></table>';
         contenedor.innerHTML = html;
-        // Eventos editar
         document.querySelectorAll(".btn-editar").forEach(btn => {
             btn.addEventListener("click", (e) => {
                 const id = e.target.getAttribute("data-id");
@@ -337,7 +326,6 @@ export default class Cl_vBioanalista {
                 }
             });
         });
-        // Eventos eliminar
         document.querySelectorAll(".btn-eliminar").forEach(btn => {
             btn.addEventListener("click", (e) => {
                 const id = e.target.getAttribute("data-id");
@@ -355,7 +343,6 @@ export default class Cl_vBioanalista {
         document.getElementById("editarUnidad").value = estudio.unidad;
         document.getElementById("editarReferencia").value = estudio.valoresReferencia;
     }
-    // ============ CALLBACKS ============
     cuandoCargarResultados(callback) {
         this.avisarCargarResultados = callback;
     }

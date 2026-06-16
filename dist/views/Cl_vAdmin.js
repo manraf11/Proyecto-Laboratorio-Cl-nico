@@ -126,7 +126,7 @@ export default class Cl_vAdmin {
       </div>
     `;
     }
-    mostrarResultadosobtener9yMnTm4NSzvG9rrwjM2ec8xZgh1cafXH8(datos) {
+    mostrarResultadosobteneNombrePacientesPorEstudio(datos) {
         const divResultado = document.getElementById("resultadoNombrePacientesPorEstudio");
         if (!divResultado)
             return;

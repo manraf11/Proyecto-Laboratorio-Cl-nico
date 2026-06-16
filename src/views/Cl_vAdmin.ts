@@ -149,7 +149,7 @@ export default class Cl_vAdmin implements I_vAdmin {
     `;
   }
 
-  public mostrarResultadosobtener9yMnTm4NSzvG9rrwjM2ec8xZgh1cafXH8(datos: { nombres: string[], tipoEstudio: string }): void {
+  public mostrarResultadosobteneNombrePacientesPorEstudio(datos: { nombres: string[], tipoEstudio: string }): void {
     const divResultado = document.getElementById("resultadoNombrePacientesPorEstudio");
     if (!divResultado) return;
 
