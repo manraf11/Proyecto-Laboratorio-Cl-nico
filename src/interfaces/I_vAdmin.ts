@@ -14,4 +14,11 @@ export interface I_vAdmin {
   mostrarResultadoPorcentaje(porcentaje: number, tipoEstudio: string): void;   mostrarResultadoTotalPorEstudio(resultado: string): void;  mostrarResultadosobtenerNombrePacientesPorEstudio(datos: { nombres: string[], tipoEstudio: string }): void;
   mostrarReporte(reporte: string): void;
   actualizarListaEstudios?(): void; 
+   cuandoClicEnVerEstadisticasEstudio(callback: (tipoEstudio: string) => void): void;
+  cuandoClicEnCalcularPorcentajeFinalizados(callback: () => void): void;
+  cuandoClicEnCalcularPromedioEstudio(callback: (tipoEstudio: string) => void): void;
+  
+  mostrarEstadisticasEstudio(datos: { tipoEstudio: string; cantidad: number; total: number }): void;
+  mostrarPorcentajeFinalizados(porcentaje: number): void;
+  mostrarPromedioEstudio(datos: { tipoEstudio: string; promedio: number; cantidad: number }): void;
 }

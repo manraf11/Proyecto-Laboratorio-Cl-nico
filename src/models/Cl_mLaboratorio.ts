@@ -231,4 +231,74 @@ public obtenertotalporestudio(tipoEstudio: string): number {
     
     return costoPorEstudio * cantidad;
 }
+public obtenerEstadisticasEstudio(tipoEstudio: string): { cantidad: number; total: number } {
+    const tipoBusqueda = tipoEstudio.trim();
+    let cantidad = 0;
+    
+    const estudio = Cl_mEstudio.buscarPorNombre(tipoBusqueda);
+    if (!estudio) {
+      return { cantidad: 0, total: 0 };
+    }
+    
+    for (let i = 0; i < this.listaExamenes.length; i++) {
+      let examen = this.listaExamenes[i];
+      let estudios = examen.obtenerArregloEstudios();
+      
+      for (let m = 0; m < estudios.length; m++) {
+        if (estudios[m].trim() === tipoBusqueda) {
+          cantidad++;
+        }
+      }
+    }
+    
+    return {
+      cantidad: cantidad,
+      total: estudio.precio * cantidad
+    };
+  }
+
+  public calcularPorcentajeFinalizados(): number {
+    if (this.listaExamenes.length === 0) {
+      return 0;
+    }
+    
+    let finalizados = 0;
+    for (let i = 0; i < this.listaExamenes.length; i++) {
+      if (this.listaExamenes[i].estado === "listo") {
+        finalizados++;
+      }
+    }
+    
+    return Math.round((finalizados / this.listaExamenes.length) * 100 * 100) / 100;
+  }
+
+  
+  public calcularPromedioEstudio(tipoEstudio: string): number {
+  const tipoBusqueda = tipoEstudio.trim();
+  
+  let cantidadEstudio = 0;
+  let totalEstudios = 0;
+  
+  for (let i = 0; i < this.listaExamenes.length; i++) {
+    let examen = this.listaExamenes[i];
+    let estudios = examen.obtenerArregloEstudios();
+    
+    for (let m = 0; m < estudios.length; m++) {
+      totalEstudios++; 
+      
+      if (estudios[m].trim() === tipoBusqueda) {
+        cantidadEstudio++; 
+      }
+    }
+  }
+  
+  // si no hay estudios retorna 0
+  if (totalEstudios === 0) {
+    return 0;
+  }
+  
+  
+  const promedio = cantidadEstudio / totalEstudios;
+  return Math.round(promedio * 100) / 100; // para redonder a 2 decimas
+}
 }

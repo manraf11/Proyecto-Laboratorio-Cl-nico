@@ -19,6 +19,9 @@ export default class Cl_cLaboratorioAdmin {
         this.pantallaAdmin.cuandoClicEnObtenerTotalPorEstudio((tipo) => yoMismo.obtenertotalportestudio(tipo));
         this.pantallaAdmin.cuandoClicEnEnviarWhatsApp((id) => yoMismo.enviarWhatsApp(id));
         this.pantallaAdmin.cuandoClicEnImprimir((id) => yoMismo.imprimirReporte(id));
+        this.pantallaAdmin.cuandoClicEnVerEstadisticasEstudio((tipo) => yoMismo.verEstadisticasEstudio(tipo));
+        this.pantallaAdmin.cuandoClicEnCalcularPorcentajeFinalizados(() => yoMismo.calcularPorcentajeFinalizados());
+        this.pantallaAdmin.cuandoClicEnCalcularPromedioEstudio((tipo) => yoMismo.calcularPromedioEstudio(tipo));
     }
     async cargarExamenes() {
         let resultado = await Cl_sLaboratorio.traerDesdeNube();
@@ -234,6 +237,35 @@ export default class Cl_cLaboratorioAdmin {
         else {
             alert(`❌ Error: ${resultado.mensaje}`);
         }
+    }
+    verEstadisticasEstudio(tipoEstudio) {
+        if (!tipoEstudio || tipoEstudio.trim() === "") {
+            alert("⚠️ Debe seleccionar un tipo de estudio");
+            return;
+        }
+        const estadisticas = this.laboratorio.obtenerEstadisticasEstudio(tipoEstudio);
+        this.pantallaAdmin.mostrarEstadisticasEstudio({
+            tipoEstudio: tipoEstudio,
+            cantidad: estadisticas.cantidad,
+            total: estadisticas.total
+        });
+    }
+    calcularPorcentajeFinalizados() {
+        const porcentaje = this.laboratorio.calcularPorcentajeFinalizados();
+        this.pantallaAdmin.mostrarPorcentajeFinalizados(porcentaje);
+    }
+    calcularPromedioEstudio(tipoEstudio) {
+        if (!tipoEstudio || tipoEstudio.trim() === "") {
+            alert("⚠️ Debe seleccionar un tipo de estudio");
+            return;
+        }
+        const promedio = this.laboratorio.calcularPromedioEstudio(tipoEstudio);
+        const cantidad = this.laboratorio.contarEstudiosPorTipo(tipoEstudio);
+        this.pantallaAdmin.mostrarPromedioEstudio({
+            tipoEstudio: tipoEstudio,
+            promedio: promedio,
+            cantidad: cantidad
+        });
     }
 }
 //# sourceMappingURL=Cl_cLaboratorioAdmin.js.map

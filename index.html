@@ -83,14 +83,18 @@
       box-shadow: 0 2px 8px rgba(26,95,122,0.3);
     }
     
-    .modulo-filtro, .modulo-porcentaje, .modulo-nombres, .modulo-total {
+    .modulo-filtro, .modulo-porcentaje, .modulo-nombres, .modulo-total,
+    .modulo-estadisticas, .modulo-porcentaje-finalizados, .modulo-promedio {
       display: none;
       animation: fadeIn 0.25s ease;
     }
     .modulo-filtro.active-modulo, 
     .modulo-porcentaje.active-modulo, 
     .modulo-nombres.active-modulo, 
-    .modulo-total.active-modulo {
+    .modulo-total.active-modulo,
+    .modulo-estadisticas.active-modulo,
+    .modulo-porcentaje-finalizados.active-modulo,
+    .modulo-promedio.active-modulo {
       display: block;
     }
     @keyframes fadeIn {
@@ -226,11 +230,10 @@
       align-items: center;
       z-index: 1000;
     }
-    /* MODAL MÁS GRANDE */
     .modal-contenido {
       background: white;
       border-radius: 20px;
-      width: 750px;           /* ← aumentado de 480px a 750px */
+      width: 750px;
       max-width: 95%;
       max-height: 90vh;
       overflow-y: auto;
@@ -282,7 +285,6 @@
       border: 2px solid #c0392b !important;
       background: #ffe8e5 !important;
     }
-    /* CHECKBOX GROUP MEJORADO - DOS COLUMNAS */
     .checkbox-group {
       background: #f9f9f9;
       padding: 12px;
@@ -339,6 +341,19 @@
       border: none;
       border-top: 1px solid #e0e7ed;
     }
+    /* Estilos para los nuevos resultados */
+    .resultado-estadisticas {
+      background: #e3f2fd;
+      border-left-color: #1a5f7a;
+    }
+    .resultado-porcentaje-finalizados {
+      background: #e8f5e9;
+      border-left-color: #4caf50;
+    }
+    .resultado-promedio {
+      background: #fff3e0;
+      border-left-color: #ff9800;
+    }
   </style>
 </head>
 <body>
@@ -358,9 +373,12 @@
         <div id="contenidoPrincipal" style="display: none;">
           <div class="navbar-reportes">
             <button class="nav-item active" data-modulo="filtros">🔍 Filtro por Fecha/Estudio</button>
-            <button class="nav-item" data-modulo="porcentaje">📊 Porcentaje de Estudio</button>
+            <button class="nav-item" data-modulo="porcentaje">📊 % de Estudio</button>
             <button class="nav-item" data-modulo="nombres">📋 Nombres por Estudio</button>
             <button class="nav-item" data-modulo="total">💰 Total por Estudio</button>
+            <button class="nav-item" data-modulo="estadisticas">📊 Estadísticas</button>
+            <button class="nav-item" data-modulo="porcentaje-finalizados">✅ % Finalizados</button>
+            <button class="nav-item" data-modulo="promedio">📈 Promedio</button>
           </div>
           
           <div class="admin-botones" style="margin-bottom: 20px;">
@@ -435,6 +453,49 @@
                 <div id="resultadoTotalPorEstudio" style="margin-top: 18px;"></div>
               </div>
             </div>
+
+            <!-- NUEVO MÓDULO: ESTADÍSTICAS POR ESTUDIO -->
+            <div id="modulo-estadisticas" class="modulo-estadisticas modulo-card">
+              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
+                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">📊 Estadísticas de Solicitudes por Estudio</div>
+                <div style="margin-bottom: 14px;">
+                  <label style="display: flex; flex-direction: column; gap: 6px;">
+                    Estudio a analizar
+                    <select id="estadisticas_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
+                      <option value="">-- Seleccione un estudio --</option>
+                    </select>
+                  </label>
+                </div>
+                <button id="botonVerEstadisticasEstudio" class="btn-secundario" style="background: #1a5f7a; color: white;">📊 Ver Estadísticas</button>
+                <div id="resultadoEstadisticasEstudio" style="margin-top: 18px;"></div>
+              </div>
+            </div>
+
+            <!-- NUEVO MÓDULO: PORCENTAJE DE FINALIZADOS -->
+            <div id="modulo-porcentaje-finalizados" class="modulo-porcentaje-finalizados modulo-card">
+              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
+                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">✅ Porcentaje de Exámenes Finalizados</div>
+                <button id="botonPorcentajeFinalizados" class="btn-secundario" style="background: #4caf50; color: white;">✅ Calcular % Finalizados</button>
+                <div id="resultadoPorcentajeFinalizados" style="margin-top: 18px;"></div>
+              </div>
+            </div>
+
+            <!-- NUEVO MÓDULO: PROMEDIO GENERAL -->
+            <div id="modulo-promedio" class="modulo-promedio modulo-card">
+              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
+                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">📈 Promedio General de un Estudio</div>
+                <div style="margin-bottom: 14px;">
+                  <label style="display: flex; flex-direction: column; gap: 6px;">
+                    Estudio a analizar
+                    <select id="promedio_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
+                      <option value="">-- Seleccione un estudio --</option>
+                    </select>
+                  </label>
+                </div>
+                <button id="botonCalcularPromedioEstudio" class="btn-secundario" style="background: #ff9800; color: white;">📈 Calcular Promedio</button>
+                <div id="resultadoPromedioEstudio" style="margin-top: 18px;"></div>
+              </div>
+            </div>
           </div>
           
           <div class="seccion" style="margin-top: 32px;">
@@ -446,7 +507,7 @@
     </div>
   </div>
 
-  <!-- MODAL REGISTRAR EXAMEN - MÁS GRANDE -->
+  <!-- MODAL REGISTRAR EXAMEN -->
   <div id="modalExamen" class="modal">
     <div class="modal-contenido">
       <div class="modal-header" style="background: #1a5f7a; color: white; border-radius: 20px 20px 0 0;">
@@ -470,7 +531,6 @@
         <div class="campo">
           <label>Estudios Solicitados: <span style="color:#c0392b;">*</span></label>
           <div id="modal_checkboxes" class="checkbox-group">
-            <!-- Los checkboxes se llenan dinámicamente desde Cl_vExamen -->
           </div>
         </div>
         <div class="campo">
@@ -533,17 +593,26 @@
       const moduloPorcentaje = document.getElementById('modulo-porcentaje');
       const moduloNombres = document.getElementById('modulo-nombres');
       const moduloTotal = document.getElementById('modulo-total');
+      const moduloEstadisticas = document.getElementById('modulo-estadisticas');
+      const moduloPorcentajeFinalizados = document.getElementById('modulo-porcentaje-finalizados');
+      const moduloPromedio = document.getElementById('modulo-promedio');
       
       function activarModulo(moduloId) {
         if (moduloFiltros) moduloFiltros.classList.remove('active-modulo');
         if (moduloPorcentaje) moduloPorcentaje.classList.remove('active-modulo');
         if (moduloNombres) moduloNombres.classList.remove('active-modulo');
         if (moduloTotal) moduloTotal.classList.remove('active-modulo');
+        if (moduloEstadisticas) moduloEstadisticas.classList.remove('active-modulo');
+        if (moduloPorcentajeFinalizados) moduloPorcentajeFinalizados.classList.remove('active-modulo');
+        if (moduloPromedio) moduloPromedio.classList.remove('active-modulo');
         
         if (moduloId === 'filtros' && moduloFiltros) moduloFiltros.classList.add('active-modulo');
         if (moduloId === 'porcentaje' && moduloPorcentaje) moduloPorcentaje.classList.add('active-modulo');
         if (moduloId === 'nombres' && moduloNombres) moduloNombres.classList.add('active-modulo');
         if (moduloId === 'total' && moduloTotal) moduloTotal.classList.add('active-modulo');
+        if (moduloId === 'estadisticas' && moduloEstadisticas) moduloEstadisticas.classList.add('active-modulo');
+        if (moduloId === 'porcentaje-finalizados' && moduloPorcentajeFinalizados) moduloPorcentajeFinalizados.classList.add('active-modulo');
+        if (moduloId === 'promedio' && moduloPromedio) moduloPromedio.classList.add('active-modulo');
         
         botonesNav.forEach(btn => {
           const btnModulo = btn.getAttribute('data-modulo');

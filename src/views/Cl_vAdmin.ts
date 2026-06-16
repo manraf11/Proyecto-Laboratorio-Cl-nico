@@ -22,13 +22,68 @@ export default class Cl_vAdmin implements I_vAdmin {
   private botonObtenerTotalPorEstudio: HTMLButtonElement | null = null;
   private selectTotalPorEstudioTipo: HTMLSelectElement | null = null;
   private avisarObtenerTotalPorEstudio: ((tipoEstudio: string) => void) | null = null;
+  private avisarVerEstadisticasEstudio: ((tipoEstudio: string) => void) | null = null;
+  private avisarCalcularPorcentajeFinalizados: (() => void) | null = null;
+  private avisarCalcularPromedioEstudio: ((tipoEstudio: string) => void) | null = null;
+  private selectEstadisticasTipo: HTMLSelectElement | null = null;
+  private selectPromedioTipo: HTMLSelectElement | null = null;
+  private botonVerEstadisticas: HTMLButtonElement | null = null;
+  private botonPorcentajeFinalizados: HTMLButtonElement | null = null;
+  private botonCalcularPromedio: HTMLButtonElement | null = null;
 
   constructor() {
     this.divFinalizados = document.getElementById("admin_finalizados") as HTMLElement;
     this.divFormulario = document.getElementById("admin_formulario") as HTMLElement;
     this.mostrarFormulario();
   }
+public cuandoClicEnVerEstadisticasEstudio(avisar: (tipoEstudio: string) => void): void {
+    this.avisarVerEstadisticasEstudio = avisar;
+  }
 
+  public cuandoClicEnCalcularPorcentajeFinalizados(avisar: () => void): void {
+    this.avisarCalcularPorcentajeFinalizados = avisar;
+  }
+
+  public cuandoClicEnCalcularPromedioEstudio(avisar: (tipoEstudio: string) => void): void {
+    this.avisarCalcularPromedioEstudio = avisar;
+  }
+
+  public mostrarEstadisticasEstudio(datos: { tipoEstudio: string; cantidad: number; total: number }): void {
+    const divResultado = document.getElementById("resultadoEstadisticasEstudio");
+    if (!divResultado) return;
+    
+    divResultado.innerHTML = `
+      <div class="resultado-item" style="background:#e3f2fd; border-left-color:#1a5f7a;">
+        <strong>📊 Estadísticas del estudio "${datos.tipoEstudio}":</strong><br>
+        📋 Solicitudes: <strong>${datos.cantidad}</strong><br>
+        💰 Ingreso total: <strong>$${datos.total.toFixed(2)}</strong>
+      </div>
+    `;
+  }
+
+  public mostrarPorcentajeFinalizados(porcentaje: number): void {
+    const divResultado = document.getElementById("resultadoPorcentajeFinalizados");
+    if (!divResultado) return;
+    
+    divResultado.innerHTML = `
+      <div class="resultado-item" style="background:#e8f5e9; border-left-color:#4caf50;">
+        ✅ <strong>${porcentaje}%</strong> de los exámenes están <strong>FINALIZADOS</strong>
+      </div>
+    `;
+  }
+
+  public mostrarPromedioEstudio(datos: { tipoEstudio: string; promedio: number; cantidad: number }): void {
+    const divResultado = document.getElementById("resultadoPromedioEstudio");
+    if (!divResultado) return;
+    
+    divResultado.innerHTML = `
+      <div class="resultado-item" style="background:#fff3e0; border-left-color:#ff9800;">
+        📈 <strong>Promedio General del estudio "${datos.tipoEstudio}":</strong><br>
+        📊 Promedio: <strong>${datos.promedio.toFixed(2)}</strong><br>
+        📋 Basado en <strong>${datos.cantidad}</strong> resultados
+      </div>
+    `;
+  }
   public cuandoClicEnNuevoExamen(avisar: () => void): void {
     if (this.botonNuevoExamen) this.botonNuevoExamen.onclick = avisar;
   }
@@ -143,63 +198,41 @@ export default class Cl_vAdmin implements I_vAdmin {
   public actualizarListaEstudios(): void {
     const estudios = Cl_mEstudio.obtenerTodos();
     
-    const valorActualFiltro = this.selectFiltroTipo ? this.selectFiltroTipo.value : "";
-    const valorActualPorcentaje = this.selectPorcentajeTipo ? this.selectPorcentajeTipo.value : "";
-    const valorActualNombres = this.selectNombresTipo ? this.selectNombresTipo.value : "";
-    const valorActualTotal = this.selectTotalPorEstudioTipo ? this.selectTotalPorEstudioTipo.value : "";
+    const selects = [
+      this.selectFiltroTipo,
+      this.selectPorcentajeTipo,
+      this.selectNombresTipo,
+      this.selectTotalPorEstudioTipo,
+      this.selectEstadisticasTipo,
+      this.selectPromedioTipo
+    ];
     
-    if (this.selectFiltroTipo) {
-      this.selectFiltroTipo.innerHTML = '<option value="">-- Seleccione un estudio --</option>';
-      for (let i = 0; i < estudios.length; i++) {
-        const option = document.createElement("option");
-        option.value = estudios[i].nombre;
-        option.textContent = `${estudios[i].nombre} ($${estudios[i].precio})`;
-        this.selectFiltroTipo.appendChild(option);
-      }
-      if (valorActualFiltro && this.selectFiltroTipo.querySelector(`option[value="${valorActualFiltro}"]`)) {
-        this.selectFiltroTipo.value = valorActualFiltro;
-      }
-    }
+    const valores = [
+      this.selectFiltroTipo?.value || "",
+      this.selectPorcentajeTipo?.value || "",
+      this.selectNombresTipo?.value || "",
+      this.selectTotalPorEstudioTipo?.value || "",
+      this.selectEstadisticasTipo?.value || "",
+      this.selectPromedioTipo?.value || ""
+    ];
     
-    if (this.selectPorcentajeTipo) {
-      this.selectPorcentajeTipo.innerHTML = '<option value="">-- Seleccione un estudio --</option>';
-      for (let i = 0; i < estudios.length; i++) {
-        const option = document.createElement("option");
-        option.value = estudios[i].nombre;
-        option.textContent = `${estudios[i].nombre} ($${estudios[i].precio})`;
-        this.selectPorcentajeTipo.appendChild(option);
+    // Actualizar cada select
+    selects.forEach((select, index) => {
+      if (select) {
+        select.innerHTML = '<option value="">-- Seleccione un estudio --</option>';
+        for (let i = 0; i < estudios.length; i++) {
+          const option = document.createElement("option");
+          option.value = estudios[i].nombre;
+          option.textContent = `${estudios[i].nombre} ($${estudios[i].precio})`;
+          select.appendChild(option);
+        }
+        if (valores[index] && select.querySelector(`option[value="${valores[index]}"]`)) {
+          select.value = valores[index];
+        }
       }
-      if (valorActualPorcentaje && this.selectPorcentajeTipo.querySelector(`option[value="${valorActualPorcentaje}"]`)) {
-        this.selectPorcentajeTipo.value = valorActualPorcentaje;
-      }
-    }
-    
-    if (this.selectNombresTipo) {
-      this.selectNombresTipo.innerHTML = '<option value="">-- Seleccione un estudio --</option>';
-      for (let i = 0; i < estudios.length; i++) {
-        const option = document.createElement("option");
-        option.value = estudios[i].nombre;
-        option.textContent = `${estudios[i].nombre} ($${estudios[i].precio})`;
-        this.selectNombresTipo.appendChild(option);
-      }
-      if (valorActualNombres && this.selectNombresTipo.querySelector(`option[value="${valorActualNombres}"]`)) {
-        this.selectNombresTipo.value = valorActualNombres;
-      }
-    }
-
-    if (this.selectTotalPorEstudioTipo) {
-      this.selectTotalPorEstudioTipo.innerHTML = '<option value="">-- Seleccione un estudio --</option>';
-      for (let i = 0; i < estudios.length; i++) {
-        const option = document.createElement("option");
-        option.value = estudios[i].nombre;
-        option.textContent = `${estudios[i].nombre} ($${estudios[i].precio})`;
-        this.selectTotalPorEstudioTipo.appendChild(option);
-      }
-      if (valorActualTotal && this.selectTotalPorEstudioTipo.querySelector(`option[value="${valorActualTotal}"]`)) {
-        this.selectTotalPorEstudioTipo.value = valorActualTotal;
-      }
-    }
+    });
   }
+
 
   public mostrarFormulario(): void {
     if (!this.divFormulario) return;
@@ -214,9 +247,33 @@ export default class Cl_vAdmin implements I_vAdmin {
     this.selectNombresTipo = document.getElementById("nombre_pacientes_tipo_estudio") as HTMLSelectElement;
     this.selectTotalPorEstudioTipo = document.getElementById("total_tipo_estudio") as HTMLSelectElement;
     this.botonObtenerTotalPorEstudio = document.getElementById("botonObtenerTotalPorEstudio") as HTMLButtonElement;
-
+this.selectEstadisticasTipo = document.getElementById("estadisticas_tipo_estudio") as HTMLSelectElement;
+    this.selectPromedioTipo = document.getElementById("promedio_tipo_estudio") as HTMLSelectElement;
+    this.botonVerEstadisticas = document.getElementById("botonVerEstadisticasEstudio") as HTMLButtonElement;
+    this.botonPorcentajeFinalizados = document.getElementById("botonPorcentajeFinalizados") as HTMLButtonElement;
+    this.botonCalcularPromedio = document.getElementById("botonCalcularPromedioEstudio") as HTMLButtonElement;
     this.actualizarListaEstudios(); 
-
+ if (this.botonVerEstadisticas) {
+      this.botonVerEstadisticas.onclick = () => {
+        const tipo = this.selectEstadisticasTipo?.value || "";
+        if (!tipo) { alert("Seleccione un estudio"); return; }
+        if (this.avisarVerEstadisticasEstudio) this.avisarVerEstadisticasEstudio(tipo);
+      };
+    }
+    
+    if (this.botonPorcentajeFinalizados) {
+      this.botonPorcentajeFinalizados.onclick = () => {
+        if (this.avisarCalcularPorcentajeFinalizados) this.avisarCalcularPorcentajeFinalizados();
+      };
+    }
+    
+    if (this.botonCalcularPromedio) {
+      this.botonCalcularPromedio.onclick = () => {
+        const tipo = this.selectPromedioTipo?.value || "";
+        if (!tipo) { alert("Seleccione un estudio"); return; }
+        if (this.avisarCalcularPromedioEstudio) this.avisarCalcularPromedioEstudio(tipo);
+      };
+    }
     if (this.botonFiltrarEstudios) {
       this.botonFiltrarEstudios.onclick = () => {
         const tipo = this.selectFiltroTipo?.value || "";

@@ -25,7 +25,10 @@ export default class Cl_cLaboratorioAdmin {
     this.pantallaAdmin.cuandoCLicEnObtenerNombres((tipo) => yoMismo.obtenerNombresPacientes(tipo));
     this.pantallaAdmin.cuandoClicEnObtenerTotalPorEstudio((tipo) => yoMismo.obtenertotalportestudio(tipo));
     this.pantallaAdmin.cuandoClicEnEnviarWhatsApp((id) => yoMismo.enviarWhatsApp(id));
-    this.pantallaAdmin.cuandoClicEnImprimir((id) => yoMismo.imprimirReporte(id));
+    this.pantallaAdmin.cuandoClicEnImprimir((id) => yoMismo.imprimirReporte(id)); this.pantallaAdmin.cuandoClicEnVerEstadisticasEstudio((tipo) => yoMismo.verEstadisticasEstudio(tipo));
+    this.pantallaAdmin.cuandoClicEnCalcularPorcentajeFinalizados(() => yoMismo.calcularPorcentajeFinalizados());
+    this.pantallaAdmin.cuandoClicEnCalcularPromedioEstudio((tipo) => yoMismo.calcularPromedioEstudio(tipo));
+    
   }
 
   private async cargarExamenes() {
@@ -261,5 +264,39 @@ export default class Cl_cLaboratorioAdmin {
     } else {
       alert(`❌ Error: ${resultado.mensaje}`);
     }
+  }
+   private verEstadisticasEstudio(tipoEstudio: string): void {
+    if (!tipoEstudio || tipoEstudio.trim() === "") {
+      alert("⚠️ Debe seleccionar un tipo de estudio");
+      return;
+    }
+    
+    const estadisticas = this.laboratorio.obtenerEstadisticasEstudio(tipoEstudio);
+    this.pantallaAdmin.mostrarEstadisticasEstudio({
+      tipoEstudio: tipoEstudio,
+      cantidad: estadisticas.cantidad,
+      total: estadisticas.total
+    });
+  }
+
+  private calcularPorcentajeFinalizados(): void {
+    const porcentaje = this.laboratorio.calcularPorcentajeFinalizados();
+    this.pantallaAdmin.mostrarPorcentajeFinalizados(porcentaje);
+  }
+
+  private calcularPromedioEstudio(tipoEstudio: string): void {
+    if (!tipoEstudio || tipoEstudio.trim() === "") {
+      alert("⚠️ Debe seleccionar un tipo de estudio");
+      return;
+    }
+    
+    const promedio = this.laboratorio.calcularPromedioEstudio(tipoEstudio);
+    const cantidad = this.laboratorio.contarEstudiosPorTipo(tipoEstudio);
+    
+    this.pantallaAdmin.mostrarPromedioEstudio({
+      tipoEstudio: tipoEstudio,
+      promedio: promedio,
+      cantidad: cantidad
+    });
   }
 }
