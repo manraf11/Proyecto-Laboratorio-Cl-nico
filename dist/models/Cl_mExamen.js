@@ -7,7 +7,7 @@ export default class Cl_mExamen {
     telefonoPaciente;
     nombreEstudio;
     resultadoExamen;
-    precioEstudio;
+    precioEstudio; // se cambio a string para guardar múltiples precios
     formaPago;
     referencia;
     estado;
@@ -24,16 +24,60 @@ export default class Cl_mExamen {
         this.fechaRegistro = datos.fechaRegistro || new Date().toISOString();
         if (datos.estudiosSeleccionados && Array.isArray(datos.estudiosSeleccionados)) {
             this.nombreEstudio = datos.estudiosSeleccionados.join(", ");
-            this.precioEstudio = Cl_mEstudio.calcularPrecioTotal(datos.estudiosSeleccionados);
+            this.precioEstudio = datos.estudiosSeleccionados
+                .map(nombre => Cl_mEstudio.getPrecio(nombre))
+                .join(", ");
         }
         else if (datos.nombreEstudio) {
             this.nombreEstudio = datos.nombreEstudio;
-            this.precioEstudio = Number(datos.precioEstudio) || 0;
+            this.precioEstudio = datos.precioEstudio !== undefined && datos.precioEstudio !== null
+                ? String(datos.precioEstudio)
+                : "";
         }
         else {
             this.nombreEstudio = "";
-            this.precioEstudio = 0;
+            this.precioEstudio = "";
         }
+    }
+    // Calcula total sumando los precios individuales de los estudios en el examen 
+    calcularTotal() {
+        if (!this.precioEstudio)
+            return 0;
+        const precios = this.obtenerArregloPrecios();
+        return precios.reduce((sum, precio) => sum + precio, 0);
+    }
+    obtenerArregloPrecios() {
+        if (!this.precioEstudio || this.precioEstudio.trim() === "")
+            return [];
+        return this.precioEstudio.split(", ").map(item => {
+            const num = parseFloat(item.trim());
+            return isNaN(num) ? 0 : num;
+        });
+    }
+    obtenerDatosCompletos() {
+        const estudios = this.obtenerArregloEstudios();
+        const resultados = this.obtenerArregloResultados();
+        const precios = this.obtenerArregloPrecios();
+        const maxLength = Math.max(estudios.length, resultados.length, precios.length);
+        const datosCompletos = [];
+        for (let i = 0; i < maxLength; i++) {
+            datosCompletos.push({
+                estudio: estudios[i] || "",
+                resultado: resultados[i] || "",
+                precio: precios[i] || 0
+            });
+        }
+        return datosCompletos;
+    }
+    obtenerArregloEstudios() {
+        if (!this.nombreEstudio.trim())
+            return [];
+        return this.nombreEstudio.split(", ").map(item => item.trim());
+    }
+    obtenerArregloResultados() {
+        if (!this.resultadoExamen.trim())
+            return [];
+        return this.resultadoExamen.split(", ").map(item => item.trim());
     }
     validarNombre(nombre) {
         if (!nombre || nombre.trim() === "") {
@@ -114,16 +158,6 @@ export default class Cl_mExamen {
             errores: errores
         };
     }
-    obtenerArregloEstudios() {
-        if (!this.nombreEstudio.trim())
-            return [];
-        return this.nombreEstudio.split(", ").map(item => item.trim());
-    }
-    obtenerArregloResultados() {
-        if (!this.resultadoExamen.trim())
-            return [];
-        return this.resultadoExamen.split(", ").map(item => item.trim());
-    }
     async enviarResultadosPorWhatsApp() {
         if (this.estado !== "listo") {
             return {
@@ -156,8 +190,8 @@ export default class Cl_mExamen {
         };
     }
     construirMensajeResultados() {
-        let estudios = this.obtenerArregloEstudios();
-        let resultados = this.obtenerArregloResultados();
+        const datosCompletos = this.obtenerDatosCompletos();
+        const total = this.calcularTotal();
         let mensaje = `🏥 *LABORATORIO CLÍNICO*\n\n`;
         mensaje += `📋 *RESULTADOS DE EXAMENES*\n`;
         mensaje += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
@@ -165,15 +199,14 @@ export default class Cl_mExamen {
         mensaje += `🆔 *Cédula:* ${this.cedulaPaciente}\n`;
         mensaje += `📅 *Fecha:* ${new Date(this.fechaRegistro).toLocaleDateString()}\n\n`;
         mensaje += `*📊 RESULTADOS:*\n`;
-        for (let i = 0; i < estudios.length; i++) {
-            let estudio = estudios[i];
-            let resultado = resultados[i] || "Pendiente";
-            let referencia = Cl_mEstudio.obtenerValoresReferencia(estudio);
-            let unidad = Cl_mEstudio.obtenerUnidad(estudio);
+        for (let i = 0; i < datosCompletos.length; i++) {
+            const item = datosCompletos[i];
+            const referencia = Cl_mEstudio.obtenerValoresReferencia(item.estudio);
+            const unidad = Cl_mEstudio.obtenerUnidad(item.estudio);
             let alerta = "";
-            if (resultado !== "Pendiente" && !isNaN(Number(resultado))) {
-                const valNum = Number(resultado);
-                const evaluacion = Cl_mEstudio.evaluarResultado(estudio, valNum);
+            if (item.resultado !== "Pendiente" && !isNaN(Number(item.resultado))) {
+                const valNum = Number(item.resultado);
+                const evaluacion = Cl_mEstudio.evaluarResultado(item.estudio, valNum);
                 if (evaluacion.esAlto) {
                     alerta = `  *${evaluacion.mensaje}* `;
                 }
@@ -181,12 +214,13 @@ export default class Cl_mExamen {
                     alerta = `  *${evaluacion.mensaje}* `;
                 }
             }
-            mensaje += `\n🔬 *${estudio}*\n`;
-            mensaje += `   Valor: ${resultado} ${unidad}${alerta}\n`;
+            mensaje += `\n🔬 *${item.estudio}*\n`;
+            mensaje += `   Valor: ${item.resultado} ${unidad}${alerta}\n`;
             mensaje += `   Referencia: ${referencia}\n`;
+            mensaje += `   Precio: $${item.precio.toFixed(2)}\n`;
         }
         mensaje += `\n━━━━━━━━━━━━━━━━━━━━━\n`;
-        mensaje += `*Total pagado:* $${this.precioEstudio}\n`;
+        mensaje += `*Total pagado:* $${total.toFixed(2)}\n`;
         mensaje += `*Método de pago:* ${this.formaPago}\n\n`;
         mensaje += `_Resultados validados por nuestro equipo._\n`;
         mensaje += `_Ante cualquier duda, consulte con su médico._`;

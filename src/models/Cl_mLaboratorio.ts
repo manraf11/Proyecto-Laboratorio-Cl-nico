@@ -184,7 +184,6 @@ export default class Cl_mLaboratorio {
     return Math.round(porcentaje * 100) / 100;
   }
 
-
   public nombrepacientesporestudio(tipoEstudio: string): string[] {
     let pacientes: string[] = [];
     let tipoBusqueda = tipoEstudio.trim().toLowerCase();
@@ -205,58 +204,45 @@ export default class Cl_mLaboratorio {
     return pacientes;
   }
 
-public obtenertotalporestudio(tipoEstudio: string): number {
-    let tipoBusqueda = tipoEstudio.trim();
-    let cantidad = 0;
-    
-    const estudio = Cl_mEstudio.buscarPorNombre(tipoBusqueda);
-    
-    if (!estudio) {
-        console.warn(`No se encontró el estudio: ${tipoEstudio}`);
-        return 0;
-    }
-    
-    const costoPorEstudio = estudio.precio;
+ public obtenertotalporestudio(tipoEstudio: string): number {
+    const tipoBusqueda = tipoEstudio.trim();
+    let total = 0;
     
     for (let i = 0; i < this.listaExamenes.length; i++) {
         let examen = this.listaExamenes[i];
-        let estudios = examen.obtenerArregloEstudios();
+        let datosCompletos = examen.obtenerDatosCompletos();
         
-        for (let m = 0; m < estudios.length; m++) {
-            if (estudios[m].trim() === tipoBusqueda) {
-                cantidad++;
+        for (let m = 0; m < datosCompletos.length; m++) {
+            if (datosCompletos[m].estudio.trim() === tipoBusqueda) {
+                total += datosCompletos[m].precio;
             }
         }
     }
     
-    return costoPorEstudio * cantidad;
+    return total;
 }
-public obtenerEstadisticasEstudio(tipoEstudio: string): { cantidad: number; total: number } {
+  public obtenerEstadisticasEstudio(tipoEstudio: string): { cantidad: number; total: number } {
     const tipoBusqueda = tipoEstudio.trim();
     let cantidad = 0;
-    
-    const estudio = Cl_mEstudio.buscarPorNombre(tipoBusqueda);
-    if (!estudio) {
-      return { cantidad: 0, total: 0 };
-    }
+    let total = 0;
     
     for (let i = 0; i < this.listaExamenes.length; i++) {
-      let examen = this.listaExamenes[i];
-      let estudios = examen.obtenerArregloEstudios();
-      
-      for (let m = 0; m < estudios.length; m++) {
-        if (estudios[m].trim() === tipoBusqueda) {
-          cantidad++;
+        let examen = this.listaExamenes[i];
+        let datosCompletos = examen.obtenerDatosCompletos();
+        
+        for (let m = 0; m < datosCompletos.length; m++) {
+            if (datosCompletos[m].estudio.trim() === tipoBusqueda) {
+                cantidad++;
+                total += datosCompletos[m].precio;
+            }
         }
-      }
     }
     
     return {
-      cantidad: cantidad,
-      total: estudio.precio * cantidad
+        cantidad: cantidad,
+        total: total
     };
-  }
-
+}
   public calcularPorcentajeFinalizados(): number {
     if (this.listaExamenes.length === 0) {
       return 0;
@@ -272,33 +258,127 @@ public obtenerEstadisticasEstudio(tipoEstudio: string): { cantidad: number; tota
     return Math.round((finalizados / this.listaExamenes.length) * 100 * 100) / 100;
   }
 
-  
   public calcularPromedioEstudio(tipoEstudio: string): number {
-  const tipoBusqueda = tipoEstudio.trim();
-  
-  let cantidadEstudio = 0;
-  let totalEstudios = 0;
-  
-  for (let i = 0; i < this.listaExamenes.length; i++) {
-    let examen = this.listaExamenes[i];
-    let estudios = examen.obtenerArregloEstudios();
+    const tipoBusqueda = tipoEstudio.trim();
     
-    for (let m = 0; m < estudios.length; m++) {
-      totalEstudios++; 
+    let cantidadEstudio = 0;
+    let totalEstudios = 0;
+    
+    for (let i = 0; i < this.listaExamenes.length; i++) {
+      let examen = this.listaExamenes[i];
+      let estudios = examen.obtenerArregloEstudios();
       
-      if (estudios[m].trim() === tipoBusqueda) {
-        cantidadEstudio++; 
+      for (let m = 0; m < estudios.length; m++) {
+        totalEstudios++; 
+        
+        if (estudios[m].trim() === tipoBusqueda) {
+          cantidadEstudio++; 
+        }
       }
     }
+    
+    if (totalEstudios === 0) {
+      return 0;
+    }
+    
+    const promedio = cantidadEstudio / totalEstudios;
+    return Math.round(promedio * 100) / 100;
   }
-  
-  // si no hay estudios retorna 0
-  if (totalEstudios === 0) {
-    return 0;
+
+  public obtenerTotalRecaudadoPorEstudio(tipoEstudio: string): number {
+    const tipoBusqueda = tipoEstudio.trim();
+    let total = 0;
+    
+    for (let i = 0; i < this.listaExamenes.length; i++) {
+      let examen = this.listaExamenes[i];
+      let datosCompletos = examen.obtenerDatosCompletos();
+      
+      for (let m = 0; m < datosCompletos.length; m++) {
+        if (datosCompletos[m].estudio.trim() === tipoBusqueda) {
+          total += datosCompletos[m].precio;
+        }
+      }
+    }
+    
+    return total;
   }
-  
-  
-  const promedio = cantidadEstudio / totalEstudios;
-  return Math.round(promedio * 100) / 100; // para redonder a 2 decimas
-}
+
+  public obtenerResumenEstudios(): { nombre: string; cantidad: number; total: number }[] {
+    const todosLosEstudios = Cl_mEstudio.obtenerTodos();
+    const resumen: { nombre: string; cantidad: number; total: number }[] = [];
+    
+    for (let i = 0; i < todosLosEstudios.length; i++) {
+      const estudio = todosLosEstudios[i];
+      let cantidad = 0;
+      
+      for (let j = 0; j < this.listaExamenes.length; j++) {
+        let examen = this.listaExamenes[j];
+        let estudios = examen.obtenerArregloEstudios();
+        
+        for (let m = 0; m < estudios.length; m++) {
+          if (estudios[m].trim() === estudio.nombre) {
+            cantidad++;
+          }
+        }
+      }
+      
+      if (cantidad > 0) {
+        resumen.push({
+          nombre: estudio.nombre,
+          cantidad: cantidad,
+          total: estudio.precio * cantidad
+        });
+      }
+    }
+    
+    return resumen;
+  }
+
+  public obtenerTotalGeneral(): number {
+    let total = 0;
+    for (let i = 0; i < this.listaExamenes.length; i++) {
+      total += this.listaExamenes[i].calcularTotal();
+    }
+    return total;
+  }
+
+  public obtenerTotalEstudiosRealizados(): number {
+    let total = 0;
+    for (let i = 0; i < this.listaExamenes.length; i++) {
+      total += this.listaExamenes[i].obtenerArregloEstudios().length;
+    }
+    return total;
+  }
+
+  public obtenerTodosLosExamenes(): Cl_mExamen[] {
+    return [...this.listaExamenes];
+  }
+
+  public buscarPorCedula(cedula: string): Cl_mExamen[] {
+    const cedulaBusqueda = cedula.trim().toLowerCase();
+    const resultados: Cl_mExamen[] = [];
+    
+    for (let i = 0; i < this.listaExamenes.length; i++) {
+      const examen = this.listaExamenes[i];
+      if (examen.cedulaPaciente.toLowerCase().includes(cedulaBusqueda)) {
+        resultados.push(examen);
+      }
+    }
+    
+    return resultados;
+  }
+
+  public buscarPorNombre(nombre: string): Cl_mExamen[] {
+    const nombreBusqueda = nombre.trim().toLowerCase();
+    const resultados: Cl_mExamen[] = [];
+    
+    for (let i = 0; i < this.listaExamenes.length; i++) {
+      const examen = this.listaExamenes[i];
+      if (examen.nombrePaciente.toLowerCase().includes(nombreBusqueda)) {
+        resultados.push(examen);
+      }
+    }
+    
+    return resultados;
+  }
 }

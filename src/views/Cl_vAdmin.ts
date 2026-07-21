@@ -207,7 +207,7 @@ export default class Cl_vAdmin implements I_vAdmin {
           <td style="padding:12px;">${ex.telefonoPaciente || "No registrado"}</td>
           <td style="padding:12px;"><span style="background:#28a745; color:white; padding:4px 10px; border-radius:12px;">LISTO</span></td>
           <td style="padding:12px;"><span style="background:#e8eaf6; padding:4px 10px; border-radius:12px;">${this.escapeHtml(ex.nombreEstudio)}</span></td>
-          <td style="padding:12px;">$${ex.precioEstudio}</td>
+          <td style="padding:12px;">$${ex.calcularTotal().toFixed(2)}</td>
           <td style="padding:12px;">
             <button class="btn-imprimir" data-id="${ex.id}">📄 Imprimir</button>
             <button class="btn-whatsapp" data-id="${ex.id}">💬 WhatsApp</button>

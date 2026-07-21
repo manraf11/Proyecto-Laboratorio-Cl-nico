@@ -80,7 +80,7 @@ export default class Cl_sLaboratorio {
     }
   }
 
-  static async actualizarEnNube(id: string, examen: Cl_mExamen): Promise<{ ok: boolean }> {
+  static async actualizarEnNube(id: string, examen: Cl_mExamen): Promise<{ ok: boolean,  id?: string }> {
     try {
       let respuesta = await fetch(`${this.direccionWeb}/${id}`, {
         method: "PUT",

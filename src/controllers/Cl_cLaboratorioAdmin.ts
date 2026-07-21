@@ -169,48 +169,48 @@ export default class Cl_cLaboratorioAdmin {
   }
 
   
-  private imprimirReporte(idExamen: string) {
-    let examen = this.laboratorio.buscarPorId(idExamen);
-    if (!examen) {
-      console.error("Examen no encontrado:", idExamen);
-      alert("No se encontró el examen solicitado.");
-      return;
-    }
+ 
+private imprimirReporte(idExamen: string) {
+  let examen = this.laboratorio.buscarPorId(idExamen);
+  if (!examen) {
+    console.error("Examen no encontrado:", idExamen);
+    alert("No se encontró el examen solicitado.");
+    return;
+  }
 
-    let listaEstudios = examen.obtenerArregloEstudios();
-    let listaResultados = examen.obtenerArregloResultados();
+  const datosCompletos = examen.obtenerDatosCompletos();
+  const total = examen.calcularTotal();
 
-    let filasHtml = "";
-    for (let i = 0; i < listaEstudios.length; i++) {
-      let nombreEst = listaEstudios[i];
-      let resultadoVal = listaResultados[i] || "Pendiente";
+  let filasHtml = "";
+  for (let i = 0; i < datosCompletos.length; i++) {
+    const item = datosCompletos[i];
+    let resultadoVal = item.resultado || "Pendiente";
+    
+    let refInfo = Cl_mEstudio.obtenerValoresReferencia(item.estudio);
+    let unidadMedida = Cl_mEstudio.obtenerUnidad(item.estudio);
+    let estiloResultado = 'color: #2c6e49; font-weight:600; font-size:1.05rem;';
+    let alertaTexto = "";
+
+    if (resultadoVal !== "Pendiente" && !isNaN(Number(resultadoVal))) {
+      const valNum = Number(resultadoVal);
+      const evaluacion = Cl_mEstudio.evaluarResultado(item.estudio, valNum);
       
-      let refInfo = Cl_mEstudio.obtenerValoresReferencia(nombreEst);
-      let unidadMedida = Cl_mEstudio.obtenerUnidad(nombreEst);
-      let estiloResultado = 'color: #2c6e49; font-weight:600; font-size:1.05rem;';
-      let alertaTexto = "";
-
-      if (resultadoVal !== "Pendiente" && !isNaN(Number(resultadoVal))) {
-        const valNum = Number(resultadoVal);
-        const evaluacion = Cl_mEstudio.evaluarResultado(nombreEst, valNum);
-        
-        if (evaluacion.esAlto) {
-          estiloResultado = 'color: #c0392b; font-weight:700; font-size:1.05rem; background: #ffe8e5; padding: 4px 8px; border-radius: 4px;';
-          alertaTexto = ` <span style="color: #c0392b; font-weight: bold;">⚠️ ${evaluacion.mensaje}</span>`;
-        } else if (evaluacion.esBajo) {
-          estiloResultado = 'color: #c0392b; font-weight:700; font-size:1.05rem; background: #ffe8e5; padding: 4px 8px; border-radius: 4px;';
-          alertaTexto = ` <span style="color: #c0392b; font-weight: bold;">⚠️ ${evaluacion.mensaje}</span>`;
-        }
+      if (evaluacion.esAlto || evaluacion.esBajo) {
+        estiloResultado = 'color: #c0392b; font-weight:700; font-size:1.05rem; background: #ffe8e5; padding: 4px 8px; border-radius: 4px;';
+        alertaTexto = ` <span style="color: #c0392b; font-weight: bold;">⚠️</span>`;
       }
-
-      filasHtml += `
-        <tr style="border-bottom: 1px solid #e2e8f0;">
-          <td style="padding: 12px; font-weight: 600; color: #0b3b4f;">${nombreEst}</td>
-          <td style="padding: 12px; ${estiloResultado}">${resultadoVal} ${unidadMedida}${alertaTexto}</td>
-          <td style="padding: 12px; color: #5e7a93; font-size: 0.9rem;">${refInfo}</td>
-        </tr>
-      `;
     }
+
+    filasHtml += `
+      <tr style="border-bottom: 1px solid #e2e8f0;">
+        <td style="padding: 12px; font-weight: 600; color: #0b3b4f;">${item.estudio}</td>
+        <td style="padding: 12px; ${estiloResultado}">${resultadoVal} ${unidadMedida}${alertaTexto}</td>
+        <td style="padding: 12px; color: #5e7a93; font-size: 0.9rem;">${refInfo}</td>
+        <td style="padding: 12px; color: #2c6e49; font-weight: 600;">$${item.precio.toFixed(2)}</td>
+      </tr>
+    `;
+  }
+
 
     let estadoTexto = "";
     let estadoColor = "";
@@ -244,6 +244,7 @@ export default class Cl_cLaboratorioAdmin {
               <th style="padding: 12px; border-top-left-radius: 6px;">Estudio Clinico</th>
               <th style="padding: 12px;">Resultado Obtenido</th>
               <th style="padding: 12px; border-top-right-radius: 6px;">Valores de Referencia</th>
+              <th style="padding: 12px;">Precio</th>
              </tr>
           </thead>
           <tbody>

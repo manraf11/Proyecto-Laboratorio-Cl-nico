@@ -168,44 +168,36 @@ export default class Cl_mLaboratorio {
         return pacientes;
     }
     obtenertotalporestudio(tipoEstudio) {
-        let tipoBusqueda = tipoEstudio.trim();
-        let cantidad = 0;
-        const estudio = Cl_mEstudio.buscarPorNombre(tipoBusqueda);
-        if (!estudio) {
-            console.warn(`No se encontró el estudio: ${tipoEstudio}`);
-            return 0;
-        }
-        const costoPorEstudio = estudio.precio;
+        const tipoBusqueda = tipoEstudio.trim();
+        let total = 0;
         for (let i = 0; i < this.listaExamenes.length; i++) {
             let examen = this.listaExamenes[i];
-            let estudios = examen.obtenerArregloEstudios();
-            for (let m = 0; m < estudios.length; m++) {
-                if (estudios[m].trim() === tipoBusqueda) {
-                    cantidad++;
+            let datosCompletos = examen.obtenerDatosCompletos();
+            for (let m = 0; m < datosCompletos.length; m++) {
+                if (datosCompletos[m].estudio.trim() === tipoBusqueda) {
+                    total += datosCompletos[m].precio;
                 }
             }
         }
-        return costoPorEstudio * cantidad;
+        return total;
     }
     obtenerEstadisticasEstudio(tipoEstudio) {
         const tipoBusqueda = tipoEstudio.trim();
         let cantidad = 0;
-        const estudio = Cl_mEstudio.buscarPorNombre(tipoBusqueda);
-        if (!estudio) {
-            return { cantidad: 0, total: 0 };
-        }
+        let total = 0;
         for (let i = 0; i < this.listaExamenes.length; i++) {
             let examen = this.listaExamenes[i];
-            let estudios = examen.obtenerArregloEstudios();
-            for (let m = 0; m < estudios.length; m++) {
-                if (estudios[m].trim() === tipoBusqueda) {
+            let datosCompletos = examen.obtenerDatosCompletos();
+            for (let m = 0; m < datosCompletos.length; m++) {
+                if (datosCompletos[m].estudio.trim() === tipoBusqueda) {
                     cantidad++;
+                    total += datosCompletos[m].precio;
                 }
             }
         }
         return {
             cantidad: cantidad,
-            total: estudio.precio * cantidad
+            total: total
         };
     }
     calcularPorcentajeFinalizados() {
@@ -234,12 +226,89 @@ export default class Cl_mLaboratorio {
                 }
             }
         }
-        // si no hay estudios retorna 0
         if (totalEstudios === 0) {
             return 0;
         }
         const promedio = cantidadEstudio / totalEstudios;
-        return Math.round(promedio * 100) / 100; // para redonder a 2 decimas
+        return Math.round(promedio * 100) / 100;
+    }
+    obtenerTotalRecaudadoPorEstudio(tipoEstudio) {
+        const tipoBusqueda = tipoEstudio.trim();
+        let total = 0;
+        for (let i = 0; i < this.listaExamenes.length; i++) {
+            let examen = this.listaExamenes[i];
+            let datosCompletos = examen.obtenerDatosCompletos();
+            for (let m = 0; m < datosCompletos.length; m++) {
+                if (datosCompletos[m].estudio.trim() === tipoBusqueda) {
+                    total += datosCompletos[m].precio;
+                }
+            }
+        }
+        return total;
+    }
+    obtenerResumenEstudios() {
+        const todosLosEstudios = Cl_mEstudio.obtenerTodos();
+        const resumen = [];
+        for (let i = 0; i < todosLosEstudios.length; i++) {
+            const estudio = todosLosEstudios[i];
+            let cantidad = 0;
+            for (let j = 0; j < this.listaExamenes.length; j++) {
+                let examen = this.listaExamenes[j];
+                let estudios = examen.obtenerArregloEstudios();
+                for (let m = 0; m < estudios.length; m++) {
+                    if (estudios[m].trim() === estudio.nombre) {
+                        cantidad++;
+                    }
+                }
+            }
+            if (cantidad > 0) {
+                resumen.push({
+                    nombre: estudio.nombre,
+                    cantidad: cantidad,
+                    total: estudio.precio * cantidad
+                });
+            }
+        }
+        return resumen;
+    }
+    obtenerTotalGeneral() {
+        let total = 0;
+        for (let i = 0; i < this.listaExamenes.length; i++) {
+            total += this.listaExamenes[i].calcularTotal();
+        }
+        return total;
+    }
+    obtenerTotalEstudiosRealizados() {
+        let total = 0;
+        for (let i = 0; i < this.listaExamenes.length; i++) {
+            total += this.listaExamenes[i].obtenerArregloEstudios().length;
+        }
+        return total;
+    }
+    obtenerTodosLosExamenes() {
+        return [...this.listaExamenes];
+    }
+    buscarPorCedula(cedula) {
+        const cedulaBusqueda = cedula.trim().toLowerCase();
+        const resultados = [];
+        for (let i = 0; i < this.listaExamenes.length; i++) {
+            const examen = this.listaExamenes[i];
+            if (examen.cedulaPaciente.toLowerCase().includes(cedulaBusqueda)) {
+                resultados.push(examen);
+            }
+        }
+        return resultados;
+    }
+    buscarPorNombre(nombre) {
+        const nombreBusqueda = nombre.trim().toLowerCase();
+        const resultados = [];
+        for (let i = 0; i < this.listaExamenes.length; i++) {
+            const examen = this.listaExamenes[i];
+            if (examen.nombrePaciente.toLowerCase().includes(nombreBusqueda)) {
+                resultados.push(examen);
+            }
+        }
+        return resultados;
     }
 }
 //# sourceMappingURL=Cl_mLaboratorio.js.map

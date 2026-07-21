@@ -17,6 +17,10 @@ export default class Cl_mEstudio {
     get precio() { return this._precio; }
     get unidad() { return this._unidad; }
     get valoresReferencia() { return this._valoresReferencia; }
+    static getPrecio(nombreEstudio) {
+        const estudio = this.buscarPorNombre(nombreEstudio.trim());
+        return estudio ? estudio.precio : 0;
+    }
     set nombre(valor) { this._nombre = valor; }
     set precio(valor) { this._precio = valor; }
     set unidad(valor) { this._unidad = valor; }
