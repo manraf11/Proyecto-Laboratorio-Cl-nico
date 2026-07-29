@@ -43,9 +43,9 @@ export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       const { data, error } = await supabase
-        .from('estudios')
-        .select('id, nombre, precio, unidad, valores_referencia')
-        .order('id');
+        .from('examenes')
+        .select('*')
+        .order('fecha_registro', { ascending: false });
 
       if (error) {
         console.error('❌ Error al consultar Supabase:', error);
@@ -53,13 +53,7 @@ export default async function handler(req, res) {
         return;
       }
 
-      res.status(200).json(data.map((fila) => ({
-        id: fila.id,
-        nombre: fila.nombre,
-        precio: fila.precio,
-        unidad: fila.unidad,
-        valores_referencia: fila.valores_referencia,
-      })));
+      res.status(200).json(data || []);
       return;
     }
 
@@ -67,14 +61,22 @@ export default async function handler(req, res) {
 
     if (req.method === 'POST') {
       const { data, error } = await supabase
-        .from('estudios')
+        .from('examenes')
         .insert({
-          nombre: datos.nombre,
-          precio: datos.precio,
-          unidad: datos.unidad,
-          valores_referencia: datos.valoresReferencia ?? datos.valores_referencia
+          nombre_paciente: datos.nombrePaciente,
+          cedula_paciente: datos.cedulaPaciente,
+          telefono_paciente: datos.telefonoPaciente || '',
+          nombre_estudio: datos.nombreEstudio || '',
+          resultado_examen: datos.resultadoExamen || '',
+          precio_estudio: datos.precioEstudio || '',
+          forma_pago: datos.formaPago || '',
+          referencia: datos.referencia || '',
+          estado: datos.estado || 'preparacion',
+          fecha_registro: datos.fechaRegistro || new Date().toISOString(),
+          usuario_registra: datos.usuarioRegistra || 'Sistema',
+          usuario_id: datos.usuarioId || null
         })
-        .select('id, nombre, precio, unidad, valores_referencia')
+        .select()
         .single();
 
       if (error) {
@@ -88,23 +90,28 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      const id = datos.id;
+      const id = datos.id || req.query?.id || req.url?.split('/').pop();
       if (!id) {
-        res.status(400).json({ error: 'Falta el id del estudio' });
+        res.status(400).json({ error: 'Falta el id del examen' });
         return;
       }
 
       const { data, error } = await supabase
-        .from('estudios')
+        .from('examenes')
         .update({
-          nombre: datos.nombre,
-          precio: datos.precio,
-          unidad: datos.unidad,
-          valores_referencia: datos.valoresReferencia ?? datos.valores_referencia,
-          updated_at: new Date().toISOString()
+          nombre_paciente: datos.nombrePaciente,
+          cedula_paciente: datos.cedulaPaciente,
+          telefono_paciente: datos.telefonoPaciente || '',
+          nombre_estudio: datos.nombreEstudio || '',
+          resultado_examen: datos.resultadoExamen || '',
+          precio_estudio: datos.precioEstudio || '',
+          forma_pago: datos.formaPago || '',
+          referencia: datos.referencia || '',
+          estado: datos.estado || 'preparacion',
+          fecha_registro: datos.fechaRegistro || new Date().toISOString()
         })
         .eq('id', id)
-        .select('id, nombre, precio, unidad, valores_referencia')
+        .select()
         .single();
 
       if (error) {
@@ -120,12 +127,12 @@ export default async function handler(req, res) {
     if (req.method === 'DELETE') {
       const id = req.query?.id || req.url?.split('/').pop();
       if (!id) {
-        res.status(400).json({ error: 'Falta el id del estudio' });
+        res.status(400).json({ error: 'Falta el id del examen' });
         return;
       }
 
       const { error } = await supabase
-        .from('estudios')
+        .from('examenes')
         .delete()
         .eq('id', id);
 
@@ -141,7 +148,7 @@ export default async function handler(req, res) {
 
     res.status(405).json({ error: 'Método no permitido' });
   } catch (error) {
-    console.error('❌ Error en /api/estudios:', error);
+    console.error('❌ Error en /api/examenes:', error);
     res.status(500).json({ error: true, message: error.message || 'Error inesperado' });
   }
 }

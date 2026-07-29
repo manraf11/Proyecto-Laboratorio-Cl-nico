@@ -1,8 +1,8 @@
 // services/Cl_sLaboratorio.ts
-import { supabase } from '../config/database.js';
 import Cl_mExamen from "../models/Cl_mExamen.js";
 import Cl_mLaboratorio from "../models/Cl_mLaboratorio.js";
 export default class Cl_sLaboratorio {
+    static direccionWeb = "/api/examenes";
     static obtenerUsuarioSesion() {
         try {
             const sesion = sessionStorage.getItem('labUser');
@@ -22,178 +22,126 @@ export default class Cl_sLaboratorio {
     static async guardarEnNube(examen) {
         try {
             const usuario = this.obtenerUsuarioSesion();
-            const { data: examenData, error: examenError } = await supabase
-                .from('examenes')
-                .insert({
-                nombre_paciente: examen.nombrePaciente,
-                cedula_paciente: examen.cedulaPaciente,
-                telefono_paciente: examen.telefonoPaciente || '',
-                forma_pago: examen.formaPago || '',
-                referencia: examen.referencia || '',
-                estado: examen.estado || 'preparacion',
-                fecha_registro: examen.fechaRegistro || new Date().toISOString(),
-                usuario_registra: usuario.nombre,
-                usuario_id: usuario.id || null
-            })
-                .select()
-                .single();
-            if (examenError) {
-                console.error('❌ Error al guardar examen:', examenError);
-                return { ok: false };
+            let respuesta = await fetch(this.direccionWeb, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    nombrePaciente: examen.nombrePaciente,
+                    cedulaPaciente: examen.cedulaPaciente,
+                    telefonoPaciente: examen.telefonoPaciente || '',
+                    nombreEstudio: examen.nombreEstudio || '',
+                    resultadoExamen: examen.resultadoExamen || '',
+                    precioEstudio: examen.precioEstudio || '',
+                    formaPago: examen.formaPago || '',
+                    referencia: examen.referencia || '',
+                    estado: examen.estado || 'preparacion',
+                    fechaRegistro: examen.fechaRegistro || new Date().toISOString(),
+                    usuarioRegistra: usuario.nombre,
+                    usuarioId: usuario.id
+                })
+            });
+            if (respuesta.ok) {
+                let datos = await respuesta.json();
+                return { ok: true, id: String(datos.id) };
             }
-            const examenId = examenData.id;
-            const estudios = examen.obtenerArregloEstudios();
-            const precios = examen.obtenerArregloPrecios();
-            const resultados = examen.obtenerArregloResultados();
-            for (let i = 0; i < estudios.length; i++) {
-                const nombreEstudio = estudios[i]?.trim();
-                if (!nombreEstudio)
-                    continue;
-                const { data: estudioData } = await supabase
-                    .from('estudios')
-                    .select('id')
-                    .eq('nombre', nombreEstudio)
-                    .maybeSingle();
-                if (!estudioData)
-                    continue;
-                const precio = precios[i] || 0;
-                const resultado = resultados[i] || '';
-                const estadoDetalle = resultado.trim() !== '' && resultado.trim() !== 'Pendiente' ? 'realizado' : 'pendiente';
-                await supabase
-                    .from('examen_estudios')
-                    .insert({
-                    examen_id: examenId,
-                    estudio_id: estudioData.id,
-                    precio: precio,
-                    resultado: resultado,
-                    estado: estadoDetalle
-                });
-            }
-            await this.actualizarTotalExamen(examenId);
-            console.log(`✅ Examen guardado con ID: ${examenId}`);
-            return { ok: true, id: String(examenId) };
+            console.error(`❌ Error HTTP ${respuesta.status} al guardar examen`);
+            return { ok: false };
         }
         catch (error) {
             console.error('❌ Error al guardar examen:', error);
             return { ok: false };
         }
     }
-    static async actualizarTotalExamen(examenId) {
-        try {
-            const { data } = await supabase
-                .from('examen_estudios')
-                .select('precio')
-                .eq('examen_id', examenId);
-            // CORREGIDO: Tipado explícito para los parámetros
-            const total = data?.reduce((sum, item) => sum + (item.precio || 0), 0) || 0;
-            await supabase
-                .from('examenes')
-                .update({ total_general: total })
-                .eq('id', examenId);
-        }
-        catch (error) {
-            console.error('❌ Error al actualizar total:', error);
-        }
-    }
     static async traerDesdeNube() {
         try {
-            const { data: examenesData, error: examenesError } = await supabase
-                .from('vista_examenes_completos')
-                .select('*')
-                .order('id', { ascending: false });
-            if (examenesError) {
-                console.error('❌ Error al cargar exámenes:', examenesError);
-                return { ok: false, laboratorio: new Cl_mLaboratorio() };
+            let respuesta = await fetch(this.direccionWeb);
+            let laboratorio = new Cl_mLaboratorio();
+            if (respuesta.ok) {
+                let arregloCrudo = await respuesta.json();
+                console.log(`📊 Recibidos ${arregloCrudo.length} exámenes desde Supabase`);
+                for (let i = 0; i < arregloCrudo.length; i++) {
+                    let c = arregloCrudo[i];
+                    let estadoExamen = "preparacion";
+                    if (c.estado !== undefined && c.estado !== null) {
+                        const s = String(c.estado).toLowerCase();
+                        if (s === "listo" || s.includes("listo") || s.includes("finalizado")) {
+                            estadoExamen = "listo";
+                        }
+                        else if (s === "pendiente" || s.includes("pendiente")) {
+                            estadoExamen = "pendiente";
+                        }
+                        else if (s === "preparacion" || s.includes("preparaci")) {
+                            estadoExamen = "preparacion";
+                        }
+                        else {
+                            estadoExamen = "preparacion";
+                        }
+                    }
+                    let examen = new Cl_mExamen({
+                        id: String(c.id),
+                        nombrePaciente: c.nombre_paciente || c.nombrePaciente || '',
+                        cedulaPaciente: c.cedula_paciente || c.cedulaPaciente || '',
+                        telefonoPaciente: c.telefono_paciente || c.telefonoPaciente || '',
+                        nombreEstudio: c.nombre_estudio || c.nombreEstudio || '',
+                        resultadoExamen: c.resultado_examen || c.resultadoExamen || '',
+                        precioEstudio: c.precio_estudio || c.precioEstudio || '',
+                        formaPago: c.forma_pago || c.formaPago || '',
+                        referencia: c.referencia || '',
+                        estado: estadoExamen,
+                        fechaRegistro: c.fecha_registro || c.fechaRegistro || new Date().toISOString()
+                    });
+                    laboratorio.agregarExamen(examen);
+                }
+                console.log(`✅ Cargados ${laboratorio.obtenerTodosLosExamenes().length} exámenes en memoria`);
+                return { ok: true, laboratorio: laboratorio };
             }
-            const laboratorio = new Cl_mLaboratorio();
-            for (const c of examenesData || []) {
-                let estadoExamen = "preparacion";
-                const s = String(c.estado || '').toLowerCase();
-                if (s === "listo" || s.includes("listo") || s.includes("finalizado")) {
-                    estadoExamen = "listo";
-                }
-                else if (s === "pendiente" || s.includes("pendiente")) {
-                    estadoExamen = "pendiente";
-                }
-                else {
-                    estadoExamen = "preparacion";
-                }
-                let examen = new Cl_mExamen({
-                    id: String(c.id),
-                    nombrePaciente: c.nombre_paciente || '',
-                    cedulaPaciente: c.cedula_paciente || '',
-                    telefonoPaciente: c.telefono_paciente || '',
-                    nombreEstudio: c.nombre_estudio || '',
-                    resultadoExamen: c.resultado_examen || '',
-                    precioEstudio: c.precio_estudio || '',
-                    formaPago: c.forma_pago || '',
-                    referencia: c.referencia || '',
-                    estado: estadoExamen,
-                    fechaRegistro: c.fecha_registro || new Date().toISOString()
-                });
-                laboratorio.agregarExamen(examen);
-            }
-            console.log(`✅ Cargados ${laboratorio.obtenerTodosLosExamenes().length} exámenes desde Supabase`);
-            return { ok: true, laboratorio };
+            console.error(`❌ Error HTTP ${respuesta.status} al cargar exámenes`);
+            return { ok: false, laboratorio: laboratorio };
         }
         catch (error) {
             console.error('❌ Error al cargar exámenes:', error);
             return { ok: false, laboratorio: new Cl_mLaboratorio() };
         }
     }
+    // ============================================
+    // ACTUALIZAR EXAMEN EN LA NUBE (CORREGIDO)
+    // ============================================
     static async actualizarEnNube(id, examen) {
         try {
-            const examenId = parseInt(id);
-            console.log(`🔄 Actualizando examen ID: ${examenId}`);
-            const { error: updateError } = await supabase
-                .from('examenes')
-                .update({
-                nombre_paciente: examen.nombrePaciente || '',
-                cedula_paciente: examen.cedulaPaciente || '',
-                telefono_paciente: examen.telefonoPaciente || '',
-                forma_pago: examen.formaPago || '',
-                referencia: examen.referencia || '',
-                estado: examen.estado || 'preparacion',
-                updated_at: new Date().toISOString()
-            })
-                .eq('id', examenId);
-            if (updateError) {
-                console.error('❌ Error al actualizar examen:', updateError);
+            console.log(`🔄 Actualizando examen ID: ${id}`);
+            console.log(`📋 Datos a actualizar:`, {
+                nombrePaciente: examen.nombrePaciente,
+                cedulaPaciente: examen.cedulaPaciente,
+                estado: examen.estado,
+                nombreEstudio: examen.nombreEstudio,
+                resultadoExamen: examen.resultadoExamen
+            });
+            // CORREGIDO: Enviar el ID en la URL y también en el body
+            let respuesta = await fetch(`${this.direccionWeb}/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: id,
+                    nombrePaciente: examen.nombrePaciente || '',
+                    cedulaPaciente: examen.cedulaPaciente || '',
+                    telefonoPaciente: examen.telefonoPaciente || '',
+                    nombreEstudio: examen.nombreEstudio || '',
+                    resultadoExamen: examen.resultadoExamen || '',
+                    precioEstudio: examen.precioEstudio || '',
+                    formaPago: examen.formaPago || '',
+                    referencia: examen.referencia || '',
+                    estado: examen.estado || 'preparacion',
+                    fechaRegistro: examen.fechaRegistro || new Date().toISOString()
+                })
+            });
+            if (!respuesta.ok) {
+                const errorText = await respuesta.text();
+                console.error(`❌ Error HTTP ${respuesta.status}: ${respuesta.statusText}`);
+                console.error(`📄 Respuesta del servidor: ${errorText}`);
                 return { ok: false };
             }
-            await supabase
-                .from('examen_estudios')
-                .delete()
-                .eq('examen_id', examenId);
-            const estudios = examen.obtenerArregloEstudios();
-            const precios = examen.obtenerArregloPrecios();
-            const resultados = examen.obtenerArregloResultados();
-            for (let i = 0; i < estudios.length; i++) {
-                const nombreEstudio = estudios[i]?.trim();
-                if (!nombreEstudio)
-                    continue;
-                const { data: estudioData } = await supabase
-                    .from('estudios')
-                    .select('id')
-                    .eq('nombre', nombreEstudio)
-                    .maybeSingle();
-                if (!estudioData)
-                    continue;
-                const precio = precios[i] || 0;
-                const resultado = resultados[i] || '';
-                const estadoDetalle = resultado.trim() !== '' && resultado.trim() !== 'Pendiente' ? 'realizado' : 'pendiente';
-                await supabase
-                    .from('examen_estudios')
-                    .insert({
-                    examen_id: examenId,
-                    estudio_id: estudioData.id,
-                    precio: precio,
-                    resultado: resultado,
-                    estado: estadoDetalle
-                });
-            }
-            await this.actualizarTotalExamen(examenId);
-            console.log(`✅ Examen ${id} actualizado correctamente`);
+            const datos = await respuesta.json();
+            console.log(`✅ Examen actualizado correctamente:`, datos);
             return { ok: true, id: id };
         }
         catch (error) {
@@ -201,38 +149,48 @@ export default class Cl_sLaboratorio {
             return { ok: false };
         }
     }
+    // ============================================
+    // BÚSQUEDA DE CÉDULA CON API CNE
+    // ============================================
     static async buscarPorCedula(cedula) {
         try {
             const cedulaLimpia = cedula.trim();
             console.log(`🔍 Buscando cédula: "${cedulaLimpia}"`);
-            const { data, error } = await supabase
-                .from('examenes')
-                .select('nombre_paciente, telefono_paciente, cedula_paciente')
-                .eq('cedula_paciente', cedulaLimpia)
-                .order('id', { ascending: false })
-                .limit(1);
-            if (error) {
-                console.log('⚠️ Error al buscar en BD:', error);
+            const respuesta = await fetch(`${this.direccionWeb}?cedula=${encodeURIComponent(cedulaLimpia)}`);
+            if (!respuesta.ok) {
+                console.log(`⚠️ Error en API local: ${respuesta.status}`);
             }
-            else if (data && data.length > 0) {
-                const registro = data[0];
-                console.log(`✅ Cédula encontrada en BD: ${registro.nombre_paciente}`);
-                return {
-                    ok: true,
-                    registro: {
-                        nombrePaciente: registro.nombre_paciente || '',
-                        telefonoPaciente: registro.telefono_paciente || '',
-                        cedulaPaciente: registro.cedula_paciente || ''
+            else {
+                const datos = await respuesta.json();
+                console.log(`📊 Resultados de BD: ${datos.length}`);
+                if (Array.isArray(datos) && datos.length > 0) {
+                    const exactMatch = datos.find((item) => {
+                        const cedulaRegistro = (item.cedula_paciente || item.cedulaPaciente || '').trim().toUpperCase();
+                        const cedulaBuscar = cedulaLimpia.toUpperCase();
+                        return cedulaRegistro === cedulaBuscar;
+                    });
+                    if (exactMatch) {
+                        console.log(`✅ Cédula encontrada en BD: ${exactMatch.nombre_paciente || exactMatch.nombrePaciente}`);
+                        return {
+                            ok: true,
+                            registro: {
+                                nombrePaciente: exactMatch.nombre_paciente || exactMatch.nombrePaciente || '',
+                                telefonoPaciente: exactMatch.telefono_paciente || exactMatch.telefonoPaciente || '',
+                                cedulaPaciente: exactMatch.cedula_paciente || exactMatch.cedulaPaciente || ''
+                            }
+                        };
                     }
-                };
+                }
             }
             console.log(`🔍 Cédula no encontrada en BD. Consultando API del CNE...`);
             const cedulaNumeros = cedulaLimpia.replace(/[^0-9]/g, '');
             const apiUrl = `/api/cedula.js?cedula=${cedulaNumeros}&nacionalidad=V`;
+            console.log(`🌐 Consultando API CNE: ${apiUrl}`);
             try {
-                const response = await fetch(apiUrl);
-                if (response.ok) {
-                    const dataApi = await response.json();
+                const responseApi = await fetch(apiUrl);
+                if (responseApi.ok) {
+                    const dataApi = await responseApi.json();
+                    console.log(`📊 Respuesta API:`, dataApi);
                     if (dataApi && dataApi.data && dataApi.data.nombre_completo) {
                         const nombreCompleto = dataApi.data.nombre_completo;
                         console.log(`✅ Nombre obtenido de CNE: ${nombreCompleto}`);
@@ -246,12 +204,30 @@ export default class Cl_sLaboratorio {
                             }
                         };
                     }
+                    else if (dataApi && dataApi.nombre) {
+                        console.log(`✅ Nombre obtenido de CNE: ${dataApi.nombre}`);
+                        return {
+                            ok: true,
+                            nombreApi: dataApi.nombre,
+                            registro: {
+                                nombrePaciente: dataApi.nombre,
+                                telefonoPaciente: '',
+                                cedulaPaciente: cedulaLimpia
+                            }
+                        };
+                    }
+                    else {
+                        console.log(`❌ CNE no devolvió datos para la cédula ${cedulaNumeros}`);
+                    }
+                }
+                else {
+                    console.log(`⚠️ CNE respondió con status: ${responseApi.status}`);
                 }
             }
             catch (apiError) {
                 console.error('❌ Error al consultar CNE:', apiError);
             }
-            console.log(`❌ Cédula ${cedulaLimpia} no encontrada`);
+            console.log(`❌ Cédula ${cedulaLimpia} no encontrada en BD ni en CNE`);
             return { ok: true };
         }
         catch (error) {

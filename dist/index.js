@@ -1,7 +1,7 @@
 // src/index.ts
 import Cl_vLogin from './views/Cl_vLogin.js';
 import Cl_cLogin from './controllers/Cl_cLogin.js';
-import { testConnection } from './config/database.js';
+import { testConnection } from './config/index.js';
 async function iniciarAplicacion() {
     try {
         console.log('🔌 Iniciando sistema de Laboratorio Clínico...');
@@ -25,7 +25,7 @@ async function iniciarAplicacion() {
         document.body.innerHTML = `
             <div style="text-align:center; padding:50px; font-family:Arial;">
                 <h1 style="color:#c0392b;">❌ Error de conexión</h1>
-                <p>No se pudo conectar a la base de datos Supabase.</p>
+                <p>No se pudo conectar a Supabase.</p>
                 <p style="color:#666; font-size:14px;">${mensajeError}</p>
                 <button onclick="location.reload()" style="padding:10px 20px; margin-top:20px; cursor:pointer; background:#1a5f7a; color:white; border:none; border-radius:5px;">
                     Reintentar
