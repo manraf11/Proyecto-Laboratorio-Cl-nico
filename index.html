@@ -2,367 +2,559 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Laboratorio Clínico - Sistema Administrativo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+  <title>Laboratorio Clínico · Sistema Admin</title>
   <style>
+    /* ===== RESET & BASE ===== */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { 
-      font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif; 
-      background: #eef2f7; 
-      min-height: 100vh; 
-      padding: 20px; 
+    body {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #eef2f7;
+      min-height: 100vh;
+      padding: 12px;
+      position: relative;
+      overflow-x: hidden;
     }
-    .container { max-width: 1200px; margin: 0 auto; }
-    .panel { 
-      background: white; 
-      border-radius: 12px; 
-      box-shadow: 0 8px 30px rgba(0,0,0,0.08); 
-      overflow: hidden; 
+
+    /* ===== FONDO BIOLÓGICO ===== */
+    .bg-biologico {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .globulo-rojo-bg {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at 40% 30%, rgba(180,40,40,0.04), rgba(140,30,30,0.02));
+      border: 1px solid rgba(180,40,40,0.02);
+      box-shadow: inset -5px -5px 15px rgba(0,0,0,0.01), inset 5px 5px 15px rgba(255,255,255,0.02);
+    }
+    .globulo-rojo-bg::before {
+      content: ''; position: absolute; top:20%; left:30%; width:30%; height:30%;
+      border-radius:50%; background: radial-gradient(circle, rgba(255,255,255,0.05), transparent);
+    }
+    .globulo-rojo-bg::after {
+      content: ''; position: absolute; bottom:25%; right:25%; width:20%; height:20%;
+      border-radius:50%; background: radial-gradient(circle, rgba(255,255,255,0.02), transparent);
+    }
+    .bacteria-baston-bg {
+      position: absolute;
+      border-radius: 50px;
+      background: linear-gradient(135deg, rgba(60,120,80,0.03), rgba(40,80,60,0.015));
+      border: 1px solid rgba(60,120,80,0.015);
+      box-shadow: inset 0 2px 8px rgba(255,255,255,0.01);
+    }
+    .bacteria-baston-bg::before {
+      content: ''; position: absolute; top:15%; left:15%; width:70%; height:30%;
+      border-radius: 50px; background: radial-gradient(ellipse, rgba(255,255,255,0.03), transparent);
+    }
+    .celula-nucleo-bg {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at 35% 30%, rgba(100,80,160,0.025), rgba(70,50,120,0.01));
+      border: 1px solid rgba(100,80,160,0.015);
+      box-shadow: inset -3px -3px 10px rgba(0,0,0,0.01);
+    }
+    .celula-nucleo-bg .nucleo-bg {
+      position: absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      border-radius:50%; background: radial-gradient(circle at 40% 35%, rgba(100,80,160,0.03), rgba(70,50,120,0.01));
+      border:1px solid rgba(100,80,160,0.01);
+    }
+    .celula-nucleo-bg .nucleolo-bg {
+      position: absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+      border-radius:50%; background: radial-gradient(circle at 40% 35%, rgba(120,100,180,0.02), rgba(80,60,140,0.01));
+      border:1px solid rgba(120,100,180,0.01);
+    }
+    .hemacie-bg {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at 45% 35%, rgba(200,60,60,0.025), rgba(150,40,40,0.01));
+      border: 1px solid rgba(200,60,60,0.01);
+      box-shadow: inset -3px -3px 8px rgba(0,0,0,0.01), inset 3px 3px 8px rgba(255,255,255,0.01);
+    }
+    .dna-molecula-bg {
+      position: absolute; pointer-events: none; opacity:0.08;
+    }
+    .dna-molecula-bg svg { width:100%; height:100%; }
+
+    /* ===== CONTENEDOR PRINCIPAL ===== */
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      padding: 0 4px;
+    }
+    .panel {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.07);
+      overflow: hidden;
       border: 1px solid #dce4ec;
     }
-    .panel-header { 
-      background: #1a5f7a; 
-      color: white; 
-      padding: 20px 24px; 
-      text-align: center; 
+    .panel-header {
+      background: #1a5f7a;
+      color: white;
+      padding: 16px 16px 14px;
+      text-align: center;
       border-bottom: 3px solid #ffc107;
       position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px 12px;
     }
-    .panel-header h1 { font-size: 1.8rem; font-weight: 600; }
-    .panel-header p { font-size: 0.9rem; margin-top: 6px; opacity: 0.9; }
-    .btn-cambiar-rol {
-      position: absolute;
-      top: 20px;
-      right: 24px;
-      background: rgba(255,255,255,0.2);
+    .panel-header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      margin: 0;
+      order: 1;
+    }
+    .panel-header p {
+      font-size: 0.8rem;
+      opacity: 0.9;
+      width: 100%;
+      margin: 2px 0 0;
+      order: 3;
+    }
+    .btn-cerrar-sesion {
+      background: rgba(255,0,0,0.2);
       color: white;
-      border: 2px solid rgba(255,255,255,0.5);
-      padding: 8px 16px;
+      border: 2px solid rgba(255,0,0,0.5);
+      padding: 6px 14px;
       border-radius: 40px;
       cursor: pointer;
       font-weight: 600;
-      font-size: 0.85rem;
-      transition: all 0.3s ease;
+      font-size: 0.75rem;
+      transition: all 0.2s;
+      white-space: nowrap;
+      order: 0;
+      margin-right: auto;
+      flex-shrink: 0;
     }
-    .btn-cambiar-rol:hover {
-      background: rgba(255,255,255,0.3);
+    .btn-cerrar-sesion:hover {
+      background: rgba(255,0,0,0.4);
+      border-color: #ff4444;
       transform: translateY(-2px);
-      border-color: #ffc107;
     }
-    .panel-content { padding: 28px; }
+    @media (max-width: 480px) {
+      .panel-header { padding: 12px 10px; gap: 6px; }
+      .panel-header h1 { font-size: 1.2rem; order: 1; width: auto; }
+      .btn-cerrar-sesion { font-size: 0.65rem; padding: 4px 10px; margin-right: 0; order: 0; }
+      .panel-header p { font-size: 0.7rem; order: 2; }
+    }
+    .panel-content { padding: 20px 14px; }
+    @media (max-width: 480px) { .panel-content { padding: 14px 8px; } }
 
+    /* ===== NAV TABS ===== */
     .navbar-reportes {
       background: #f0f6fa;
-      border-radius: 50px;
-      padding: 8px;
-      margin-bottom: 28px;
+      border-radius: 60px;
+      padding: 6px 8px;
+      margin-bottom: 20px;
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 4px 6px;
       justify-content: center;
       border: 1px solid #cbdde9;
     }
     .nav-item {
       background: transparent;
       border: none;
-      padding: 10px 24px;
+      padding: 6px 14px;
       border-radius: 40px;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.75rem;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.2s;
       color: #1a5f7a;
       font-family: inherit;
+      white-space: nowrap;
+      flex: 0 1 auto;
     }
-    .nav-item:hover {
-      background: #e2eaf1;
-    }
+    .nav-item:hover { background: #dce8f0; }
     .nav-item.active {
       background: #1a5f7a;
       color: white;
-      box-shadow: 0 2px 8px rgba(26,95,122,0.3);
+      box-shadow: 0 2px 10px rgba(26,95,122,0.25);
     }
-    
+    @media (max-width: 500px) {
+      .navbar-reportes { border-radius: 30px; padding: 5px 6px; gap: 3px; }
+      .nav-item { font-size: 0.6rem; padding: 4px 10px; }
+    }
+
+    /* ===== MÓDULOS ===== */
     .modulo-filtro, .modulo-porcentaje, .modulo-nombres, .modulo-total,
-    .modulo-estadisticas, .modulo-porcentaje-finalizados, .modulo-promedio {
+    .modulo-estadisticas, .modulo-porcentaje-finalizados, .modulo-promedio,
+    .modulo-usuarios {
       display: none;
       animation: fadeIn 0.25s ease;
     }
-    .modulo-filtro.active-modulo, 
-    .modulo-porcentaje.active-modulo, 
-    .modulo-nombres.active-modulo, 
+    .modulo-filtro.active-modulo,
+    .modulo-porcentaje.active-modulo,
+    .modulo-nombres.active-modulo,
     .modulo-total.active-modulo,
     .modulo-estadisticas.active-modulo,
     .modulo-porcentaje-finalizados.active-modulo,
-    .modulo-promedio.active-modulo {
+    .modulo-promedio.active-modulo,
+    .modulo-usuarios.active-modulo {
       display: block;
     }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
+      from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .seccion-titulo { 
-      font-size: 1.2rem; 
-      color: #1a5f7a; 
-      margin-bottom: 16px; 
+    .modulo-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 4px 0 0 0;
+    }
+    .modulo-card > div {
+      padding: 14px 12px;
+      border: 1px solid #dce4ec;
+      border-radius: 18px;
+      background: #f8fbff;
+    }
+    @media (max-width: 480px) {
+      .modulo-card > div { padding: 10px 8px; }
+    }
+    .seccion-titulo {
+      font-size: 1rem;
+      color: #1a5f7a;
+      margin: 16px 0 10px;
       border-left: 4px solid #2c9cd4;
-      padding-left: 12px;
+      padding-left: 10px;
       font-weight: 600;
     }
-    .mensaje-vacio { 
-      text-align: center; 
-      color: #7f8c8d; 
-      padding: 32px; 
-      background: #f9fafb;
-      border-radius: 10px;
-    }
-    .loader {
-      border: 4px solid #e0e7ed;
-      border-top: 4px solid #1a5f7a;
-      border-radius: 50%;
-      width: 42px;
-      height: 42px;
-      animation: spin 0.9s linear infinite;
-      margin: 20px auto;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .cargando-mensaje {
-      text-align: center;
-      color: #1a5f7a;
-      padding: 24px;
-      font-weight: 500;
-      background: #f0f6fa;
-      border-radius: 12px;
-    }
-    .resultado-item {
-      background: #f9fdf9;
-      border-left: 4px solid #2c6e49;
-      border-radius: 10px;
-      padding: 16px;
-      margin-bottom: 12px;
-    }
+
+    /* ===== FORM ELEMENTOS ===== */
     .admin-botones {
       display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
+      gap: 10px;
+      margin-bottom: 18px;
       flex-wrap: wrap;
     }
     .btn-primario {
       background: #1a5f7a;
       color: white;
       border: none;
-      padding: 10px 18px;
+      padding: 9px 18px;
       border-radius: 40px;
       font-weight: 600;
       cursor: pointer;
+      transition: 0.15s;
+      font-size: 0.85rem;
     }
-    .btn-primario:hover { background: #104a60; }
+    .btn-primario:hover { background: #104a60; transform: scale(0.97); }
     .btn-secundario {
       background: #eef2f7;
       color: #1f5e7a;
       border: 1px solid #cbdde9;
-      padding: 10px 18px;
+      padding: 9px 18px;
       border-radius: 40px;
       font-weight: 500;
       cursor: pointer;
+      transition: 0.15s;
+      font-size: 0.85rem;
     }
     .btn-secundario:hover { background: #e2eaf1; }
-    .btn-imprimir {
-      background: #764ba2;
-      color: white;
-      border: none;
-      padding: 5px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.75rem;
+    @media (max-width: 480px) {
+      .btn-primario, .btn-secundario { padding: 7px 14px; font-size: 0.75rem; }
     }
-    .btn-whatsapp {
-      background: #25D366;
-      color: white;
-      border: none;
-      padding: 5px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.75rem;
-    }
-    .aviso-cambio {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #2c6e49;
-      color: white;
-      padding: 12px 20px;
-      border-radius: 40px;
-      animation: slideIn 0.3s ease;
-      z-index: 1000;
-    }
-    @keyframes slideIn {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    th {
-      background: #1a5f7a;
-      color: white;
-      padding: 12px;
-      text-align: left;
-    }
-    td {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
-    }
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-    .modal-contenido {
-      background: white;
-      border-radius: 20px;
-      width: 750px;
-      max-width: 95%;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    .modal-header {
-      padding: 20px;
-      border-bottom: 1px solid #ddd;
-      position: sticky;
-      top: 0;
-      background: white;
-      border-radius: 20px 20px 0 0;
-      z-index: 10;
-    }
-    .modal-body {
-      padding: 20px;
-    }
-    .modal-footer {
-      padding: 15px 20px;
-      border-top: 1px solid #ddd;
-      display: flex;
+
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 12px;
-      position: sticky;
-      bottom: 0;
-      background: white;
-      border-radius: 0 0 20px 20px;
     }
+    @media (max-width: 600px) { .grid-2col { grid-template-columns: 1fr; gap: 8px; } }
+
     .campo {
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
     .campo label {
       display: block;
-      font-weight: bold;
-      margin-bottom: 6px;
+      font-weight: 600;
+      margin-bottom: 3px;
       color: #1a5f7a;
+      font-size: 0.85rem;
     }
     .campo input, .campo select {
       width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      font-size: 14px;
+      padding: 9px 12px;
+      border: 1px solid #d0d9e3;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      background: white;
+      transition: 0.15s;
     }
     .campo input:focus, .campo select:focus {
       outline: none;
       border-color: #1a5f7a;
-      box-shadow: 0 0 0 2px rgba(26,95,122,0.2);
+      box-shadow: 0 0 0 3px rgba(26,95,122,0.15);
     }
-    .error-input {
-      border: 2px solid #c0392b !important;
-      background: #ffe8e5 !important;
-    }
+
     .checkbox-group {
       background: #f9f9f9;
       padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      max-height: 280px;
+      border: 1px solid #dce4ec;
+      border-radius: 14px;
+      max-height: 240px;
       overflow-y: auto;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-      gap: 6px;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 4px;
     }
     .checkbox-item {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       cursor: pointer;
-      padding: 6px 8px;
-      border-radius: 8px;
+      padding: 5px 6px;
+      border-radius: 10px;
       background: white;
-      transition: all 0.2s ease;
+      transition: 0.15s;
     }
-    .checkbox-item:hover {
-      background: #e8f0fe;
+    .checkbox-item:hover { background: #e8f0fe; }
+    .checkbox-item input { width: 16px; height: 16px; accent-color: #1a5f7a; flex-shrink: 0; }
+    .checkbox-item label { margin:0; cursor:pointer; font-weight:400; font-size:0.85rem; }
+    @media (max-width: 480px) {
+      .checkbox-group { grid-template-columns: 1fr 1fr; max-height: 180px; padding: 8px; }
+      .checkbox-item { padding: 4px 5px; }
+      .checkbox-item label { font-size: 0.75rem; }
     }
-    .checkbox-item input {
-      width: 18px;
-      height: 18px;
-      margin: 0;
-      cursor: pointer;
-      flex-shrink: 0;
-      accent-color: #1a5f7a;
+    @media (max-width: 380px) { .checkbox-group { grid-template-columns: 1fr; } }
+
+    /* ===== RESULTADOS ===== */
+    .resultado-item {
+      background: #f9fdf9;
+      border-left: 4px solid #2c6e49;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      word-break: break-word;
+      font-size: 0.9rem;
     }
-    .checkbox-item label {
-      margin: 0;
-      cursor: pointer;
-      font-weight: normal;
-      flex: 1;
-      font-size: 14px;
-      color: #2c3e50;
+    .resultado-estadisticas { background: #e3f2fd; border-left-color: #1a5f7a; }
+    .resultado-porcentaje-finalizados { background: #e8f5e9; border-left-color: #4caf50; }
+    .resultado-promedio { background: #fff3e0; border-left-color: #ff9800; }
+
+    .mensaje-vacio {
+      text-align: center;
+      color: #6c7a8a;
+      padding: 20px 10px;
+      background: #f9fafb;
+      border-radius: 14px;
+      font-size: 0.9rem;
     }
-    .modulo-card {
-      background: #ffffff;
-      border-radius: 20px;
-      padding: 4px 0 0 0;
+    .loader {
+      border: 4px solid #e0e7ed;
+      border-top: 4px solid #1a5f7a;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      animation: spin 0.9s linear infinite;
+      margin: 10px auto;
     }
-    small {
-      display: block;
-      margin-top: 4px;
-      color: #6c757d;
-      font-size: 11px;
+    @keyframes spin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
+
+    /* ===== MODAL ===== */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1100;
+      padding: 16px;
     }
-    hr {
-      margin: 15px 0;
-      border: none;
+    .modal-contenido {
+      background: white;
+      border-radius: 28px;
+      width: 100%;
+      max-width: 700px;
+      max-height: 92vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #ddd;
+      position: sticky;
+      top:0;
+      background: white;
+      border-radius: 28px 28px 0 0;
+      z-index:10;
+    }
+    .modal-header h3 { color: #1a5f7a; font-size: 1.2rem; }
+    .modal-body { padding: 16px 18px; }
+    .modal-footer {
+      padding: 12px 18px;
       border-top: 1px solid #e0e7ed;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      background: white;
+      border-radius: 0 0 28px 28px;
     }
-    /* Estilos para los nuevos resultados */
-    .resultado-estadisticas {
-      background: #e3f2fd;
-      border-left-color: #1a5f7a;
+    .modal-footer button { flex: 1 1 auto; min-width: 80px; }
+    @media (max-width: 480px) {
+      .modal { padding: 8px; }
+      .modal-contenido { max-width: 100%; border-radius: 20px; }
+      .modal-header { padding: 12px 14px; }
+      .modal-header h3 { font-size: 1rem; }
+      .modal-body { padding: 12px 12px; }
+      .modal-footer { padding: 10px 12px; gap: 6px; }
+      .modal-footer button { min-width: 60px; font-size: 0.75rem; padding: 6px 12px; }
     }
-    .resultado-porcentaje-finalizados {
-      background: #e8f5e9;
-      border-left-color: #4caf50;
+
+    /* ===== TABLA RESPONSIVE ===== */
+    .tabla-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 6px 0;
+      border-radius: 12px;
+      border: 1px solid #e0e7ed;
+      background: white;
     }
-    .resultado-promedio {
-      background: #fff3e0;
-      border-left-color: #ff9800;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      min-width: 420px;
+    }
+    th {
+      background: #1a5f7a;
+      color: white;
+      padding: 10px 8px;
+      text-align: left;
+      white-space: nowrap;
+      font-size: 0.8rem;
+    }
+    td {
+      padding: 8px 8px;
+      border-bottom: 1px solid #eaeef3;
+      word-break: break-word;
+      font-size: 0.8rem;
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    .btn-imprimir, .btn-whatsapp {
+      border: none;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: white;
+      transition: 0.1s;
+      white-space: nowrap;
+    }
+    .btn-imprimir { background: #764ba2; }
+    .btn-whatsapp { background: #25D366; }
+    .btn-imprimir:hover, .btn-whatsapp:hover { opacity:0.8; transform:scale(0.95); }
+
+    /* ===== VERSIÓN MÓVIL: TABLA COMO TARJETAS ===== */
+    @media (max-width: 600px) {
+      .tabla-wrapper {
+        overflow-x: visible;
+        border: none;
+        background: transparent;
+      }
+      table {
+        min-width: 0;
+        display: block;
+        border: none;
+      }
+      table thead {
+        display: none;
+      }
+      table tbody {
+        display: block;
+      }
+      table tr {
+        display: block;
+        background: white;
+        border-radius: 14px;
+        border: 1px solid #dce4ec;
+        padding: 12px 14px;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      }
+      table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px dashed #eaeef3;
+        font-size: 0.8rem;
+        gap: 8px;
+      }
+      table td:last-child { border-bottom: none; }
+      table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #1a5f7a;
+        flex-shrink: 0;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        width: 40%;
+      }
+      table td .btn-imprimir, 
+      table td .btn-whatsapp {
+        font-size: 0.6rem;
+        padding: 3px 8px;
+        margin-left: 4px;
+      }
+      table td:has(.btn-imprimir, .btn-whatsapp) {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 4px;
+      }
+      table td:has(.btn-imprimir, .btn-whatsapp)::before {
+        content: "Acciones";
+        width: 40%;
+      }
+    }
+
+    /* ===== AVISO ===== */
+    .aviso-cambio {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      background: #2c6e49;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 40px;
+      animation: slideIn 0.3s ease;
+      z-index: 999;
+      font-size: 0.8rem;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity:0; }
+      to { transform: translateX(0); opacity:1; }
     }
   </style>
 </head>
 <body>
+
+  <!-- FONDO BIOLÓGICO -->
+  <div class="bg-biologico" id="bgCanvas"></div>
+
   <div class="container">
     <div class="panel">
       <div class="panel-header">
-        <button id="btnCambiarARolBioanalista" class="btn-cambiar-rol">🔬 Cambiar a Bioanalista</button>
+        <button id="btnCerrarSesion" class="btn-cerrar-sesion">🚪 Cerrar Sesión</button>
         <h1>🏥 Laboratorio Clínico</h1>
-        <p>SISTEMA ADMINISTRATIVO - Gestión de Órdenes</p>
+        <p>SISTEMA ADMINISTRATIVO · Gestión de Órdenes</p>
       </div>
       <div class="panel-content">
         <div id="cargando" class="cargando-mensaje">
@@ -371,134 +563,119 @@
         </div>
         
         <div id="contenidoPrincipal" style="display: none;">
+          <!-- NAV -->
           <div class="navbar-reportes">
-            <button class="nav-item active" data-modulo="filtros">🔍 Filtro por Fecha/Estudio</button>
-            <button class="nav-item" data-modulo="porcentaje">📊 % de Estudio</button>
-            <button class="nav-item" data-modulo="nombres">📋 Nombres por Estudio</button>
-            <button class="nav-item" data-modulo="total">💰 Total por Estudio</button>
+            <button class="nav-item active" data-modulo="filtros">🔍 Filtro</button>
+            <button class="nav-item" data-modulo="porcentaje">📊 % Estudio</button>
+            <button class="nav-item" data-modulo="nombres">📋 Nombres</button>
+            <button class="nav-item" data-modulo="total">💰 Total</button>
             <button class="nav-item" data-modulo="estadisticas">📊 Estadísticas</button>
             <button class="nav-item" data-modulo="porcentaje-finalizados">✅ % Finalizados</button>
             <button class="nav-item" data-modulo="promedio">📈 Promedio</button>
+            <button class="nav-item" data-modulo="usuarios">👥 Usuarios</button>
           </div>
-          
-          <div class="admin-botones" style="margin-bottom: 20px;">
-            <button id="botonAbrirModal" class="btn-primario">+ Registrar Orden de Examen</button>
+
+          <div class="admin-botones">
+            <button id="botonAbrirModal" class="btn-primario">+ Registrar Orden</button>
           </div>
 
           <div id="admin_formulario">
+            <!-- MÓDULOS -->
             <div id="modulo-filtros" class="modulo-filtro active-modulo modulo-card">
-              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
-                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">🔍 Filtrar estudios por fecha</div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
-                  <label style="display: flex; flex-direction: column; gap: 6px;">
-                    Fecha
-                    <input id="filtro_fecha" type="date" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
-                  </label>
-                  <label style="display: flex; flex-direction: column; gap: 6px;">
-                    Estudio
-                    <select id="filtro_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
-                      <option value="">-- Seleccione un estudio --</option>
-                    </select>
-                  </label>
+              <div>
+                <div style="font-weight:600; color:#1a5f7a; margin-bottom:10px;">🔍 Filtrar estudios por fecha</div>
+                <div class="grid-2col">
+                  <label style="display:flex; flex-direction:column; gap:4px;">Fecha <input id="filtro_fecha" type="date"></label>
+                  <label style="display:flex; flex-direction:column; gap:4px;">Estudio <select id="filtro_tipo_estudio"><option value="">-- Seleccione --</option></select></label>
                 </div>
-                <button id="botonFiltrarEstudios" class="btn-secundario">🔎 Buscar cantidad</button>
-                <div id="resultadoFiltroEstudios" style="margin-top: 18px;"></div>
+                <button id="botonFiltrarEstudios" class="btn-secundario" style="margin-top:4px;">🔎 Buscar cantidad</button>
+                <div id="resultadoFiltroEstudios" style="margin-top:14px;"></div>
               </div>
             </div>
 
             <div id="modulo-porcentaje" class="modulo-porcentaje modulo-card">
-              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
-                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">📊 Porcentaje de estudio sobre el total</div>
-                <div style="margin-bottom: 14px;">
-                  <label style="display: flex; flex-direction: column; gap: 6px;">
-                    Estudio a analizar
-                    <select id="porcentaje_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
-                      <option value="">-- Seleccione un estudio --</option>
-                    </select>
-                  </label>
-                </div>
-                <button id="botonCalcularPorcentaje" class="btn-secundario" style="background: #764ba2; color: white;">📊 Calcular porcentaje</button>
-                <div id="resultadoPorcentajeEstudios" style="margin-top: 18px;"></div>
+              <div>
+                <div style="font-weight:600; color:#1a5f7a; margin-bottom:10px;">📊 Porcentaje de estudio sobre el total</div>
+                <label style="display:flex; flex-direction:column; gap:4px; margin-bottom:10px;">Estudio <select id="porcentaje_tipo_estudio"><option value="">-- Seleccione --</option></select></label>
+                <button id="botonCalcularPorcentaje" class="btn-secundario" style="background:#764ba2; color:white;">📊 Calcular porcentaje</button>
+                <div id="resultadoPorcentajeEstudios" style="margin-top:14px;"></div>
               </div>
             </div>
 
             <div id="modulo-nombres" class="modulo-nombres modulo-card">
-              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
-                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">📋 Nombres de pacientes por estudio</div>
-                <div style="margin-bottom: 14px;">
-                  <label style="display: flex; flex-direction: column; gap: 6px;">
-                    Estudio a analizar
-                    <select id="nombre_pacientes_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
-                      <option value="">-- Seleccione un estudio --</option>
-                    </select>
-                  </label>
-                </div>
-                <button id="botonObtenerNombres" class="btn-secundario" style="background: #764ba2; color: white;">📋 Obtener nombres</button>
-                <div id="resultadoNombrePacientesPorEstudio" style="margin-top: 18px;"></div>
+              <div>
+                <div style="font-weight:600; color:#1a5f7a; margin-bottom:10px;">📋 Nombres de pacientes por estudio</div>
+                <label style="display:flex; flex-direction:column; gap:4px; margin-bottom:10px;">Estudio <select id="nombre_pacientes_tipo_estudio"><option value="">-- Seleccione --</option></select></label>
+                <button id="botonObtenerNombres" class="btn-secundario" style="background:#764ba2; color:white;">📋 Obtener nombres</button>
+                <div id="resultadoNombrePacientesPorEstudio" style="margin-top:14px;"></div>
               </div>
             </div>
 
             <div id="modulo-total" class="modulo-total modulo-card">
-              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
-                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">💰 Total recaudado por estudio</div>
-                <div style="margin-bottom: 14px;">
-                  <label style="display: flex; flex-direction: column; gap: 6px;">
-                    Estudio a analizar
-                    <select id="total_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
-                      <option value="">-- Seleccione un estudio --</option>
-                    </select>
-                  </label>
-                </div>
-                <button id="botonObtenerTotalPorEstudio" class="btn-secundario" style="background: #764ba2; color: white;">💰 Calcular total</button>
-                <div id="resultadoTotalPorEstudio" style="margin-top: 18px;"></div>
+              <div>
+                <div style="font-weight:600; color:#1a5f7a; margin-bottom:10px;">💰 Total recaudado por estudio</div>
+                <label style="display:flex; flex-direction:column; gap:4px; margin-bottom:10px;">Estudio <select id="total_tipo_estudio"><option value="">-- Seleccione --</option></select></label>
+                <button id="botonObtenerTotalPorEstudio" class="btn-secundario" style="background:#764ba2; color:white;">💰 Calcular total</button>
+                <div id="resultadoTotalPorEstudio" style="margin-top:14px;"></div>
               </div>
             </div>
 
-            <!-- NUEVO MÓDULO: ESTADÍSTICAS POR ESTUDIO -->
             <div id="modulo-estadisticas" class="modulo-estadisticas modulo-card">
-              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
-                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">📊 Estadísticas de Solicitudes por Estudio</div>
-                <div style="margin-bottom: 14px;">
-                  <label style="display: flex; flex-direction: column; gap: 6px;">
-                    Estudio a analizar
-                    <select id="estadisticas_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
-                      <option value="">-- Seleccione un estudio --</option>
-                    </select>
-                  </label>
-                </div>
-                <button id="botonVerEstadisticasEstudio" class="btn-secundario" style="background: #1a5f7a; color: white;">📊 Ver Estadísticas</button>
-                <div id="resultadoEstadisticasEstudio" style="margin-top: 18px;"></div>
+              <div>
+                <div style="font-weight:600; color:#1a5f7a; margin-bottom:10px;">📊 Estadísticas de Solicitudes por Estudio</div>
+                <label style="display:flex; flex-direction:column; gap:4px; margin-bottom:10px;">Estudio <select id="estadisticas_tipo_estudio"><option value="">-- Seleccione --</option></select></label>
+                <button id="botonVerEstadisticasEstudio" class="btn-secundario" style="background:#1a5f7a; color:white;">📊 Ver Estadísticas</button>
+                <div id="resultadoEstadisticasEstudio" style="margin-top:14px;"></div>
               </div>
             </div>
 
-            <!-- NUEVO MÓDULO: PORCENTAJE DE FINALIZADOS -->
             <div id="modulo-porcentaje-finalizados" class="modulo-porcentaje-finalizados modulo-card">
-              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
-                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">✅ Porcentaje de Exámenes Finalizados</div>
-                <button id="botonPorcentajeFinalizados" class="btn-secundario" style="background: #4caf50; color: white;">✅ Calcular % Finalizados</button>
-                <div id="resultadoPorcentajeFinalizados" style="margin-top: 18px;"></div>
+              <div>
+                <div style="font-weight:600; color:#1a5f7a; margin-bottom:10px;">✅ Porcentaje de Exámenes Finalizados</div>
+                <button id="botonPorcentajeFinalizados" class="btn-secundario" style="background:#4caf50; color:white;">✅ Calcular % Finalizados</button>
+                <div id="resultadoPorcentajeFinalizados" style="margin-top:14px;"></div>
               </div>
             </div>
 
-            <!-- NUEVO MÓDULO: PROMEDIO GENERAL -->
             <div id="modulo-promedio" class="modulo-promedio modulo-card">
-              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
-                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">📈 Promedio General de un Estudio</div>
-                <div style="margin-bottom: 14px;">
-                  <label style="display: flex; flex-direction: column; gap: 6px;">
-                    Estudio a analizar
-                    <select id="promedio_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
-                      <option value="">-- Seleccione un estudio --</option>
-                    </select>
-                  </label>
+              <div>
+                <div style="font-weight:600; color:#1a5f7a; margin-bottom:10px;">📈 Promedio General de un Estudio</div>
+                <label style="display:flex; flex-direction:column; gap:4px; margin-bottom:10px;">Estudio <select id="promedio_tipo_estudio"><option value="">-- Seleccione --</option></select></label>
+                <button id="botonCalcularPromedioEstudio" class="btn-secundario" style="background:#ff9800; color:white;">📈 Calcular Promedio</button>
+                <div id="resultadoPromedioEstudio" style="margin-top:14px;"></div>
+              </div>
+            </div>
+
+            <!-- MÓDULO USUARIOS -->
+            <div id="modulo-usuarios" class="modulo-usuarios modulo-card">
+              <div>
+                <div style="font-weight:600; color:#1a5f7a; margin-bottom:10px;">👥 Gestión de Usuarios del Sistema</div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+                  <button id="btnMostrarCrearUsuario" class="btn-primario">➕ Crear Nuevo Usuario</button>
+                  <button id="btnRecargarUsuarios" class="btn-secundario">🔄 Recargar Lista</button>
                 </div>
-                <button id="botonCalcularPromedioEstudio" class="btn-secundario" style="background: #ff9800; color: white;">📈 Calcular Promedio</button>
-                <div id="resultadoPromedioEstudio" style="margin-top: 18px;"></div>
+                <div id="formCrearUsuario" style="display:none; background:#f0f6fa; padding:14px; border-radius:16px; margin-bottom:16px; border:1px solid #cbdde9;">
+                  <div style="font-weight:600; color:#1a5f7a; margin-bottom:8px;">📝 Nuevo Usuario</div>
+                  <div class="grid-2col">
+                    <div class="campo"><label>Usuario *</label><input type="text" id="inputNuevoUsuario" placeholder="jperez"></div>
+                    <div class="campo"><label>Nombre *</label><input type="text" id="inputNuevoNombre" placeholder="Juan Pérez"></div>
+                    <div class="campo"><label>Email *</label><input type="email" id="inputNuevoEmail" placeholder="jperez@lab.com"></div>
+                    <div class="campo"><label>Contraseña *</label><input type="password" id="inputNuevoPassword" placeholder="Mínimo 4 caracteres"></div>
+                    <div class="campo"><label>Rol *</label><select id="selectNuevoRol"><option value="bioanalista">🧪 Bioanalista</option><option value="recepcionista">📋 Recepcionista</option><option value="admin">🔧 Administrador</option></select></div>
+                  </div>
+                  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;">
+                    <button id="btnGuardarNuevoUsuario" class="btn-primario">💾 Guardar</button>
+                    <button id="btnCancelarCrearUsuario" class="btn-secundario">❌ Cancelar</button>
+                  </div>
+                  <div id="resultadoCrearUsuario" style="margin-top:10px;"></div>
+                </div>
+                <div id="tablaUsuarios"><div class="cargando-mensaje"><div class="loader" style="width:24px;height:24px;"></div>Cargando usuarios...</div></div>
               </div>
             </div>
           </div>
-          
-          <div class="seccion" style="margin-top: 32px;">
+
+          <!-- Resultados listos para impresión -->
+          <div style="margin-top:24px;">
             <div class="seccion-titulo">🖨️ Resultados Listos para Impresión</div>
             <div id="admin_finalizados"></div>
           </div>
@@ -510,45 +687,17 @@
   <!-- MODAL REGISTRAR EXAMEN -->
   <div id="modalExamen" class="modal">
     <div class="modal-contenido">
-      <div class="modal-header" style="background: #1a5f7a; color: white; border-radius: 20px 20px 0 0;">
-        <h3>📝 Registrar Orden Médica</h3>
+      <div class="modal-header" style="background:#1a5f7a; color:white; border-radius:28px 28px 0 0;">
+        <h3 style="color:white;">📝 Registrar Orden Médica</h3>
       </div>
       <div class="modal-body">
-        <div class="campo">
-          <label>Cédula de Identidad: <span style="color:#c0392b;">*</span></label>
-          <input type="text" id="modal_cedula" placeholder="Ej: V-12345678">
-          <small>Presione Enter para buscar</small>
-        </div>
-        <div class="campo">
-          <label>Nombre Completo: <span style="color:#c0392b;">*</span></label>
-          <input type="text" id="modal_nombre" placeholder="Ej: Manuel Flores">
-        </div>
-        <div class="campo">
-          <label>Teléfono: <span style="color:#c0392b;">*</span></label>
-          <input type="tel" id="modal_telefono" placeholder="Ej: 04121234567">
-          <small>Válidos: 0412, 0414, 0424, 0426, 0416, 0422</small>
-        </div>
-        <div class="campo">
-          <label>Estudios Solicitados: <span style="color:#c0392b;">*</span></label>
-          <div id="modal_checkboxes" class="checkbox-group">
-          </div>
-        </div>
-        <div class="campo">
-          <label>Total Provisional ($):</label>
-          <input type="number" id="modal_precio" value="0" readonly style="background:#f0f0f0; font-weight:bold; color:#2e7d32;">
-        </div>
-        <div class="campo">
-          <label>Método de Pago: <span style="color:#c0392b;">*</span></label>
-          <select id="modal_metodoPago">
-            <option value="Efectivo">💵 Efectivo</option>
-            <option value="Transferencia">🏦 Transferencia</option>
-            <option value="Pago Móvil">📱 Pago Móvil</option>
-          </select>
-        </div>
-        <div class="campo" id="campo_referencia" style="display:none;">
-          <label>Número de referencia: <span style="color:#c0392b;">*</span></label>
-          <input type="text" id="modal_referencia" placeholder="Ej: 1234567890">
-        </div>
+        <div class="campo"><label>Cédula <span style="color:#c0392b;">*</span></label><input type="text" id="modal_cedula" placeholder="V-12345678"><small>Presione Enter para buscar</small></div>
+        <div class="campo"><label>Nombre Completo <span style="color:#c0392b;">*</span></label><input type="text" id="modal_nombre" placeholder="Manuel Flores"></div>
+        <div class="campo"><label>Teléfono <span style="color:#c0392b;">*</span></label><input type="tel" id="modal_telefono" placeholder="04121234567"><small>Válidos: 0412, 0414, 0424, 0426, 0416, 0422</small></div>
+        <div class="campo"><label>Estudios Solicitados <span style="color:#c0392b;">*</span></label><div id="modal_checkboxes" class="checkbox-group"></div></div>
+        <div class="campo"><label>Total Provisional ($):</label><input type="number" id="modal_precio" value="0" readonly style="background:#f0f0f0; font-weight:bold; color:#2e7d32;"></div>
+        <div class="campo"><label>Método de Pago <span style="color:#c0392b;">*</span></label><select id="modal_metodoPago"><option value="Efectivo">💵 Efectivo</option><option value="Transferencia">🏦 Transferencia</option><option value="Pago Móvil">📱 Pago Móvil</option></select></div>
+        <div class="campo" id="campo_referencia" style="display:none;"><label>Número de referencia <span style="color:#c0392b;">*</span></label><input type="text" id="modal_referencia" placeholder="1234567890"></div>
       </div>
       <div class="modal-footer">
         <button id="modal_btnCancelar" class="btn-secundario" style="flex:1;">❌ Cancelar</button>
@@ -557,85 +706,107 @@
     </div>
   </div>
 
-  <script type="module">
-    import Cl_vAdmin from "./dist/views/Cl_vAdmin.js";
-    import Cl_vExamen from "./dist/views/Cl_vExamen.js";
-    import Cl_cExamen from "./dist/controllers/Cl_cExamen.js";
-    import Cl_cLaboratorioAdmin from "./dist/controllers/Cl_cLaboratorioAdmin.js";
-    import Cl_sEstudio from "./dist/services/Cl_sEstudio.js";
-    import Cl_mEstudio from "./dist/models/Cl_mEstudio.js";
-    
-    function mostrarAviso(mensaje, esError = false) {
-      const aviso = document.createElement('div');
-      aviso.className = 'aviso-cambio';
-      aviso.textContent = mensaje;
-      aviso.style.background = esError ? '#c0392b' : '#2c6e49';
-      document.body.appendChild(aviso);
-      setTimeout(() => aviso.remove(), 3000);
-    }
+  <!-- Modal Cambiar Contraseña -->
+  <div id="modalCambiarPassword" class="modal" style="display:none;">
+    <div class="modal-contenido" style="max-width:420px;">
+      <div class="modal-header" style="background:#1a5f7a; color:white; border-radius:28px 28px 0 0;"><h3 style="color:white;">🔑 Cambiar Contraseña</h3></div>
+      <div class="modal-body">
+        <p id="textoCambiarPassword" style="margin-bottom:14px; color:#2c3e50;"></p>
+        <div class="campo"><label>Nueva Contraseña *</label><input type="password" id="inputNuevaPassword" placeholder="Mínimo 4 caracteres"></div>
+        <div class="campo"><label>Confirmar *</label><input type="password" id="inputConfirmarPassword" placeholder="Repita la contraseña"></div>
+        <div id="resultadoCambiarPassword" style="margin-top:8px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnCancelarCambioPassword" class="btn-secundario" style="flex:1;">❌ Cancelar</button>
+        <button id="btnGuardarCambioPassword" class="btn-primario" style="flex:1;">💾 Guardar</button>
+      </div>
+    </div>
+  </div>
 
-    function cambiarABioanalista() {
-      fetch('index_bioanalista.html', { method: 'HEAD' })
-        .then(response => {
-          if (response.ok) {
-            mostrarAviso("🔬 Cambiando al panel de Bioanalista...");
-            setTimeout(() => window.location.href = 'index_bioanalista.html', 500);
-          } else {
-            mostrarAviso("⚠️ El módulo de Bioanalista no está disponible", true);
-          }
-        })
-        .catch(() => mostrarAviso("❌ Error al cambiar de módulo", true));
-    }
+  <!-- ============================================ -->
+  <!-- SCRIPTS CORREGIDOS -->
+  <!-- ============================================ -->
+  <script>
+    // Generar fondo biológico
+    (function generarElementosBiologicos() {
+      const canvas = document.getElementById('bgCanvas');
+      if (!canvas) return;
+      const add = (cls, styles) => { const d=document.createElement('div'); d.className=cls; Object.assign(d.style, styles); canvas.appendChild(d); };
+      [[160,8,3],[130,72,82],[180,78,8],[110,12,72],[150,48,42],[90,22,28],[70,88,52],[140,38,18],[100,32,62],[80,60,35]]
+        .forEach(([s,t,l])=> add('globulo-rojo-bg',{width:s+'px',height:s+'px',top:t+'%',left:l+'%'}));
+      [[90,28,12,18],[110,24,55,68],[70,20,82,28],[100,26,22,58],[80,22,68,12],[60,18,42,78],[120,30,5,45],[75,20,60,48],[95,25,35,8],[65,16,90,72]]
+        .forEach(([w,h,t,l])=> add('bacteria-baston-bg',{width:w+'px',height:h+'px',top:t+'%',left:l+'%'}));
+      [[140,15,40],[100,50,15],[160,75,55],[80,30,75],[120,60,60],[90,10,55],[130,45,30],[70,85,20],[110,20,10],[85,70,40]]
+        .forEach(([s,t,l])=> {
+          const d=document.createElement('div'); d.className='celula-nucleo-bg'; Object.assign(d.style,{width:s+'px',height:s+'px',top:t+'%',left:l+'%'});
+          const n=document.createElement('div'); n.className='nucleo-bg'; const ns=s*0.35; Object.assign(n.style,{width:ns+'px',height:ns+'px'});
+          const nl=document.createElement('div'); nl.className='nucleolo-bg'; const nls=ns*0.35; Object.assign(nl.style,{width:nls+'px',height:nls+'px'});
+          n.appendChild(nl); d.appendChild(n); canvas.appendChild(d);
+        });
+      [[30,5,10],[25,50,90],[35,80,5],[20,15,85],[28,45,55],[22,25,25],[32,70,70],[18,35,45],[26,55,20],[20,90,40],[30,10,50],[24,75,85]]
+        .forEach(([s,t,l])=> add('hemacie-bg',{width:s+'px',height:s+'px',top:t+'%',left:l+'%'}));
+      [[15,85,40],[60,5,35],[30,50,30],[80,65,45],[45,20,25],[70,40,38],[10,30,32],[90,80,28]]
+        .forEach(([t,l,s])=> {
+          const d=document.createElement('div'); d.className='dna-molecula-bg'; Object.assign(d.style,{top:t+'%',left:l+'%',width:s+'px',height:s+'px'});
+          d.innerHTML=`<svg viewBox="0 0 100 100"><path d="M20 10 Q40 30 20 50 Q0 70 20 90" stroke="rgba(100,150,200,0.08)" stroke-width="2" fill="none"/><path d="M80 10 Q60 30 80 50 Q100 70 80 90" stroke="rgba(100,150,200,0.08)" stroke-width="2" fill="none"/><line x1="30" y1="25" x2="70" y2="25" stroke="rgba(100,150,200,0.04)" stroke-width="1.5"/><line x1="30" y1="40" x2="70" y2="40" stroke="rgba(100,150,200,0.04)" stroke-width="1.5"/><line x1="20" y1="55" x2="80" y2="55" stroke="rgba(100,150,200,0.04)" stroke-width="1.5"/><line x1="30" y1="70" x2="70" y2="70" stroke="rgba(100,150,200,0.04)" stroke-width="1.5"/><line x1="20" y1="85" x2="80" y2="85" stroke="rgba(100,150,200,0.04)" stroke-width="1.5"/><circle cx="20" cy="10" r="3" fill="rgba(100,150,200,0.03)"/><circle cx="80" cy="10" r="3" fill="rgba(100,150,200,0.03)"/><circle cx="20" cy="50" r="3" fill="rgba(100,150,200,0.03)"/><circle cx="80" cy="50" r="3" fill="rgba(100,150,200,0.03)"/><circle cx="20" cy="90" r="3" fill="rgba(100,150,200,0.03)"/><circle cx="80" cy="90" r="3" fill="rgba(100,150,200,0.03)"/></svg>`;
+          canvas.appendChild(d);
+        });
+    })();
+
+    // Verificar sesión - Admin
+    (function verificarSesion() {
+      const sesion = sessionStorage.getItem('labUser');
+      if (!sesion) { window.location.href='indexlogin.html'; return; }
+      try {
+        const datos=JSON.parse(sesion);
+        if(!datos.rol || !datos.timestamp || Date.now()-datos.timestamp>28800000 || datos.rol!=='admin') {
+          sessionStorage.removeItem('labUser'); window.location.href='indexlogin.html'; return;
+        }
+      } catch(e){ sessionStorage.removeItem('labUser'); window.location.href='indexlogin.html'; return; }
+      document.getElementById('btnCerrarSesion').addEventListener('click', ()=>{ sessionStorage.removeItem('labUser'); window.location.replace('indexlogin.html'); });
+      window.history.pushState(null,'',window.location.href);
+      window.addEventListener('popstate', ()=>{
+        if(!sessionStorage.getItem('labUser')) window.location.replace('indexlogin.html');
+        else window.history.pushState(null,'',window.location.href);
+      });
+    })();
+  </script>
+
+  <!-- ============================================ -->
+  <!-- MÓDULO PRINCIPAL - CORREGIDO -->
+  <!-- ============================================ -->
+  <script type="module">
+    import Cl_vAdmin from './dist/views/Cl_vAdmin.js';
+    import Cl_vExamen from './dist/views/Cl_vExamen.js';
+    import Cl_cExamen from './dist/controllers/Cl_cExamen.js';
+    import Cl_cLaboratorioAdmin from './dist/controllers/Cl_cLaboratorioAdmin.js';
+    import Cl_sEstudio from './dist/services/Cl_sEstudio.js';
     
     function inicializarNavegacionPorTabs() {
       const botonesNav = document.querySelectorAll('.nav-item');
-      const moduloFiltros = document.getElementById('modulo-filtros');
-      const moduloPorcentaje = document.getElementById('modulo-porcentaje');
-      const moduloNombres = document.getElementById('modulo-nombres');
-      const moduloTotal = document.getElementById('modulo-total');
-      const moduloEstadisticas = document.getElementById('modulo-estadisticas');
-      const moduloPorcentajeFinalizados = document.getElementById('modulo-porcentaje-finalizados');
-      const moduloPromedio = document.getElementById('modulo-promedio');
-      
-      function activarModulo(moduloId) {
-        if (moduloFiltros) moduloFiltros.classList.remove('active-modulo');
-        if (moduloPorcentaje) moduloPorcentaje.classList.remove('active-modulo');
-        if (moduloNombres) moduloNombres.classList.remove('active-modulo');
-        if (moduloTotal) moduloTotal.classList.remove('active-modulo');
-        if (moduloEstadisticas) moduloEstadisticas.classList.remove('active-modulo');
-        if (moduloPorcentajeFinalizados) moduloPorcentajeFinalizados.classList.remove('active-modulo');
-        if (moduloPromedio) moduloPromedio.classList.remove('active-modulo');
-        
-        if (moduloId === 'filtros' && moduloFiltros) moduloFiltros.classList.add('active-modulo');
-        if (moduloId === 'porcentaje' && moduloPorcentaje) moduloPorcentaje.classList.add('active-modulo');
-        if (moduloId === 'nombres' && moduloNombres) moduloNombres.classList.add('active-modulo');
-        if (moduloId === 'total' && moduloTotal) moduloTotal.classList.add('active-modulo');
-        if (moduloId === 'estadisticas' && moduloEstadisticas) moduloEstadisticas.classList.add('active-modulo');
-        if (moduloId === 'porcentaje-finalizados' && moduloPorcentajeFinalizados) moduloPorcentajeFinalizados.classList.add('active-modulo');
-        if (moduloId === 'promedio' && moduloPromedio) moduloPromedio.classList.add('active-modulo');
-        
-        botonesNav.forEach(btn => {
-          const btnModulo = btn.getAttribute('data-modulo');
-          if (btnModulo === moduloId) {
-            btn.classList.add('active');
-          } else {
-            btn.classList.remove('active');
-          }
-        });
+      const modulos = {
+        filtros: document.getElementById('modulo-filtros'),
+        porcentaje: document.getElementById('modulo-porcentaje'),
+        nombres: document.getElementById('modulo-nombres'),
+        total: document.getElementById('modulo-total'),
+        estadisticas: document.getElementById('modulo-estadisticas'),
+        'porcentaje-finalizados': document.getElementById('modulo-porcentaje-finalizados'),
+        promedio: document.getElementById('modulo-promedio'),
+        usuarios: document.getElementById('modulo-usuarios')
+      };
+      function activarModulo(id) {
+        Object.keys(modulos).forEach(key => { if(modulos[key]) modulos[key].classList.toggle('active-modulo', key===id); });
+        botonesNav.forEach(btn => btn.classList.toggle('active', btn.dataset.modulo===id));
       }
-      
-      botonesNav.forEach(btn => {
-        btn.addEventListener('click', () => {
-          const moduloId = btn.getAttribute('data-modulo');
-          if (moduloId) activarModulo(moduloId);
-        });
-      });
-      
+      botonesNav.forEach(btn => btn.addEventListener('click', ()=> activarModulo(btn.dataset.modulo)));
       activarModulo('filtros');
     }
 
     async function iniciarAplicacion() {
       try {
+        console.log('🏥 Iniciando panel de Administrador...');
+        
+        // Cargar catálogo de estudios desde Supabase
         await Cl_sEstudio.cargarCatálogo();
         
         document.getElementById("cargando").style.display = "none";
@@ -648,15 +819,14 @@
         const cExamen = new Cl_cExamen(vExamen);
         const cLaboratorioAdmin = new Cl_cLaboratorioAdmin(vAdmin, cExamen);
         
-        const btnCambioRol = document.getElementById("btnCambiarARolBioanalista");
-        if (btnCambioRol) {
-          const nuevoBoton = btnCambioRol.cloneNode(true);
-          btnCambioRol.parentNode.replaceChild(nuevoBoton, btnCambioRol);
-          nuevoBoton.addEventListener("click", cambiarABioanalista);
-        }
+        console.log('✅ Panel de Administrador iniciado correctamente');
       } catch (error) {
-        console.error(error);
-        document.getElementById("cargando").innerHTML = '<p style="color:red;">Error al cargar. <button onclick="location.reload()">Reintentar</button></p>';
+        console.error('❌ Error al iniciar:', error);
+        document.getElementById("cargando").innerHTML = `
+          <p style="color: red; font-weight: 600;">❌ Error al cargar</p>
+          <p style="color: #666; font-size: 0.9rem;">${error.message}</p>
+          <button onclick="location.reload()" style="margin-top: 12px; padding: 8px 20px; background: #1a5f7a; color: white; border: none; border-radius: 8px; cursor: pointer;">Reintentar</button>
+        `;
       }
     }
     
