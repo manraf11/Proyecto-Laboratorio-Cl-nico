@@ -35,13 +35,6 @@
     "allowImportingTsExtensions": false,
     "moduleDetection": "force"
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "config",
-    "src/config"
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "config", "src/config"]
 }

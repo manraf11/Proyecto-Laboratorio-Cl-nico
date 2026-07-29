@@ -1,10 +1,14 @@
 {
   "rewrites": [
-    { "source": "/api/cedula", "destination": "/api/cedula" }
+    { "source": "/api/cedula", "destination": "/api/cedula" },
+    { "source": "/(.*)", "destination": "/" }
   ],
   "functions": {
     "api/cedula.js": {
       "runtime": "nodejs18.x"
     }
-  }
+  },
+  "buildCommand": "npm run build",
+  "outputDirectory": ".",
+  "installCommand": "npm install"
 }
