@@ -5,15 +5,6 @@
     "moduleResolution": "node",
     "rootDir": "./src",
     "outDir": "./dist",
-    "baseUrl": "./src",
-    "paths": {
-      "*": ["*"],
-      "@models/*": ["models/*"],
-      "@services/*": ["services/*"],
-      "@controllers/*": ["controllers/*"],
-      "@views/*": ["views/*"],
-      "@interfaces/*": ["interfaces/*"]
-    },
     "sourceMap": true,
     "noEmitOnError": false,
     "esModuleInterop": true,
