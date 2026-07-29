@@ -513,6 +513,7 @@
         padding: 3px 8px;
         margin-left: 4px;
       }
+      /* Para celdas con múltiples botones */
       table td:has(.btn-imprimir, .btn-whatsapp) {
         flex-wrap: wrap;
         justify-content: flex-end;
@@ -723,37 +724,28 @@
     </div>
   </div>
 
-  <!-- ============================================ -->
-  <!-- SCRIPTS CORREGIDOS -->
-  <!-- ============================================ -->
+  <!-- ===== SCRIPTS ===== -->
   <script>
-    // Generar fondo biológico
     (function generarElementosBiologicos() {
       const canvas = document.getElementById('bgCanvas');
       if (!canvas) return;
       const add = (cls, styles) => { const d=document.createElement('div'); d.className=cls; Object.assign(d.style, styles); canvas.appendChild(d); };
-      [[160,8,3],[130,72,82],[180,78,8],[110,12,72],[150,48,42],[90,22,28],[70,88,52],[140,38,18],[100,32,62],[80,60,35]]
-        .forEach(([s,t,l])=> add('globulo-rojo-bg',{width:s+'px',height:s+'px',top:t+'%',left:l+'%'}));
-      [[90,28,12,18],[110,24,55,68],[70,20,82,28],[100,26,22,58],[80,22,68,12],[60,18,42,78],[120,30,5,45],[75,20,60,48],[95,25,35,8],[65,16,90,72]]
-        .forEach(([w,h,t,l])=> add('bacteria-baston-bg',{width:w+'px',height:h+'px',top:t+'%',left:l+'%'}));
-      [[140,15,40],[100,50,15],[160,75,55],[80,30,75],[120,60,60],[90,10,55],[130,45,30],[70,85,20],[110,20,10],[85,70,40]]
-        .forEach(([s,t,l])=> {
-          const d=document.createElement('div'); d.className='celula-nucleo-bg'; Object.assign(d.style,{width:s+'px',height:s+'px',top:t+'%',left:l+'%'});
-          const n=document.createElement('div'); n.className='nucleo-bg'; const ns=s*0.35; Object.assign(n.style,{width:ns+'px',height:ns+'px'});
-          const nl=document.createElement('div'); nl.className='nucleolo-bg'; const nls=ns*0.35; Object.assign(nl.style,{width:nls+'px',height:nls+'px'});
-          n.appendChild(nl); d.appendChild(n); canvas.appendChild(d);
-        });
-      [[30,5,10],[25,50,90],[35,80,5],[20,15,85],[28,45,55],[22,25,25],[32,70,70],[18,35,45],[26,55,20],[20,90,40],[30,10,50],[24,75,85]]
-        .forEach(([s,t,l])=> add('hemacie-bg',{width:s+'px',height:s+'px',top:t+'%',left:l+'%'}));
-      [[15,85,40],[60,5,35],[30,50,30],[80,65,45],[45,20,25],[70,40,38],[10,30,32],[90,80,28]]
-        .forEach(([t,l,s])=> {
-          const d=document.createElement('div'); d.className='dna-molecula-bg'; Object.assign(d.style,{top:t+'%',left:l+'%',width:s+'px',height:s+'px'});
-          d.innerHTML=`<svg viewBox="0 0 100 100"><path d="M20 10 Q40 30 20 50 Q0 70 20 90" stroke="rgba(100,150,200,0.08)" stroke-width="2" fill="none"/><path d="M80 10 Q60 30 80 50 Q100 70 80 90" stroke="rgba(100,150,200,0.08)" stroke-width="2" fill="none"/><line x1="30" y1="25" x2="70" y2="25" stroke="rgba(100,150,200,0.04)" stroke-width="1.5"/><line x1="30" y1="40" x2="70" y2="40" stroke="rgba(100,150,200,0.04)" stroke-width="1.5"/><line x1="20" y1="55" x2="80" y2="55" stroke="rgba(100,150,200,0.04)" stroke-width="1.5"/><line x1="30" y1="70" x2="70" y2="70" stroke="rgba(100,150,200,0.04)" stroke-width="1.5"/><line x1="20" y1="85" x2="80" y2="85" stroke="rgba(100,150,200,0.04)" stroke-width="1.5"/><circle cx="20" cy="10" r="3" fill="rgba(100,150,200,0.03)"/><circle cx="80" cy="10" r="3" fill="rgba(100,150,200,0.03)"/><circle cx="20" cy="50" r="3" fill="rgba(100,150,200,0.03)"/><circle cx="80" cy="50" r="3" fill="rgba(100,150,200,0.03)"/><circle cx="20" cy="90" r="3" fill="rgba(100,150,200,0.03)"/><circle cx="80" cy="90" r="3" fill="rgba(100,150,200,0.03)"/></svg>`;
-          canvas.appendChild(d);
-        });
+      [[160,8,3],[130,72,82],[180,78,8],[110,12,72],[150,48,42],[90,22,28],[70,88,52],[140,38,18],[100,32,62],[80,60,35]].forEach(([s,t,l])=> add('globulo-rojo-bg',{width:s+'px',height:s+'px',top:t+'%',left:l+'%'}));
+      [[90,28,12,18],[110,24,55,68],[70,20,82,28],[100,26,22,58],[80,22,68,12],[60,18,42,78],[120,30,5,45],[75,20,60,48],[95,25,35,8],[65,16,90,72]].forEach(([w,h,t,l])=> add('bacteria-baston-bg',{width:w+'px',height:h+'px',top:t+'%',left:l+'%'}));
+      [[140,15,40],[100,50,15],[160,75,55],[80,30,75],[120,60,60],[90,10,55],[130,45,30],[70,85,20],[110,20,10],[85,70,40]].forEach(([s,t,l])=> {
+        const d=document.createElement('div'); d.className='celula-nucleo-bg'; Object.assign(d.style,{width:s+'px',height:s+'px',top:t+'%',left:l+'%'});
+        const n=document.createElement('div'); n.className='nucleo-bg'; const ns=s*0.35; Object.assign(n.style,{width:ns+'px',height:ns+'px'});
+        const nl=document.createElement('div'); nl.className='nucleolo-bg'; const nls=ns*0.35; Object.assign(nl.style,{width:nls+'px',height:nls+'px'});
+        n.appendChild(nl); d.appendChild(n); canvas.appendChild(d);
+      });
+      [[30,5,10],[25,50,90],[35,80,5],[20,15,85],[28,45,55],[22,25,25],[32,70,70],[18,35,45],[26,55,20],[20,90,40],[30,10,50],[24,75,85]].forEach(([s,t,l])=> add('hemacie-bg',{width:s+'px',height:s+'px',top:t+'%',left:l+'%'}));
+      [[15,85,40],[60,5,35],[30,50,30],[80,65,45],[45,20,25],[70,40,38],[10,30,32],[90,80,28]].forEach(([t,l,s])=> {
+        const d=document.createElement('div'); d.className='dna-molecula-bg'; Object.assign(d.style,{top:t+'%',left:l+'%',width:s+'px',height:s+'px'});
+        d.innerHTML=`<svg viewBox="0 0 100 100"><path d="M20 10 Q40 30 20 50 Q0 70 20 90" stroke="rgba(100,150,200,0.08)" stroke-width="2" fill="none"/><path d="M80 10 Q60 30 80 50 Q100 70 80 90" stroke="rgba(100,150,200,0.08)" stroke-width="2" fill="none"/><line x1="30" y1="25" x2="70" y2="25" stroke="rgba(100,150,200,0.04)" stroke-width="1.5"/><line x1="30" y1="40" x2="70" y2="40" stroke="rgba(100,150,200,0.04)" stroke-width="1.5"/><line x1="20" y1="55" x2="80" y2="55" stroke="rgba(100,150,200,0.04)" stroke-width="1.5"/><line x1="30" y1="70" x2="70" y2="70" stroke="rgba(100,150,200,0.04)" stroke-width="1.5"/><line x1="20" y1="85" x2="80" y2="85" stroke="rgba(100,150,200,0.04)" stroke-width="1.5"/><circle cx="20" cy="10" r="3" fill="rgba(100,150,200,0.03)"/><circle cx="80" cy="10" r="3" fill="rgba(100,150,200,0.03)"/><circle cx="20" cy="50" r="3" fill="rgba(100,150,200,0.03)"/><circle cx="80" cy="50" r="3" fill="rgba(100,150,200,0.03)"/><circle cx="20" cy="90" r="3" fill="rgba(100,150,200,0.03)"/><circle cx="80" cy="90" r="3" fill="rgba(100,150,200,0.03)"/></svg>`;
+        canvas.appendChild(d);
+      });
     })();
 
-    // Verificar sesión - Admin
     (function verificarSesion() {
       const sesion = sessionStorage.getItem('labUser');
       if (!sesion) { window.location.href='indexlogin.html'; return; }
@@ -772,15 +764,13 @@
     })();
   </script>
 
-  <!-- ============================================ -->
-  <!-- MÓDULO PRINCIPAL - CORREGIDO -->
-  <!-- ============================================ -->
   <script type="module">
-    import Cl_vAdmin from './dist/views/Cl_vAdmin.js';
-    import Cl_vExamen from './dist/views/Cl_vExamen.js';
-    import Cl_cExamen from './dist/controllers/Cl_cExamen.js';
-    import Cl_cLaboratorioAdmin from './dist/controllers/Cl_cLaboratorioAdmin.js';
-    import Cl_sEstudio from './dist/services/Cl_sEstudio.js';
+    import Cl_vAdmin from "./dist/views/Cl_vAdmin.js";
+    import Cl_vExamen from "./dist/views/Cl_vExamen.js";
+    import Cl_cExamen from "./dist/controllers/Cl_cExamen.js";
+    import Cl_cLaboratorioAdmin from "./dist/controllers/Cl_cLaboratorioAdmin.js";
+    import Cl_sEstudio from "./dist/services/Cl_sEstudio.js";
+    import Cl_mEstudio from "./dist/models/Cl_mEstudio.js";
     
     function inicializarNavegacionPorTabs() {
       const botonesNav = document.querySelectorAll('.nav-item');
@@ -804,32 +794,19 @@
 
     async function iniciarAplicacion() {
       try {
-        console.log('🏥 Iniciando panel de Administrador...');
-        
-        // Cargar catálogo de estudios desde Supabase
         await Cl_sEstudio.cargarCatálogo();
-        
         document.getElementById("cargando").style.display = "none";
         document.getElementById("contenidoPrincipal").style.display = "block";
-        
         inicializarNavegacionPorTabs();
-        
         const vAdmin = new Cl_vAdmin();
         const vExamen = new Cl_vExamen();
         const cExamen = new Cl_cExamen(vExamen);
         const cLaboratorioAdmin = new Cl_cLaboratorioAdmin(vAdmin, cExamen);
-        
-        console.log('✅ Panel de Administrador iniciado correctamente');
       } catch (error) {
-        console.error('❌ Error al iniciar:', error);
-        document.getElementById("cargando").innerHTML = `
-          <p style="color: red; font-weight: 600;">❌ Error al cargar</p>
-          <p style="color: #666; font-size: 0.9rem;">${error.message}</p>
-          <button onclick="location.reload()" style="margin-top: 12px; padding: 8px 20px; background: #1a5f7a; color: white; border: none; border-radius: 8px; cursor: pointer;">Reintentar</button>
-        `;
+        console.error(error);
+        document.getElementById("cargando").innerHTML = '<p style="color:red;">Error al cargar. <button onclick="location.reload()">Reintentar</button></p>';
       }
     }
-    
     iniciarAplicacion();
   </script>
 </body>
