@@ -1,7 +1,8 @@
 import Cl_mExamen from "../models/Cl_mExamen.js";
+// Eliminar import de Cl_mEstudio si no se usa
 import Cl_sEstudio from "../services/Cl_sEstudio.js";
 import Cl_sLaboratorio from "../services/Cl_sLaboratorio.js";
-import Cl_sCedula from "../services/Cl_sCedula.js";
+// ELIMINAR ESTA LÍNEA: import Cl_sCedula from "../services/Cl_sCedula.js";
 export default class Cl_cExamen {
     pantallaExamen;
     avisar = null;
@@ -63,6 +64,9 @@ export default class Cl_cExamen {
         }
         this.pantallaExamen.ocultar();
     }
+    // ============================================
+    // CORREGIDO: BÚSQUEDA DE CÉDULA
+    // ============================================
     async buscarCedula(cedula) {
         if (!cedula || cedula.trim() === "")
             return;
@@ -71,13 +75,14 @@ export default class Cl_cExamen {
         }
         try {
             const resMockApi = await Cl_sLaboratorio.buscarPorCedula(cedula);
-            if (resMockApi.ok && resMockApi.registro) {
+            // Caso 1: Encontró en la base de datos
+            if (resMockApi.ok && resMockApi.registro && resMockApi.registro.nombrePaciente) {
                 const r = resMockApi.registro;
                 if (this.pantallaExamen.mostrarDatosPaciente) {
                     this.pantallaExamen.mostrarDatosPaciente({
                         nombre: r.nombrePaciente || "",
                         telefono: r.telefonoPaciente || "",
-                        origen: "mockapi"
+                        origen: "db"
                     });
                 }
                 if (this.pantallaExamen.mostrarMensajeExito) {
@@ -88,35 +93,32 @@ export default class Cl_cExamen {
                 }
                 return;
             }
-            if (this.pantallaExamen.mostrarConsultandoAPI) {
-                this.pantallaExamen.mostrarConsultandoAPI();
-            }
-            const resultadoApi = await Cl_sCedula.consultarPorCedula(cedula);
-            if (resultadoApi.exito && resultadoApi.nombreCompleto) {
+            // Caso 2: No encontró en BD, pero la API devolvió un nombre
+            if (resMockApi.ok && resMockApi.nombreApi) {
                 if (this.pantallaExamen.mostrarDatosPaciente) {
                     this.pantallaExamen.mostrarDatosPaciente({
-                        nombre: resultadoApi.nombreCompleto,
+                        nombre: resMockApi.nombreApi,
                         telefono: "",
                         origen: "cne"
                     });
                 }
                 if (this.pantallaExamen.mostrarMensajeExito) {
-                    this.pantallaExamen.mostrarMensajeExito(`✅ Datos obtenidos del CNE:\n👤 ${resultadoApi.nombreCompleto}`);
+                    this.pantallaExamen.mostrarMensajeExito(`✅ Datos obtenidos del CNE:\n👤 ${resMockApi.nombreApi}`);
                 }
                 else {
-                    alert(`✅ Datos obtenidos del CNE:\n👤 ${resultadoApi.nombreCompleto}`);
+                    alert(`✅ Datos obtenidos del CNE:\n👤 ${resMockApi.nombreApi}`);
                 }
+                return;
+            }
+            // Caso 3: No encontrado en ningún lado
+            if (this.pantallaExamen.mostrarErrorBusqueda) {
+                this.pantallaExamen.mostrarErrorBusqueda("ℹ️ Cédula no encontrada. Complete los datos manualmente.");
             }
             else {
-                if (this.pantallaExamen.mostrarErrorBusqueda) {
-                    this.pantallaExamen.mostrarErrorBusqueda(`ℹ️ ${resultadoApi.mensaje}\nComplete los datos manualmente.`);
-                }
-                else {
-                    alert(`ℹ️ ${resultadoApi.mensaje}\nComplete los datos manualmente.`);
-                }
-                if (this.pantallaExamen.enfocarCampoNombre) {
-                    this.pantallaExamen.enfocarCampoNombre();
-                }
+                alert("ℹ️ Cédula no encontrada. Complete los datos manualmente.");
+            }
+            if (this.pantallaExamen.enfocarCampoNombre) {
+                this.pantallaExamen.enfocarCampoNombre();
             }
         }
         catch (error) {

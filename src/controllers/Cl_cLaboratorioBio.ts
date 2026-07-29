@@ -1,6 +1,5 @@
 // controllers/Cl_cLaboratorioBio.ts
 import Cl_mLaboratorio from "../models/Cl_mLaboratorio.js";
-import Cl_mExamen from "../models/Cl_mExamen.js";
 import Cl_mEstudio from "../models/Cl_mEstudio.js";
 import Cl_sLaboratorio from "../services/Cl_sLaboratorio.js";
 import Cl_sEstudio from "../services/Cl_sEstudio.js";
@@ -75,43 +74,54 @@ export default class Cl_cLaboratorioBio {
   
   private async guardarResultados(idExamen: string, resultados: string[]) {
     let examen = this.laboratorio.buscarPorId(idExamen);
-    if (examen && examen.id) {
-      const estudios = examen.obtenerArregloEstudios();
-      const placeholders = ["pendiente", "no realizado", "nr", "-", "n/a", "na"];
-      
-      let hayResultadosVacios = false;
-      for (let i = 0; i < resultados.length; i++) {
-        const r = resultados[i]?.trim() || "";
-        if (r === "" || placeholders.includes(r.toLowerCase())) {
-          hayResultadosVacios = true;
-          break;
-        }
+    if (!examen || !examen.id) {
+      alert("❌ No se encontró el examen.");
+      return;
+    }
+    
+    const estudios = examen.obtenerArregloEstudios();
+    const placeholders = ["pendiente", "no realizado", "nr", "-", "n/a", "na"];
+    
+    let hayResultadosVacios = false;
+    for (let i = 0; i < resultados.length; i++) {
+      const r = resultados[i]?.trim() || "";
+      if (r === "" || placeholders.includes(r.toLowerCase())) {
+        hayResultadosVacios = true;
+        break;
       }
-      
-      if (hayResultadosVacios) {
-        const confirmar = confirm(
-          "⚠️ Algunos resultados están vacíos o tienen valores como 'pendiente'.\n" +
-          "¿Desea guardarlos así? El examen permanecerá en PREPARACIÓN."
-        );
-        if (!confirmar) return;
-      }
-      
-      examen.resultadoExamen = resultados.join(", ");
-      
+    }
+    
+    if (hayResultadosVacios) {
+      const confirmar = confirm(
+        "⚠️ Algunos resultados están vacíos o tienen valores como 'pendiente'.\n" +
+        "¿Desea guardarlos así? El examen permanecerá en PREPARACIÓN."
+      );
+      if (!confirmar) return;
+    }
+    
+    // Actualizar los resultados en el objeto examen
+    examen.resultadoExamen = resultados.join(", ");
+    
+    // Determinar nuevo estado
+    if (!hayResultadosVacios && resultados.length === estudios.length) {
+      examen.cambiarEstado("pendiente");
+    } else {
+      examen.cambiarEstado("preparacion");
+    }
+    
+    // Guardar en la base de datos
+    let exito = await Cl_sLaboratorio.actualizarEnNube(examen.id, examen);
+    
+    if (exito && exito.ok) {
       if (!hayResultadosVacios && resultados.length === estudios.length) {
-        examen.cambiarEstado("pendiente");
         alert("✅ Resultados guardados correctamente. El examen ahora está en estado PENDIENTE.");
       } else {
-        examen.cambiarEstado("preparacion");
         alert("ℹ️ Resultados guardados. El examen permanece en PREPARACIÓN porque faltan resultados.");
       }
-      
-      let exito = await Cl_sLaboratorio.actualizarEnNube(examen.id, examen);
-      if (exito.ok) {
-        await this.cargarExamenes();
-      } else {
-        alert("❌ Error al guardar los resultados.");
-      }
+      await this.cargarExamenes();
+    } else {
+      alert("❌ Error al guardar los resultados. Por favor, intente nuevamente.");
+      console.error("Error al guardar resultados:", exito);
     }
   }
 
@@ -126,7 +136,7 @@ export default class Cl_cLaboratorioBio {
       examen.cambiarEstado("listo");
       
       let exito = await Cl_sLaboratorio.actualizarEnNube(examen.id, examen);
-      if (exito.ok) {
+      if (exito && exito.ok) {
         alert(`✅ Orden de ${examen.nombrePaciente} completada exitosamente.`);
         await this.cargarExamenes();
       } else {

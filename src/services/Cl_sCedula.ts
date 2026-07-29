@@ -10,6 +10,8 @@ export interface DatosCedula {
 }
 
 export default class Cl_sCedula {
+  // Esta URL debe apuntar a tu API de verificación de cédula
+  // Si usas el mismo endpoint que MockAPI, debe ser:
   private static readonly API_URL = "/api/cedula.js";
 
   static async consultarPorCedula(cedulaCompleta: string): Promise<DatosCedula> {
@@ -33,10 +35,14 @@ export default class Cl_sCedula {
     }
     
     try {
+      // Construir URL con los parámetros
       const url = `${this.API_URL}?cedula=${numeroCedula}&nacionalidad=${nacionalidad}`;
+      console.log(`🌐 Cl_sCedula consultando: ${url}`);
+      
       const respuesta = await fetch(url);
       
       if (!respuesta.ok) {
+        console.log(`⚠️ Cl_sCedula respondió con status: ${respuesta.status}`);
         return {
           exito: false,
           mensaje: `Error HTTP: ${respuesta.status}`
@@ -44,6 +50,7 @@ export default class Cl_sCedula {
       }
       
       const datos = await respuesta.json();
+      console.log(`📊 Cl_sCedula respuesta:`, datos);
       
       if (datos.error === true) {
         return {
@@ -52,6 +59,7 @@ export default class Cl_sCedula {
         };
       }
       
+      // Verificar diferentes formatos de respuesta
       if (datos.data && datos.data.nombre_completo) {
         return {
           exito: true,
@@ -60,6 +68,14 @@ export default class Cl_sCedula {
           estado: datos.data.estado || '',
           municipio: datos.data.municipio || '',
           parroquia: datos.data.parroquia || ''
+        };
+      }
+      
+      if (datos.nombre) {
+        return {
+          exito: true,
+          mensaje: 'Datos obtenidos correctamente',
+          nombreCompleto: datos.nombre
         };
       }
       

@@ -31,6 +31,14 @@ export default class Cl_vAdmin implements I_vAdmin {
   private botonPorcentajeFinalizados: HTMLButtonElement | null = null;
   private botonCalcularPromedio: HTMLButtonElement | null = null;
 
+  // Variables para gestión de usuarios
+  private avisarMostrarCrearUsuario: (() => void) | null = null;
+  private avisarRecargarUsuarios: (() => void) | null = null;
+  private avisarGuardarNuevoUsuario: (() => void) | null = null;
+  private avisarCancelarCrearUsuario: (() => void) | null = null;
+  private avisarGuardarCambioPassword: (() => void) | null = null;
+  private avisarCancelarCambioPassword: (() => void) | null = null;
+
   constructor() {
     this.divFinalizados = document.getElementById("admin_finalizados") as HTMLElement;
     this.divFormulario = document.getElementById("admin_formulario") as HTMLElement;
@@ -319,6 +327,56 @@ export default class Cl_vAdmin implements I_vAdmin {
         if (this.avisarObtenerNombres) this.avisarObtenerNombres(tipo);
       };
     }
+
+    // ============================================
+    // INICIALIZAR EVENTOS DE GESTIÓN DE USUARIOS
+    // ============================================
+    this.inicializarEventosUsuarios();
+  }
+
+  private inicializarEventosUsuarios(): void {
+    const btnMostrarCrear = document.getElementById("btnMostrarCrearUsuario");
+    const btnRecargar = document.getElementById("btnRecargarUsuarios");
+    const btnGuardarNuevo = document.getElementById("btnGuardarNuevoUsuario");
+    const btnCancelarCrear = document.getElementById("btnCancelarCrearUsuario");
+    const btnGuardarPassword = document.getElementById("btnGuardarCambioPassword");
+    const btnCancelarPassword = document.getElementById("btnCancelarCambioPassword");
+
+    if (btnMostrarCrear) {
+      btnMostrarCrear.onclick = () => {
+        if (this.avisarMostrarCrearUsuario) this.avisarMostrarCrearUsuario();
+      };
+    }
+
+    if (btnRecargar) {
+      btnRecargar.onclick = () => {
+        if (this.avisarRecargarUsuarios) this.avisarRecargarUsuarios();
+      };
+    }
+
+    if (btnGuardarNuevo) {
+      btnGuardarNuevo.onclick = () => {
+        if (this.avisarGuardarNuevoUsuario) this.avisarGuardarNuevoUsuario();
+      };
+    }
+
+    if (btnCancelarCrear) {
+      btnCancelarCrear.onclick = () => {
+        if (this.avisarCancelarCrearUsuario) this.avisarCancelarCrearUsuario();
+      };
+    }
+
+    if (btnGuardarPassword) {
+      btnGuardarPassword.onclick = () => {
+        if (this.avisarGuardarCambioPassword) this.avisarGuardarCambioPassword();
+      };
+    }
+
+    if (btnCancelarPassword) {
+      btnCancelarPassword.onclick = () => {
+        if (this.avisarCancelarCambioPassword) this.avisarCancelarCambioPassword();
+      };
+    }
   }
 
   public actualizarListaEstudios(): void {
@@ -356,6 +414,207 @@ export default class Cl_vAdmin implements I_vAdmin {
         }
       }
     });
+  }
+
+  // ============================================
+  // MÉTODOS DE GESTIÓN DE USUARIOS
+  // ============================================
+
+  public cuandoClicEnMostrarCrearUsuario(callback: () => void): void {
+    this.avisarMostrarCrearUsuario = callback;
+  }
+
+  public cuandoClicEnRecargarUsuarios(callback: () => void): void {
+    this.avisarRecargarUsuarios = callback;
+  }
+
+  public cuandoClicEnGuardarNuevoUsuario(callback: () => void): void {
+    this.avisarGuardarNuevoUsuario = callback;
+  }
+
+  public cuandoClicEnCancelarCrearUsuario(callback: () => void): void {
+    this.avisarCancelarCrearUsuario = callback;
+  }
+
+  public cuandoClicEnGuardarCambioPassword(callback: () => void): void {
+    this.avisarGuardarCambioPassword = callback;
+  }
+
+  public cuandoClicEnCancelarCambioPassword(callback: () => void): void {
+    this.avisarCancelarCambioPassword = callback;
+  }
+
+  public mostrarTablaUsuarios(usuarios: Array<{ id: number; nombre_usuario: string; nombre_completo: string; email: string; rol: string; activo: boolean; ultimo_acceso: string }>): void {
+    const divTabla = document.getElementById("tablaUsuarios");
+    if (!divTabla) return;
+
+    if (usuarios.length === 0) {
+      divTabla.innerHTML = '<div class="mensaje-vacio">📭 No hay usuarios registrados</div>';
+      return;
+    }
+
+    const rolLabels: Record<string, string> = {
+      admin: '🔧 Administrador',
+      bioanalista: '🧪 Bioanalista',
+      recepcionista: '📋 Recepcionista'
+    };
+
+    let html = `
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="background:#1a5f7a; color:white;">
+            <th style="padding:10px;">ID</th>
+            <th style="padding:10px;">Usuario</th>
+            <th style="padding:10px;">Nombre Completo</th>
+            <th style="padding:10px;">Email</th>
+            <th style="padding:10px;">Rol</th>
+            <th style="padding:10px;">Estado</th>
+            <th style="padding:10px;">Último Acceso</th>
+            <th style="padding:10px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    for (const u of usuarios) {
+      const estadoHtml = u.activo 
+        ? '<span style="background:#28a745; color:white; padding:2px 8px; border-radius:10px; font-size:0.8rem;">Activo</span>'
+        : '<span style="background:#dc3545; color:white; padding:2px 8px; border-radius:10px; font-size:0.8rem;">Inactivo</span>';
+      
+      const ultimoAcceso = u.ultimo_acceso 
+        ? new Date(u.ultimo_acceso).toLocaleString() 
+        : 'Nunca';
+
+      html += `
+        <tr style="border-bottom:1px solid #eee;">
+          <td style="padding:10px; font-family:monospace;">${u.id}</td>
+          <td style="padding:10px; font-weight:600;">${this.escapeHtml(u.nombre_usuario)}</td>
+          <td style="padding:10px;">${this.escapeHtml(u.nombre_completo)}</td>
+          <td style="padding:10px;">${this.escapeHtml(u.email)}</td>
+          <td style="padding:10px;">${rolLabels[u.rol] || u.rol}</td>
+          <td style="padding:10px;">${estadoHtml}</td>
+          <td style="padding:10px; font-size:0.85rem;">${ultimoAcceso}</td>
+          <td style="padding:10px;">
+            <button class="btn-cambiar-password" data-id="${u.id}" data-nombre="${this.escapeHtml(u.nombre_usuario)}" style="background:#ffc107; color:#333; border:none; padding:5px 10px; border-radius:6px; cursor:pointer; font-size:0.75rem;">🔑 Cambiar Pass</button>
+          </td>
+        </tr>
+      `;
+    }
+
+    html += "</tbody></table>";
+    divTabla.innerHTML = html;
+
+    // Asignar eventos a los botones de cambiar contraseña
+    const yoMismo = this;
+    document.querySelectorAll(".btn-cambiar-password").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const nombre = btn.getAttribute("data-nombre") || "";
+        if (id) {
+          yoMismo.mostrarModalCambiarPassword(parseInt(id), nombre);
+        }
+      });
+    });
+  }
+
+  public mostrarErrorUsuarios(mensaje: string): void {
+    const divTabla = document.getElementById("tablaUsuarios");
+    if (!divTabla) return;
+    divTabla.innerHTML = `<div class="resultado-item" style="background:#ffe8e5; border-left-color:#c0392b;">❌ ${this.escapeHtml(mensaje)}</div>`;
+  }
+
+  public mostrarResultadoCrearUsuario(mensaje: string, esError: boolean): void {
+    const divResultado = document.getElementById("resultadoCrearUsuario");
+    if (!divResultado) return;
+    const bgColor = esError ? '#ffe8e5' : '#e8f5e9';
+    const borderColor = esError ? '#c0392b' : '#4caf50';
+    divResultado.innerHTML = `<div class="resultado-item" style="background:${bgColor}; border-left-color:${borderColor}; padding:10px;">${esError ? '❌' : '✅'} ${this.escapeHtml(mensaje)}</div>`;
+  }
+
+  public mostrarResultadoCambiarPassword(mensaje: string, esError: boolean): void {
+    const divResultado = document.getElementById("resultadoCambiarPassword");
+    if (!divResultado) return;
+    const bgColor = esError ? '#ffe8e5' : '#e8f5e9';
+    const borderColor = esError ? '#c0392b' : '#4caf50';
+    divResultado.innerHTML = `<div class="resultado-item" style="background:${bgColor}; border-left-color:${borderColor}; padding:10px;">${esError ? '❌' : '✅'} ${this.escapeHtml(mensaje)}</div>`;
+  }
+
+  public mostrarModalCambiarPassword(_usuarioId: number, usuarioNombre: string): void {
+    const modal = document.getElementById("modalCambiarPassword");
+    const texto = document.getElementById("textoCambiarPassword");
+    if (modal) modal.style.display = "flex";
+    if (texto) texto.textContent = `Cambiando contraseña para: ${usuarioNombre}`;
+    this.limpiarFormularioCambioPassword();
+  }
+
+  public ocultarModalCambiarPassword(): void {
+    const modal = document.getElementById("modalCambiarPassword");
+    if (modal) modal.style.display = "none";
+  }
+
+  public obtenerDatosNuevoUsuario(): { nombreUsuario: string; nombreCompleto: string; email: string; password: string; rol: string } {
+    const inputUsuario = document.getElementById("inputNuevoUsuario") as HTMLInputElement;
+    const inputNombre = document.getElementById("inputNuevoNombre") as HTMLInputElement;
+    const inputEmail = document.getElementById("inputNuevoEmail") as HTMLInputElement;
+    const inputPassword = document.getElementById("inputNuevoPassword") as HTMLInputElement;
+    const selectRol = document.getElementById("selectNuevoRol") as HTMLSelectElement;
+
+    return {
+      nombreUsuario: inputUsuario?.value || "",
+      nombreCompleto: inputNombre?.value || "",
+      email: inputEmail?.value || "",
+      password: inputPassword?.value || "",
+      rol: selectRol?.value || "bioanalista"
+    };
+  }
+
+  public obtenerDatosCambioPassword(): { password: string } {
+    const inputPassword = document.getElementById("inputNuevaPassword") as HTMLInputElement;
+    const inputConfirmar = document.getElementById("inputConfirmarPassword") as HTMLInputElement;
+    
+    const password = inputPassword?.value || "";
+    const confirmar = inputConfirmar?.value || "";
+
+    if (password !== confirmar) {
+      return { password: "" };
+    }
+
+    return { password };
+  }
+
+  public limpiarFormularioCrearUsuario(): void {
+    const inputUsuario = document.getElementById("inputNuevoUsuario") as HTMLInputElement;
+    const inputNombre = document.getElementById("inputNuevoNombre") as HTMLInputElement;
+    const inputEmail = document.getElementById("inputNuevoEmail") as HTMLInputElement;
+    const inputPassword = document.getElementById("inputNuevoPassword") as HTMLInputElement;
+    const divResultado = document.getElementById("resultadoCrearUsuario");
+
+    if (inputUsuario) inputUsuario.value = "";
+    if (inputNombre) inputNombre.value = "";
+    if (inputEmail) inputEmail.value = "";
+    if (inputPassword) inputPassword.value = "";
+    if (divResultado) divResultado.innerHTML = "";
+  }
+
+  public limpiarFormularioCambioPassword(): void {
+    const inputPassword = document.getElementById("inputNuevaPassword") as HTMLInputElement;
+    const inputConfirmar = document.getElementById("inputConfirmarPassword") as HTMLInputElement;
+    const divResultado = document.getElementById("resultadoCambiarPassword");
+
+    if (inputPassword) inputPassword.value = "";
+    if (inputConfirmar) inputConfirmar.value = "";
+    if (divResultado) divResultado.innerHTML = "";
+  }
+
+  public mostrarFormularioCrearUsuario(): void {
+    const form = document.getElementById("formCrearUsuario");
+    if (form) form.style.display = "block";
+  }
+
+  public ocultarFormularioCrearUsuario(): void {
+    const form = document.getElementById("formCrearUsuario");
+    if (form) form.style.display = "none";
+    this.limpiarFormularioCrearUsuario();
   }
 
   private escapeHtml(text: string): string {

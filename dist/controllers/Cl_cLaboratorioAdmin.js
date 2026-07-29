@@ -22,6 +22,133 @@ export default class Cl_cLaboratorioAdmin {
         this.pantallaAdmin.cuandoClicEnVerEstadisticasEstudio((tipo) => yoMismo.verEstadisticasEstudio(tipo));
         this.pantallaAdmin.cuandoClicEnCalcularPorcentajeFinalizados(() => yoMismo.calcularPorcentajeFinalizados());
         this.pantallaAdmin.cuandoClicEnCalcularPromedioEstudio((tipo) => yoMismo.calcularPromedioEstudio(tipo));
+        // Inicializar eventos de gestión de usuarios
+        this.inicializarGestionUsuarios();
+    }
+    inicializarGestionUsuarios() {
+        const yoMismo = this;
+        this.pantallaAdmin.cuandoClicEnMostrarCrearUsuario(() => {
+            yoMismo.pantallaAdmin.mostrarFormularioCrearUsuario();
+        });
+        this.pantallaAdmin.cuandoClicEnRecargarUsuarios(() => {
+            yoMismo.cargarListaUsuarios();
+        });
+        this.pantallaAdmin.cuandoClicEnGuardarNuevoUsuario(() => {
+            yoMismo.crearNuevoUsuario();
+        });
+        this.pantallaAdmin.cuandoClicEnCancelarCrearUsuario(() => {
+            yoMismo.pantallaAdmin.ocultarFormularioCrearUsuario();
+        });
+        this.pantallaAdmin.cuandoClicEnGuardarCambioPassword(() => {
+            yoMismo.cambiarPasswordUsuario();
+        });
+        this.pantallaAdmin.cuandoClicEnCancelarCambioPassword(() => {
+            yoMismo.pantallaAdmin.ocultarModalCambiarPassword();
+        });
+        // Cargar lista de usuarios al iniciar
+        this.cargarListaUsuarios();
+    }
+    async cargarListaUsuarios() {
+        try {
+            const response = await fetch('/api/usuarios');
+            if (response.ok) {
+                const usuarios = await response.json();
+                this.pantallaAdmin.mostrarTablaUsuarios(usuarios);
+            }
+            else {
+                this.pantallaAdmin.mostrarErrorUsuarios('Error al cargar usuarios desde el servidor');
+            }
+        }
+        catch (error) {
+            console.error('❌ Error al cargar usuarios:', error);
+            this.pantallaAdmin.mostrarErrorUsuarios('Error de conexión con el servidor');
+        }
+    }
+    async crearNuevoUsuario() {
+        const datos = this.pantallaAdmin.obtenerDatosNuevoUsuario();
+        // Validaciones
+        if (!datos.nombreUsuario || !datos.nombreCompleto || !datos.email || !datos.password) {
+            this.pantallaAdmin.mostrarResultadoCrearUsuario('Todos los campos son requeridos', true);
+            return;
+        }
+        if (datos.password.length < 4) {
+            this.pantallaAdmin.mostrarResultadoCrearUsuario('La contraseña debe tener al menos 4 caracteres', true);
+            return;
+        }
+        if (!datos.email.includes('@')) {
+            this.pantallaAdmin.mostrarResultadoCrearUsuario('El email no es válido', true);
+            return;
+        }
+        try {
+            const response = await fetch('/api/usuarios', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
+            const resultado = await response.json();
+            if (response.ok) {
+                this.pantallaAdmin.mostrarResultadoCrearUsuario(`Usuario "${datos.nombreUsuario}" creado exitosamente`, false);
+                this.pantallaAdmin.ocultarFormularioCrearUsuario();
+                this.cargarListaUsuarios();
+            }
+            else {
+                this.pantallaAdmin.mostrarResultadoCrearUsuario(resultado.mensaje || 'Error al crear usuario', true);
+            }
+        }
+        catch (error) {
+            console.error('❌ Error al crear usuario:', error);
+            this.pantallaAdmin.mostrarResultadoCrearUsuario('Error de conexión con el servidor', true);
+        }
+    }
+    async cambiarPasswordUsuario() {
+        const datos = this.pantallaAdmin.obtenerDatosCambioPassword();
+        if (!datos.password) {
+            this.pantallaAdmin.mostrarResultadoCambiarPassword('Las contraseñas no coinciden o están vacías', true);
+            return;
+        }
+        if (datos.password.length < 4) {
+            this.pantallaAdmin.mostrarResultadoCambiarPassword('La contraseña debe tener al menos 4 caracteres', true);
+            return;
+        }
+        // Obtener el ID del usuario desde la vista
+        const inputTexto = document.getElementById("textoCambiarPassword");
+        if (!inputTexto)
+            return;
+        try {
+            // Buscar el usuario por nombre en la tabla
+            const response = await fetch('/api/usuarios');
+            if (!response.ok) {
+                this.pantallaAdmin.mostrarResultadoCambiarPassword('Error al identificar el usuario', true);
+                return;
+            }
+            const usuarios = await response.json();
+            const texto = inputTexto.textContent || "";
+            const nombreUsuario = texto.replace('Cambiando contraseña para: ', '').trim();
+            const usuario = usuarios.find((u) => u.nombre_usuario === nombreUsuario);
+            if (!usuario) {
+                this.pantallaAdmin.mostrarResultadoCambiarPassword('Usuario no encontrado', true);
+                return;
+            }
+            const responsePassword = await fetch(`/api/usuarios/${usuario.id}/password`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: datos.password })
+            });
+            const resultado = await responsePassword.json();
+            if (responsePassword.ok) {
+                this.pantallaAdmin.mostrarResultadoCambiarPassword(`Contraseña actualizada para "${nombreUsuario}"`, false);
+                setTimeout(() => {
+                    this.pantallaAdmin.ocultarModalCambiarPassword();
+                }, 1500);
+            }
+            else {
+                this.pantallaAdmin.mostrarResultadoCambiarPassword(resultado.mensaje || 'Error al cambiar contraseña', true);
+            }
+        }
+        catch (error) {
+            console.error('❌ Error al cambiar contraseña:', error);
+            this.pantallaAdmin.mostrarResultadoCambiarPassword('Error de conexión con el servidor', true);
+        }
     }
     async cargarExamenes() {
         let resultado = await Cl_sLaboratorio.traerDesdeNube();
@@ -124,7 +251,6 @@ export default class Cl_cLaboratorioAdmin {
         });
     }
     calcularPorcentajeFinalizados() {
-        // No necesita validación adicional, siempre es válido
         const porcentaje = this.laboratorio.calcularPorcentajeFinalizados();
         this.pantallaAdmin.mostrarPorcentajeFinalizados(porcentaje);
     }
@@ -149,7 +275,7 @@ export default class Cl_cLaboratorioAdmin {
             return;
         }
         const datosCompletos = examen.obtenerDatosCompletos();
-        const total = examen.calcularTotal();
+        // const total = examen.calcularTotal(); // <-- ELIMINADO: no se usa
         let filasHtml = "";
         for (let i = 0; i < datosCompletos.length; i++) {
             const item = datosCompletos[i];
