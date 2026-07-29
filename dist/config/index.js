@@ -1,5 +1,2 @@
-import { supabase, testConnection } from './database.js';
-import dbDefault from './database.js';
-export { supabase, testConnection };
-export default dbDefault;
+export { pool, testConnection, default as defaultConnection } from './database.js';
 //# sourceMappingURL=index.js.map

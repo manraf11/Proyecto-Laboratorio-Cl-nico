@@ -1,9 +1,11 @@
-// services/Cl_sEstudio.ts
+// src/services/Cl_sEstudio.ts
 import Cl_mEstudio from "../models/Cl_mEstudio.js";
-const API_URL = "/api/estudios";
+// USAR MOCKAPI PARA ESTUDIOS
+const API_URL = "https://6a14b55c91ff9a63de06fced.mockapi.io/estudios";
 export default class Cl_sEstudio {
     static async cargarCatálogo() {
         try {
+            console.log("📥 Cargando estudios desde MockAPI...");
             const respuesta = await fetch(API_URL);
             if (!respuesta.ok) {
                 console.error(`❌ Error HTTP: ${respuesta.status}`);
@@ -14,20 +16,18 @@ export default class Cl_sEstudio {
                 console.error('❌ La respuesta no es un array');
                 return false;
             }
-            // Limpiar la lista estática
             Cl_mEstudio.limpiar();
-            // Agregar cada estudio a la lista estática
             for (const item of datos) {
                 const estudio = new Cl_mEstudio({
                     id: String(item.id ?? ''),
                     nombre: item.nombre ?? '',
                     precio: Number(item.precio ?? 0),
                     unidad: item.unidad ?? '',
-                    valoresReferencia: item.valores_referencia ?? item.valoresReferencia ?? ''
+                    valoresReferencia: item.valoresReferencia ?? item.valores_referencia ?? ''
                 });
                 Cl_mEstudio.agregarEstudio(estudio);
             }
-            console.log(`✅ Cargados ${datos.length} estudios desde Supabase`);
+            console.log(`✅ Cargados ${datos.length} estudios desde MockAPI`);
             console.log(`📋 Estudios en memoria: ${Cl_mEstudio.obtenerTodos().length}`);
             return true;
         }
@@ -38,6 +38,7 @@ export default class Cl_sEstudio {
     }
     static async guardarNuevoEstudio(estudio) {
         try {
+            console.log("📤 Guardando nuevo estudio en MockAPI...");
             const respuesta = await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -56,6 +57,7 @@ export default class Cl_sEstudio {
                 estudio.id = String(datos.id);
                 Cl_mEstudio.agregarEstudio(estudio);
             }
+            console.log("✅ Estudio guardado en MockAPI");
             return true;
         }
         catch (error) {
@@ -65,6 +67,7 @@ export default class Cl_sEstudio {
     }
     static async actualizarEstudio(estudio) {
         try {
+            console.log(`📤 Actualizando estudio ${estudio.id} en MockAPI...`);
             const respuesta = await fetch(`${API_URL}/${estudio.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -78,8 +81,8 @@ export default class Cl_sEstudio {
             if (!respuesta.ok) {
                 throw new Error(`HTTP ${respuesta.status}`);
             }
-            // Actualizar en memoria
             Cl_mEstudio.actualizarEstudio(estudio.id, estudio);
+            console.log("✅ Estudio actualizado en MockAPI");
             return true;
         }
         catch (error) {
@@ -89,6 +92,7 @@ export default class Cl_sEstudio {
     }
     static async eliminarEstudio(id) {
         try {
+            console.log(`🗑️ Eliminando estudio ${id} de MockAPI...`);
             const respuesta = await fetch(`${API_URL}/${id}`, {
                 method: 'DELETE'
             });
@@ -96,6 +100,7 @@ export default class Cl_sEstudio {
                 throw new Error(`HTTP ${respuesta.status}`);
             }
             Cl_mEstudio.eliminarEstudio(id);
+            console.log("✅ Estudio eliminado de MockAPI");
             return true;
         }
         catch (error) {

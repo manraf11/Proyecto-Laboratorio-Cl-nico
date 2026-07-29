@@ -30,10 +30,6 @@ export default class Cl_mUsuario {
     esBioanalista() {
         return this.rol === 'bioanalista';
     }
-    // Verificar si es recepcionista
-    esRecepcionista() {
-        return this.rol === 'recepcionista';
-    }
     // Verificar si el usuario está activo
     estaActivo() {
         return this.activo;
@@ -62,8 +58,8 @@ export default class Cl_mUsuario {
         if (this.passwordHash && this.passwordHash.length < 6 && this.passwordHash.length < 20) {
             errores.push('La contraseña debe tener al menos 6 caracteres');
         }
-        if (!this.rol || !['admin', 'bioanalista', 'recepcionista'].includes(this.rol)) {
-            errores.push('El rol debe ser admin, bioanalista o recepcionista');
+        if (!this.rol || !['admin', 'bioanalista'].includes(this.rol)) {
+            errores.push('El rol debe ser admin o bioanalista');
         }
         return {
             valido: errores.length === 0,
@@ -76,11 +72,7 @@ export default class Cl_mUsuario {
     }
     // Obtener rol en español
     getRolLabel() {
-        if (this.rol === 'admin')
-            return 'Administrador';
-        if (this.rol === 'bioanalista')
-            return 'Bioanalista';
-        return 'Recepcionista';
+        return this.rol === 'admin' ? 'Administrador' : 'Bioanalista';
     }
 }
 //# sourceMappingURL=Cl_mUsuario.js.map

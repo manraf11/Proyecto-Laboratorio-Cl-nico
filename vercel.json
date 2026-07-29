@@ -1,7 +1,10 @@
 {
   "rewrites": [
-    { "source": "/api/cedula", "destination": "/api/cedula.js" },
-    { "source": "/api/estudios", "destination": "/api/estudios.js" },
-    { "source": "/api/estudios/(.*)", "destination": "/api/estudios.js" }
-  ]
+    { "source": "/api/cedula", "destination": "/api/cedula" }
+  ],
+  "functions": {
+    "api/cedula.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
 }

@@ -1,21 +1,20 @@
-// controllers/Cl_cLaboratorioRec.ts
 import Cl_mLaboratorio from "../models/Cl_mLaboratorio.js";
 import Cl_mEstudio from "../models/Cl_mEstudio.js";
 import Cl_sLaboratorio from "../services/Cl_sLaboratorio.js";
 export default class Cl_cLaboratorioRec {
     laboratorio;
-    pantallaRec;
+    pantallaRecepcion;
     controladorExamen;
-    constructor(pantallaRec, controladorExamen) {
-        this.pantallaRec = pantallaRec;
+    constructor(pantallaRecepcion, controladorExamen) {
+        this.pantallaRecepcion = pantallaRecepcion;
         this.controladorExamen = controladorExamen;
         this.laboratorio = new Cl_mLaboratorio();
         let yoMismo = this;
         this.cargarExamenes();
-        this.pantallaRec.cuandoClicEnNuevoExamen(() => yoMismo.guardarNuevoExamen());
-        this.pantallaRec.cuandoClicEnFiltrarEstudios((tipo, fecha) => yoMismo.filtrarEstudios(tipo, fecha));
-        this.pantallaRec.cuandoClicEnEnviarWhatsApp((id) => yoMismo.enviarWhatsApp(id));
-        this.pantallaRec.cuandoClicEnImprimir((id) => yoMismo.imprimirReporte(id));
+        this.pantallaRecepcion.cuandoClicEnNuevoExamen(() => yoMismo.guardarNuevoExamen());
+        this.pantallaRecepcion.cuandoClicEnFiltrarEstudios((tipo, fecha) => yoMismo.filtrarEstudios(tipo, fecha));
+        this.pantallaRecepcion.cuandoClicEnImprimir((id) => yoMismo.imprimirReporte(id));
+        this.pantallaRecepcion.cuandoClicEnEnviarWhatsApp((id) => yoMismo.enviarWhatsApp(id));
     }
     async cargarExamenes() {
         let resultado = await Cl_sLaboratorio.traerDesdeNube();
@@ -29,12 +28,12 @@ export default class Cl_cLaboratorioRec {
         }
     }
     actualizarSelectsEstudios() {
-        if (this.pantallaRec.actualizarListaEstudios) {
-            this.pantallaRec.actualizarListaEstudios();
+        if (this.pantallaRecepcion.actualizarListaEstudios) {
+            this.pantallaRecepcion.actualizarListaEstudios();
         }
     }
     refrescarPantalla() {
-        this.pantallaRec.mostrarFinalizados({ examenes: this.laboratorio.obtenerFinalizados() });
+        this.pantallaRecepcion.mostrarFinalizados({ examenes: this.laboratorio.obtenerFinalizados() });
         this.actualizarSelectsEstudios();
     }
     guardarNuevoExamen() {
@@ -76,7 +75,7 @@ export default class Cl_cLaboratorioRec {
         else if (fecha) {
             cantidad = this.laboratorio.contarEstudiosPorFecha(fecha);
         }
-        this.pantallaRec.mostrarResultadoFiltro(cantidad, tipo || "(todos)", fecha || "(todas)");
+        this.pantallaRecepcion.mostrarResultadoFiltro(cantidad, tipo || "(todos)", fecha || "(todas)");
     }
     imprimirReporte(idExamen) {
         let examen = this.laboratorio.buscarPorId(idExamen);
@@ -90,41 +89,31 @@ export default class Cl_cLaboratorioRec {
         for (let i = 0; i < datosCompletos.length; i++) {
             const item = datosCompletos[i];
             let resultadoVal = item.resultado || "Pendiente";
-            let refInfo = Cl_mEstudio.obtenerValoresReferencia(item.estudio);
-            let unidadMedida = Cl_mEstudio.obtenerUnidad(item.estudio);
-            let estiloResultado = 'color: #2c6e49; font-weight:600; font-size:1.05rem;';
-            let alertaTexto = "";
-            if (resultadoVal !== "Pendiente" && !isNaN(Number(resultadoVal))) {
-                const valNum = Number(resultadoVal);
-                const evaluacion = Cl_mEstudio.evaluarResultado(item.estudio, valNum);
-                if (evaluacion.esAlto || evaluacion.esBajo) {
-                    estiloResultado = 'color: #c0392b; font-weight:700; font-size:1.05rem; background: #ffe8e5; padding: 4px 8px; border-radius: 4px;';
-                    alertaTexto = ` <span style="color: #c0392b; font-weight: bold;">⚠️</span>`;
-                }
+            let refInfo = "";
+            try {
+                refInfo = item.estudio ? Cl_mEstudio.obtenerValoresReferencia(item.estudio) : "N/A";
+            }
+            catch {
+                refInfo = "N/A";
+            }
+            let unidadMedida = "";
+            try {
+                unidadMedida = item.estudio ? Cl_mEstudio.obtenerUnidad(item.estudio) : "";
+            }
+            catch {
+                unidadMedida = "";
             }
             filasHtml += `
         <tr style="border-bottom: 1px solid #e2e8f0;">
           <td style="padding: 12px; font-weight: 600; color: #0b3b4f;">${item.estudio}</td>
-          <td style="padding: 12px; ${estiloResultado}">${resultadoVal} ${unidadMedida}${alertaTexto}</td>
+          <td style="padding: 12px; color: #2c6e49; font-weight: 600;">${resultadoVal} ${unidadMedida}</td>
           <td style="padding: 12px; color: #5e7a93; font-size: 0.9rem;">${refInfo}</td>
           <td style="padding: 12px; color: #2c6e49; font-weight: 600;">$${item.precio.toFixed(2)}</td>
         </tr>
       `;
         }
-        let estadoTexto = "";
-        let estadoColor = "";
-        if (examen.estado === "preparacion") {
-            estadoTexto = "PREPARACIÓN";
-            estadoColor = "#ffc107";
-        }
-        else if (examen.estado === "pendiente") {
-            estadoTexto = "PENDIENTE";
-            estadoColor = "#17a2b8";
-        }
-        else {
-            estadoTexto = "LISTO";
-            estadoColor = "#28a745";
-        }
+        let estadoTexto = "LISTO";
+        let estadoColor = "#28a745";
         let plantilla = `
       <div style="font-family: 'Segoe UI', 'Roboto', Arial, sans-serif; padding: 30px; color: #2c3e50; max-width: 650px; margin: auto; border: 2px solid #1a5f7a; border-radius: 12px; background: white;">
         <div style="text-align: center; border-bottom: 3px solid #ffc107; padding-bottom: 15px; margin-bottom: 20px;">

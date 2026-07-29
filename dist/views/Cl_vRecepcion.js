@@ -45,40 +45,39 @@ export default class Cl_vRecepcion {
             return;
         }
         let html = `
-      <table style="width:100%; border-collapse:collapse;">
-        <thead>
-          <tr style="background:#1a5f7a; color:white;">
-            <th style="padding:12px;">ID</th>
-            <th style="padding:12px;">Paciente</th>
-            <th style="padding:12px;">Cédula</th>
-            <th style="padding:12px;">Teléfono</th>
-            <th style="padding:12px;">Estado</th>
-            <th style="padding:12px;">Estudios</th>
-            <th style="padding:12px;">Total</th>
-            <th style="padding:12px;">Acciones</th>
-           </tr>
-        </thead>
-        <tbody>
+      <div class="tabla-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Paciente</th>
+              <th>Cédula</th>
+              <th>Teléfono</th>
+              <th>Estudios</th>
+              <th>Total</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
     `;
         for (const ex of datos.examenes) {
             const idMostrar = ex.id ? (ex.id.length > 6 ? ex.id.slice(-6) : ex.id) : "N/A";
             html += `
-        <tr style="border-bottom:1px solid #eee;">
-          <td style="padding:12px; font-family:monospace;">#${idMostrar}</td>
-          <td style="padding:12px;">${this.escapeHtml(ex.nombrePaciente)}</td>
-          <td style="padding:12px;">${this.escapeHtml(ex.cedulaPaciente)}</td>
-          <td style="padding:12px;">${ex.telefonoPaciente || "No registrado"}</td>
-          <td style="padding:12px;"><span style="background:#28a745; color:white; padding:4px 10px; border-radius:12px;">LISTO</span></td>
-          <td style="padding:12px;"><span style="background:#e8eaf6; padding:4px 10px; border-radius:12px;">${this.escapeHtml(ex.nombreEstudio)}</span></td>
-          <td style="padding:12px;">$${ex.calcularTotal().toFixed(2)}</td>
-          <td style="padding:12px;">
+        <tr>
+          <td data-label="ID">#${idMostrar}</td>
+          <td data-label="Paciente">${this.escapeHtml(ex.nombrePaciente)}</td>
+          <td data-label="Cédula">${this.escapeHtml(ex.cedulaPaciente)}</td>
+          <td data-label="Teléfono">${ex.telefonoPaciente || "No registrado"}</td>
+          <td data-label="Estudios"><span style="background:#e8eaf6; padding:4px 10px; border-radius:12px; font-size:0.7rem;">${this.escapeHtml(ex.nombreEstudio)}</span></td>
+          <td data-label="Total">$${ex.calcularTotal().toFixed(2)}</td>
+          <td data-label="Acciones">
             <button class="btn-imprimir" data-id="${ex.id}">📄 Imprimir</button>
             <button class="btn-whatsapp" data-id="${ex.id}">💬 WhatsApp</button>
           </td>
         </tr>
       `;
         }
-        html += "</tbody></table>";
+        html += "</tbody></table></div>";
         this.divFinalizados.innerHTML = html;
         const yoMismo = this;
         document.querySelectorAll(".btn-imprimir").forEach(btn => {
@@ -115,15 +114,22 @@ export default class Cl_vRecepcion {
     }
     actualizarListaEstudios() {
         const estudios = Cl_mEstudio.obtenerTodos();
-        if (this.selectFiltroTipo) {
-            this.selectFiltroTipo.innerHTML = '<option value="">-- Seleccione un estudio --</option>';
-            for (let i = 0; i < estudios.length; i++) {
-                const option = document.createElement("option");
-                option.value = estudios[i].nombre;
-                option.textContent = `${estudios[i].nombre} ($${estudios[i].precio})`;
-                this.selectFiltroTipo.appendChild(option);
+        const selects = [this.selectFiltroTipo];
+        const valores = [this.selectFiltroTipo?.value || ""];
+        selects.forEach((select, index) => {
+            if (select) {
+                select.innerHTML = '<option value="">-- Seleccione un estudio --</option>';
+                for (let i = 0; i < estudios.length; i++) {
+                    const option = document.createElement("option");
+                    option.value = estudios[i].nombre;
+                    option.textContent = `${estudios[i].nombre} ($${estudios[i].precio})`;
+                    select.appendChild(option);
+                }
+                if (valores[index] && select.querySelector(`option[value="${valores[index]}"]`)) {
+                    select.value = valores[index];
+                }
             }
-        }
+        });
     }
     escapeHtml(text) {
         if (!text)

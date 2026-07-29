@@ -1,5 +1,5 @@
-// views/Cl_vLogin.ts
-import { I_vLogin } from '../interfaces/I_vLogin.js';
+// src/views/Cl_vLogin.ts
+import I_vLogin from '../interfaces/I_vLogin.js';
 
 export default class Cl_vLogin implements I_vLogin {
     private form: HTMLFormElement;
@@ -7,7 +7,6 @@ export default class Cl_vLogin implements I_vLogin {
     private inputPassword: HTMLInputElement;
     private btnLogin: HTMLButtonElement;
     private mensajeError: HTMLElement;
-
     private avisarLogin: ((usuario: string, password: string) => void) | null = null;
 
     constructor() {
@@ -22,7 +21,6 @@ export default class Cl_vLogin implements I_vLogin {
     }
 
     private configurarEventos(): void {
-        // Toggle password
         const togglePass = document.getElementById('togglePassword');
         if (togglePass) {
             togglePass.addEventListener('click', () => {
@@ -32,7 +30,6 @@ export default class Cl_vLogin implements I_vLogin {
             });
         }
 
-        // Submit form
         this.form.addEventListener('submit', (e) => {
             e.preventDefault();
             this.mensajeError.style.display = 'none';
@@ -50,19 +47,20 @@ export default class Cl_vLogin implements I_vLogin {
             }
         });
 
-        // Enter key
-        this.inputUsuario.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                this.inputPassword.focus();
-            }
-        });
-
-        this.inputPassword.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                this.form.dispatchEvent(new Event('submit'));
-            }
+        // Click en credenciales demo
+        document.querySelectorAll('.cred-item').forEach((item) => {
+            item.addEventListener('click', function() {
+                const user = this.getAttribute('data-user');
+                const pass = this.getAttribute('data-pass');
+                if (user && pass) {
+                    const inputUsuario = document.getElementById('usuario') as HTMLInputElement;
+                    const inputPassword = document.getElementById('password') as HTMLInputElement;
+                    inputUsuario.value = user;
+                    inputPassword.value = pass;
+                    inputPassword.focus();
+                    inputPassword.select();
+                }
+            });
         });
     }
 
@@ -87,18 +85,17 @@ export default class Cl_vLogin implements I_vLogin {
 
     public ocultarCargando(): void {
         this.btnLogin.disabled = false;
-        this.btnLogin.innerHTML = '<span>→</span> Iniciar Sesión';
+        this.btnLogin.innerHTML = '<span class="btn-icon">🚀</span> Iniciar Sesión';
     }
 
     public redirigirSegunRol(rol: 'admin' | 'bioanalista' | 'recepcionista'): void {
-        let destino = 'indexlogin.html';
-        if (rol === 'admin') {
-            destino = 'index.html';
-        } else if (rol === 'bioanalista') {
+        let destino = 'administrador.html';
+        if (rol === 'bioanalista') {
             destino = 'index_bioanalista.html';
         } else if (rol === 'recepcionista') {
             destino = 'index_recepcionista.html';
         }
+        console.log(`🔄 Redirigiendo a: ${destino} (rol: ${rol})`);
         setTimeout(() => {
             window.location.href = destino;
         }, 500);

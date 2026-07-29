@@ -1,4 +1,3 @@
-// interfaces/I_vRecepcion.ts
 import Cl_mExamen from "../models/Cl_mExamen.js";
 
 export interface I_vRecepcion {

@@ -15,7 +15,6 @@ export default class Cl_vLogin {
         console.log('%c🏥 Laboratorio Clínico - Login', 'font-size:18px; font-weight:800; color:#1a5f7a;');
     }
     configurarEventos() {
-        // Toggle password
         const togglePass = document.getElementById('togglePassword');
         if (togglePass) {
             togglePass.addEventListener('click', () => {
@@ -24,7 +23,6 @@ export default class Cl_vLogin {
                 togglePass.textContent = type === 'password' ? '👁️' : '👁️‍🗨️';
             });
         }
-        // Submit form
         this.form.addEventListener('submit', (e) => {
             e.preventDefault();
             this.mensajeError.style.display = 'none';
@@ -38,18 +36,20 @@ export default class Cl_vLogin {
                 this.avisarLogin(usuario, password);
             }
         });
-        // Enter key
-        this.inputUsuario.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                this.inputPassword.focus();
-            }
-        });
-        this.inputPassword.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                this.form.dispatchEvent(new Event('submit'));
-            }
+        // Click en credenciales demo
+        document.querySelectorAll('.cred-item').forEach((item) => {
+            item.addEventListener('click', function () {
+                const user = this.getAttribute('data-user');
+                const pass = this.getAttribute('data-pass');
+                if (user && pass) {
+                    const inputUsuario = document.getElementById('usuario');
+                    const inputPassword = document.getElementById('password');
+                    inputUsuario.value = user;
+                    inputPassword.value = pass;
+                    inputPassword.focus();
+                    inputPassword.select();
+                }
+            });
         });
     }
     cuandoDenLogin(callback) {
@@ -70,19 +70,17 @@ export default class Cl_vLogin {
     }
     ocultarCargando() {
         this.btnLogin.disabled = false;
-        this.btnLogin.innerHTML = '<span>→</span> Iniciar Sesión';
+        this.btnLogin.innerHTML = '<span class="btn-icon">🚀</span> Iniciar Sesión';
     }
     redirigirSegunRol(rol) {
-        let destino = 'indexlogin.html';
-        if (rol === 'admin') {
-            destino = 'index.html';
-        }
-        else if (rol === 'bioanalista') {
+        let destino = 'administrador.html';
+        if (rol === 'bioanalista') {
             destino = 'index_bioanalista.html';
         }
         else if (rol === 'recepcionista') {
             destino = 'index_recepcionista.html';
         }
+        console.log(`🔄 Redirigiendo a: ${destino} (rol: ${rol})`);
         setTimeout(() => {
             window.location.href = destino;
         }, 500);

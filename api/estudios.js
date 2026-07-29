@@ -1,81 +1,113 @@
-import { createClient } from '@supabase/supabase-js';
+import pg from 'pg';
 
-const supabaseUrl = process.env.SUPABASE_URL || 'https://ofhovlgfaghbqbfzagmc.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY || 'sb_publishable_izpbUwlI7NVGVjeUwPV1AQ_mMratSBB';
-const supabase = createClient(supabaseUrl, supabaseKey);
+const { Pool } = pg;
 
-export default async function handler(req, res) {
+const pool = new Pool({
+  connectionString: process.env.POSTGRES_URL || process.env.DATABASE_URL || 'postgresql://FAMJ:UCLA2026@localhost:5432/laboratorio_clinico',
+  ssl: process.env.POSTGRES_URL || process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+});
+
+function setCors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
+function parseBody(req) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    req.on('data', (chunk) => {
+      body += chunk;
+    });
+    req.on('end', () => {
+      if (!body) {
+        resolve({});
+        return;
+      }
+      try {
+        resolve(JSON.parse(body));
+      } catch (error) {
+        reject(error);
+      }
+    });
+    req.on('error', reject);
+  });
+}
+
+export default async function handler(req, res) {
+  setCors(res);
+
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
 
   try {
-    // GET - Listar estudios
     if (req.method === 'GET') {
-      const { data, error } = await supabase
-        .from('estudios')
-        .select('id, nombre, precio, unidad, valores_referencia')
-        .order('id');
+      const resultado = await pool.query(`
+        SELECT id, nombre, precio, unidad, valores_referencia
+        FROM estudios
+        ORDER BY id
+      `);
 
-      if (error) throw error;
-      return res.status(200).json(data || []);
+      res.status(200).json(resultado.rows.map((fila) => ({
+        id: fila.id,
+        nombre: fila.nombre,
+        precio: fila.precio,
+        unidad: fila.unidad,
+        valores_referencia: fila.valores_referencia,
+      })));
+      return;
     }
 
-    // POST - Crear estudio
+    const datos = await parseBody(req);
+
     if (req.method === 'POST') {
-      const { nombre, precio, unidad, valoresReferencia } = req.body;
+      const resultado = await pool.query(
+        `INSERT INTO estudios (nombre, precio, unidad, valores_referencia)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, nombre, precio, unidad, valores_referencia`,
+        [datos.nombre, datos.precio, datos.unidad, datos.valoresReferencia ?? datos.valores_referencia]
+      );
 
-      const { data, error } = await supabase
-        .from('estudios')
-        .insert({ nombre, precio, unidad, valores_referencia: valoresReferencia })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return res.status(201).json(data);
+      res.status(201).json(resultado.rows[0]);
+      return;
     }
 
-    // PUT - Actualizar estudio (por ID en URL)
     if (req.method === 'PUT') {
-      const id = req.url.split('/').pop();
-      const { nombre, precio, unidad, valoresReferencia } = req.body;
+      const id = datos.id;
+      if (!id) {
+        res.status(400).json({ error: 'Falta el id del estudio' });
+        return;
+      }
 
-      const { data, error } = await supabase
-        .from('estudios')
-        .update({
-          nombre,
-          precio,
-          unidad,
-          valores_referencia: valoresReferencia,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id)
-        .select()
-        .single();
+      const resultado = await pool.query(
+        `UPDATE estudios
+         SET nombre = $1, precio = $2, unidad = $3, valores_referencia = $4, updated_at = NOW()
+         WHERE id = $5
+         RETURNING id, nombre, precio, unidad, valores_referencia`,
+        [datos.nombre, datos.precio, datos.unidad, datos.valoresReferencia ?? datos.valores_referencia, id]
+      );
 
-      if (error) throw error;
-      return res.status(200).json(data || { ok: true });
+      res.status(200).json(resultado.rows[0] || { ok: true });
+      return;
     }
 
-    // DELETE - Eliminar estudio
     if (req.method === 'DELETE') {
-      const id = req.url.split('/').pop();
+      const id = req.query?.id || req.url?.split('/').pop();
+      if (!id) {
+        res.status(400).json({ error: 'Falta el id del estudio' });
+        return;
+      }
 
-      const { error } = await supabase
-        .from('estudios')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      return res.status(200).json({ ok: true });
+      await pool.query('DELETE FROM estudios WHERE id = $1', [id]);
+      res.status(200).json({ ok: true });
+      return;
     }
 
-    return res.status(405).json({ error: 'Método no permitido' });
-
+    res.status(405).json({ error: 'Método no permitido' });
   } catch (error) {
-    console.error('Error en /api/estudios:', error);
-    return res.status(500).json({ error: true, message: error.message });
+    console.error('❌ Error en /api/estudios:', error);
+    res.status(500).json({ error: true, message: error.message || 'Error inesperado' });
   }
 }

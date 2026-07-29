@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratorio Clínico - Sistema Administrativo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif; 
+      background: #eef2f7; 
+      min-height: 100vh; 
+      padding: 20px; 
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ============================================
+       FONDO CON ELEMENTOS BIOLÓGICOS (ESTÁTICOS)
+    ============================================ */
+    .bg-biologico {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    /* Glóbulos rojos */
+    .globulo-rojo-bg {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at 40% 30%, rgba(180, 40, 40, 0.04), rgba(140, 30, 30, 0.02));
+      border: 1px solid rgba(180, 40, 40, 0.02);
+      pointer-events: none;
+      box-shadow: inset -5px -5px 15px rgba(0,0,0,0.01), inset 5px 5px 15px rgba(255,255,255,0.02);
+    }
+
+    .globulo-rojo-bg::before {
+      content: '';
+      position: absolute;
+      top: 20%;
+      left: 30%;
+      width: 30%;
+      height: 30%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.05), transparent);
+      pointer-events: none;
+    }
+
+    .globulo-rojo-bg::after {
+      content: '';
+      position: absolute;
+      bottom: 25%;
+      right: 25%;
+      width: 20%;
+      height: 20%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.02), transparent);
+      pointer-events: none;
+    }
+
+    /* Bacterias (bastones) */
+    .bacteria-baston-bg {
+      position: absolute;
+      border-radius: 50px;
+      background: linear-gradient(135deg, rgba(60, 120, 80, 0.03), rgba(40, 80, 60, 0.015));
+      border: 1px solid rgba(60, 120, 80, 0.015);
+      pointer-events: none;
+      box-shadow: inset 0 2px 8px rgba(255,255,255,0.01);
+    }
+
+    .bacteria-baston-bg::before {
+      content: '';
+      position: absolute;
+      top: 15%;
+      left: 15%;
+      width: 70%;
+      height: 30%;
+      border-radius: 50px;
+      background: radial-gradient(ellipse, rgba(255, 255, 255, 0.03), transparent);
+      pointer-events: none;
+    }
+
+    /* Células con núcleo */
+    .celula-nucleo-bg {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at 35% 30%, rgba(100, 80, 160, 0.025), rgba(70, 50, 120, 0.01));
+      border: 1px solid rgba(100, 80, 160, 0.015);
+      pointer-events: none;
+      box-shadow: inset -3px -3px 10px rgba(0,0,0,0.01);
+    }
+
+    .celula-nucleo-bg .nucleo-bg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 35%, rgba(100, 80, 160, 0.03), rgba(70, 50, 120, 0.01));
+      border: 1px solid rgba(100, 80, 160, 0.01);
+      pointer-events: none;
+    }
+
+    .celula-nucleo-bg .nucleolo-bg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 35%, rgba(120, 100, 180, 0.02), rgba(80, 60, 140, 0.01));
+      border: 1px solid rgba(120, 100, 180, 0.01);
+      pointer-events: none;
+    }
+
+    /* Hemacies (glóbulos rojos pequeños) */
+    .hemacie-bg {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at 45% 35%, rgba(200, 60, 60, 0.025), rgba(150, 40, 40, 0.01));
+      border: 1px solid rgba(200, 60, 60, 0.01);
+      pointer-events: none;
+      box-shadow: inset -3px -3px 8px rgba(0,0,0,0.01), inset 3px 3px 8px rgba(255,255,255,0.01);
+    }
+
+    /* Moléculas de ADN */
+    .dna-molecula-bg {
+      position: absolute;
+      pointer-events: none;
+      opacity: 0.08;
+    }
+
+    .dna-molecula-bg svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ============================================
+       CONTENIDO PRINCIPAL
+    ============================================ */
+    .container { 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      position: relative;
+      z-index: 1;
+    }
+    .panel { 
+      background: white; 
+      border-radius: 12px; 
+      box-shadow: 0 8px 30px rgba(0,0,0,0.08); 
+      overflow: hidden; 
+      border: 1px solid #dce4ec;
+    }
+    .panel-header { 
+      background: #1a5f7a; 
+      color: white; 
+      padding: 20px 24px; 
+      text-align: center; 
+      border-bottom: 3px solid #ffc107;
+      position: relative;
+    }
+    .panel-header h1 { font-size: 1.8rem; font-weight: 600; }
+    .panel-header p { font-size: 0.9rem; margin-top: 6px; opacity: 0.9; }
+
+    .btn-cerrar-sesion {
+      position: absolute;
+      top: 20px;
+      left: 24px;
+      background: rgba(255, 0, 0, 0.2);
+      color: white;
+      border: 2px solid rgba(255, 0, 0, 0.5);
+      padding: 8px 16px;
+      border-radius: 40px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+    }
+    .btn-cerrar-sesion:hover {
+      background: rgba(255, 0, 0, 0.4);
+      transform: translateY(-2px);
+      border-color: #ff4444;
+    }
+    .btn-cerrar-sesion:active {
+      transform: translateY(0);
+    }
+
+    .panel-content { padding: 28px; }
+
+    .navbar-reportes {
+      background: #f0f6fa;
+      border-radius: 50px;
+      padding: 8px;
+      margin-bottom: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      border: 1px solid #cbdde9;
+    }
+    .nav-item {
+      background: transparent;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: #1a5f7a;
+      font-family: inherit;
+    }
+    .nav-item:hover {
+      background: #e2eaf1;
+    }
+    .nav-item.active {
+      background: #1a5f7a;
+      color: white;
+      box-shadow: 0 2px 8px rgba(26,95,122,0.3);
+    }
+    
+    .modulo-filtro, .modulo-porcentaje, .modulo-nombres, .modulo-total,
+    .modulo-estadisticas, .modulo-porcentaje-finalizados, .modulo-promedio {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+    .modulo-filtro.active-modulo, 
+    .modulo-porcentaje.active-modulo, 
+    .modulo-nombres.active-modulo, 
+    .modulo-total.active-modulo,
+    .modulo-estadisticas.active-modulo,
+    .modulo-porcentaje-finalizados.active-modulo,
+    .modulo-promedio.active-modulo {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .seccion-titulo { 
+      font-size: 1.2rem; 
+      color: #1a5f7a; 
+      margin-bottom: 16px; 
+      border-left: 4px solid #2c9cd4;
+      padding-left: 12px;
+      font-weight: 600;
+    }
+    .mensaje-vacio { 
+      text-align: center; 
+      color: #7f8c8d; 
+      padding: 32px; 
+      background: #f9fafb;
+      border-radius: 10px;
+    }
+    .loader {
+      border: 4px solid #e0e7ed;
+      border-top: 4px solid #1a5f7a;
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      animation: spin 0.9s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .cargando-mensaje {
+      text-align: center;
+      color: #1a5f7a;
+      padding: 24px;
+      font-weight: 500;
+      background: #f0f6fa;
+      border-radius: 12px;
+    }
+    .resultado-item {
+      background: #f9fdf9;
+      border-left: 4px solid #2c6e49;
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .admin-botones {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .btn-primario {
+      background: #1a5f7a;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 40px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-primario:hover { background: #104a60; }
+    .btn-secundario {
+      background: #eef2f7;
+      color: #1f5e7a;
+      border: 1px solid #cbdde9;
+      padding: 10px 18px;
+      border-radius: 40px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .btn-secundario:hover { background: #e2eaf1; }
+    .btn-imprimir {
+      background: #764ba2;
+      color: white;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+    .btn-whatsapp {
+      background: #25D366;
+      color: white;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+    .aviso-cambio {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #2c6e49;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 40px;
+      animation: slideIn 0.3s ease;
+      z-index: 1000;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th {
+      background: #1a5f7a;
+      color: white;
+      padding: 12px;
+      text-align: left;
+    }
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+    }
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-contenido {
+      background: white;
+      border-radius: 20px;
+      width: 750px;
+      max-width: 95%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid #ddd;
+      position: sticky;
+      top: 0;
+      background: white;
+      border-radius: 20px 20px 0 0;
+      z-index: 10;
+    }
+    .modal-body {
+      padding: 20px;
+    }
+    .modal-footer {
+      padding: 15px 20px;
+      border-top: 1px solid #ddd;
+      display: flex;
+      gap: 12px;
+      position: sticky;
+      bottom: 0;
+      background: white;
+      border-radius: 0 0 20px 20px;
+    }
+    .campo {
+      margin-bottom: 18px;
+    }
+    .campo label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+      color: #1a5f7a;
+    }
+    .campo input, .campo select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .campo input:focus, .campo select:focus {
+      outline: none;
+      border-color: #1a5f7a;
+      box-shadow: 0 0 0 2px rgba(26,95,122,0.2);
+    }
+    .error-input {
+      border: 2px solid #c0392b !important;
+      background: #ffe8e5 !important;
+    }
+    .checkbox-group {
+      background: #f9f9f9;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      max-height: 280px;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 6px;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: white;
+      transition: all 0.2s ease;
+    }
+    .checkbox-item:hover {
+      background: #e8f0fe;
+    }
+    .checkbox-item input {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      cursor: pointer;
+      flex-shrink: 0;
+      accent-color: #1a5f7a;
+    }
+    .checkbox-item label {
+      margin: 0;
+      cursor: pointer;
+      font-weight: normal;
+      flex: 1;
+      font-size: 14px;
+      color: #2c3e50;
+    }
+    .modulo-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 4px 0 0 0;
+    }
+    small {
+      display: block;
+      margin-top: 4px;
+      color: #6c757d;
+      font-size: 11px;
+    }
+    hr {
+      margin: 15px 0;
+      border: none;
+      border-top: 1px solid #e0e7ed;
+    }
+    .resultado-estadisticas {
+      background: #e3f2fd;
+      border-left-color: #1a5f7a;
+    }
+    .resultado-porcentaje-finalizados {
+      background: #e8f5e9;
+      border-left-color: #4caf50;
+    }
+    .resultado-promedio {
+      background: #fff3e0;
+      border-left-color: #ff9800;
+    }
+
+    /* ============================================
+       RESPONSIVE
+    ============================================ */
+    @media (max-width: 520px) {
+      .panel-header h1 { font-size: 1.3rem; }
+      .panel-content { padding: 16px; }
+      .navbar-reportes { border-radius: 20px; padding: 6px; }
+      .nav-item { padding: 6px 12px; font-size: 0.75rem; }
+      .btn-cerrar-sesion { font-size: 0.7rem; padding: 4px 10px; top: 10px; left: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================
+       FONDO CON ELEMENTOS BIOLÓGICOS ESTÁTICOS
+  ============================================ -->
+  <div class="bg-biologico" id="bgCanvas">
+    <!-- Los elementos se generarán con JavaScript -->
+  </div>
+
+  <div class="container">
+    <div class="panel">
+      <div class="panel-header">
+        <button id="btnCerrarSesion" class="btn-cerrar-sesion">🚪 Cerrar Sesión</button>
+        <h1>🏥 Laboratorio Clínico</h1>
+        <p>SISTEMA ADMINISTRATIVO - Gestión de Órdenes</p>
+      </div>
+      <div class="panel-content">
+        <div id="cargando" class="cargando-mensaje">
+          <div class="loader"></div>
+          Cargando...
+        </div>
+        
+        <div id="contenidoPrincipal" style="display: none;">
+          <div class="navbar-reportes">
+            <button class="nav-item active" data-modulo="filtros">🔍 Filtro por Fecha/Estudio</button>
+            <button class="nav-item" data-modulo="porcentaje">📊 % de Estudio</button>
+            <button class="nav-item" data-modulo="nombres">📋 Nombres por Estudio</button>
+            <button class="nav-item" data-modulo="total">💰 Total por Estudio</button>
+            <button class="nav-item" data-modulo="estadisticas">📊 Estadísticas</button>
+            <button class="nav-item" data-modulo="porcentaje-finalizados">✅ % Finalizados</button>
+            <button class="nav-item" data-modulo="promedio">📈 Promedio</button>
+          </div>
+          
+          <div class="admin-botones" style="margin-bottom: 20px;">
+            <button id="botonAbrirModal" class="btn-primario">+ Registrar Orden de Examen</button>
+          </div>
+
+          <div id="admin_formulario">
+            <div id="modulo-filtros" class="modulo-filtro active-modulo modulo-card">
+              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
+                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">🔍 Filtrar estudios por fecha</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+                  <label style="display: flex; flex-direction: column; gap: 6px;">
+                    Fecha
+                    <input id="filtro_fecha" type="date" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
+                  </label>
+                  <label style="display: flex; flex-direction: column; gap: 6px;">
+                    Estudio
+                    <select id="filtro_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
+                      <option value="">-- Seleccione un estudio --</option>
+                    </select>
+                  </label>
+                </div>
+                <button id="botonFiltrarEstudios" class="btn-secundario">🔎 Buscar cantidad</button>
+                <div id="resultadoFiltroEstudios" style="margin-top: 18px;"></div>
+              </div>
+            </div>
+
+            <div id="modulo-porcentaje" class="modulo-porcentaje modulo-card">
+              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
+                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">📊 Porcentaje de estudio sobre el total</div>
+                <div style="margin-bottom: 14px;">
+                  <label style="display: flex; flex-direction: column; gap: 6px;">
+                    Estudio a analizar
+                    <select id="porcentaje_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
+                      <option value="">-- Seleccione un estudio --</option>
+                    </select>
+                  </label>
+                </div>
+                <button id="botonCalcularPorcentaje" class="btn-secundario" style="background: #764ba2; color: white;">📊 Calcular porcentaje</button>
+                <div id="resultadoPorcentajeEstudios" style="margin-top: 18px;"></div>
+              </div>
+            </div>
+
+            <div id="modulo-nombres" class="modulo-nombres modulo-card">
+              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
+                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">📋 Nombres de pacientes por estudio</div>
+                <div style="margin-bottom: 14px;">
+                  <label style="display: flex; flex-direction: column; gap: 6px;">
+                    Estudio a analizar
+                    <select id="nombre_pacientes_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
+                      <option value="">-- Seleccione un estudio --</option>
+                    </select>
+                  </label>
+                </div>
+                <button id="botonObtenerNombres" class="btn-secundario" style="background: #764ba2; color: white;">📋 Obtener nombres</button>
+                <div id="resultadoNombrePacientesPorEstudio" style="margin-top: 18px;"></div>
+              </div>
+            </div>
+
+            <div id="modulo-total" class="modulo-total modulo-card">
+              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
+                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">💰 Total recaudado por estudio</div>
+                <div style="margin-bottom: 14px;">
+                  <label style="display: flex; flex-direction: column; gap: 6px;">
+                    Estudio a analizar
+                    <select id="total_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
+                      <option value="">-- Seleccione un estudio --</option>
+                    </select>
+                  </label>
+                </div>
+                <button id="botonObtenerTotalPorEstudio" class="btn-secundario" style="background: #764ba2; color: white;">💰 Calcular total</button>
+                <div id="resultadoTotalPorEstudio" style="margin-top: 18px;"></div>
+              </div>
+            </div>
+
+            <div id="modulo-estadisticas" class="modulo-estadisticas modulo-card">
+              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
+                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">📊 Estadísticas de Solicitudes por Estudio</div>
+                <div style="margin-bottom: 14px;">
+                  <label style="display: flex; flex-direction: column; gap: 6px;">
+                    Estudio a analizar
+                    <select id="estadisticas_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
+                      <option value="">-- Seleccione un estudio --</option>
+                    </select>
+                  </label>
+                </div>
+                <button id="botonVerEstadisticasEstudio" class="btn-secundario" style="background: #1a5f7a; color: white;">📊 Ver Estadísticas</button>
+                <div id="resultadoEstadisticasEstudio" style="margin-top: 18px;"></div>
+              </div>
+            </div>
+
+            <div id="modulo-porcentaje-finalizados" class="modulo-porcentaje-finalizados modulo-card">
+              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
+                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">✅ Porcentaje de Exámenes Finalizados</div>
+                <button id="botonPorcentajeFinalizados" class="btn-secundario" style="background: #4caf50; color: white;">✅ Calcular % Finalizados</button>
+                <div id="resultadoPorcentajeFinalizados" style="margin-top: 18px;"></div>
+              </div>
+            </div>
+
+            <div id="modulo-promedio" class="modulo-promedio modulo-card">
+              <div style="padding: 18px; border: 1px solid #dce4ec; border-radius: 16px; background: #f8fbff;">
+                <div style="font-weight: 600; color: #1a5f7a; margin-bottom: 12px;">📈 Promedio General de un Estudio</div>
+                <div style="margin-bottom: 14px;">
+                  <label style="display: flex; flex-direction: column; gap: 6px;">
+                    Estudio a analizar
+                    <select id="promedio_tipo_estudio" style="padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1;">
+                      <option value="">-- Seleccione un estudio --</option>
+                    </select>
+                  </label>
+                </div>
+                <button id="botonCalcularPromedioEstudio" class="btn-secundario" style="background: #ff9800; color: white;">📈 Calcular Promedio</button>
+                <div id="resultadoPromedioEstudio" style="margin-top: 18px;"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="seccion" style="margin-top: 32px;">
+            <div class="seccion-titulo">🖨️ Resultados Listos para Impresión</div>
+            <div id="admin_finalizados"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL REGISTRAR EXAMEN -->
+  <div id="modalExamen" class="modal">
+    <div class="modal-contenido">
+      <div class="modal-header" style="background: #1a5f7a; color: white; border-radius: 20px 20px 0 0;">
+        <h3>📝 Registrar Orden Médica</h3>
+      </div>
+      <div class="modal-body">
+        <div class="campo">
+          <label>Cédula de Identidad: <span style="color:#c0392b;">*</span></label>
+          <input type="text" id="modal_cedula" placeholder="Ej: V-12345678">
+          <small>Presione Enter para buscar</small>
+        </div>
+        <div class="campo">
+          <label>Nombre Completo: <span style="color:#c0392b;">*</span></label>
+          <input type="text" id="modal_nombre" placeholder="Ej: Manuel Flores">
+        </div>
+        <div class="campo">
+          <label>Teléfono: <span style="color:#c0392b;">*</span></label>
+          <input type="tel" id="modal_telefono" placeholder="Ej: 04121234567">
+          <small>Válidos: 0412, 0414, 0424, 0426, 0416, 0422</small>
+        </div>
+        <div class="campo">
+          <label>Estudios Solicitados: <span style="color:#c0392b;">*</span></label>
+          <div id="modal_checkboxes" class="checkbox-group">
+          </div>
+        </div>
+        <div class="campo">
+          <label>Total Provisional ($):</label>
+          <input type="number" id="modal_precio" value="0" readonly style="background:#f0f0f0; font-weight:bold; color:#2e7d32;">
+        </div>
+        <div class="campo">
+          <label>Método de Pago: <span style="color:#c0392b;">*</span></label>
+          <select id="modal_metodoPago">
+            <option value="Efectivo">💵 Efectivo</option>
+            <option value="Transferencia">🏦 Transferencia</option>
+            <option value="Pago Móvil">📱 Pago Móvil</option>
+          </select>
+        </div>
+        <div class="campo" id="campo_referencia" style="display:none;">
+          <label>Número de referencia: <span style="color:#c0392b;">*</span></label>
+          <input type="text" id="modal_referencia" placeholder="Ej: 1234567890">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="modal_btnCancelar" class="btn-secundario" style="flex:1;">❌ Cancelar</button>
+        <button id="modal_btnAceptar" class="btn-primario" style="flex:1;">✅ Registrar Orden</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================
+    // GENERAR ELEMENTOS BIOLÓGICOS ESTÁTICOS
+    // ============================================
+    (function generarElementosBiologicos() {
+      const canvas = document.getElementById('bgCanvas');
+      if (!canvas) return;
+
+      // ========== GLÓBULOS ROJOS ==========
+      const globulos = [
+        { size: 160, top: 8, left: 3 },
+        { size: 130, top: 72, left: 82 },
+        { size: 180, top: 78, left: 8 },
+        { size: 110, top: 12, left: 72 },
+        { size: 150, top: 48, left: 42 },
+        { size: 90, top: 22, left: 28 },
+        { size: 70, top: 88, left: 52 },
+        { size: 140, top: 38, left: 18 },
+        { size: 100, top: 32, left: 62 },
+        { size: 80, top: 60, left: 35 },
+      ];
+
+      globulos.forEach((g) => {
+        const div = document.createElement('div');
+        div.className = 'globulo-rojo-bg';
+        div.style.width = g.size + 'px';
+        div.style.height = g.size + 'px';
+        div.style.top = g.top + '%';
+        div.style.left = g.left + '%';
+        canvas.appendChild(div);
+      });
+
+      // ========== BACTERIAS (BASTONES) ==========
+      const bacterias = [
+        { width: 90, height: 28, top: 12, left: 18 },
+        { width: 110, height: 24, top: 55, left: 68 },
+        { width: 70, height: 20, top: 82, left: 28 },
+        { width: 100, height: 26, top: 22, left: 58 },
+        { width: 80, height: 22, top: 68, left: 12 },
+        { width: 60, height: 18, top: 42, left: 78 },
+        { width: 120, height: 30, top: 5, left: 45 },
+        { width: 75, height: 20, top: 60, left: 48 },
+        { width: 95, height: 25, top: 35, left: 8 },
+        { width: 65, height: 16, top: 90, left: 72 },
+      ];
+
+      bacterias.forEach((b) => {
+        const div = document.createElement('div');
+        div.className = 'bacteria-baston-bg';
+        div.style.width = b.width + 'px';
+        div.style.height = b.height + 'px';
+        div.style.top = b.top + '%';
+        div.style.left = b.left + '%';
+        canvas.appendChild(div);
+      });
+
+      // ========== CÉLULAS CON NÚCLEO ==========
+      const celulas = [
+        { size: 140, top: 15, left: 40 },
+        { size: 100, top: 50, left: 15 },
+        { size: 160, top: 75, left: 55 },
+        { size: 80, top: 30, left: 75 },
+        { size: 120, top: 60, left: 60 },
+        { size: 90, top: 10, left: 55 },
+        { size: 130, top: 45, left: 30 },
+        { size: 70, top: 85, left: 20 },
+        { size: 110, top: 20, left: 10 },
+        { size: 85, top: 70, left: 40 },
+      ];
+
+      celulas.forEach((c) => {
+        const div = document.createElement('div');
+        div.className = 'celula-nucleo-bg';
+        div.style.width = c.size + 'px';
+        div.style.height = c.size + 'px';
+        div.style.top = c.top + '%';
+        div.style.left = c.left + '%';
+
+        const nucleo = document.createElement('div');
+        nucleo.className = 'nucleo-bg';
+        const nucleoSize = c.size * 0.35;
+        nucleo.style.width = nucleoSize + 'px';
+        nucleo.style.height = nucleoSize + 'px';
+
+        const nucleolo = document.createElement('div');
+        nucleolo.className = 'nucleolo-bg';
+        const nucleoloSize = nucleoSize * 0.35;
+        nucleolo.style.width = nucleoloSize + 'px';
+        nucleolo.style.height = nucleoloSize + 'px';
+
+        nucleo.appendChild(nucleolo);
+        div.appendChild(nucleo);
+        canvas.appendChild(div);
+      });
+
+      // ========== HEMACIES ==========
+      const hemacies = [
+        { size: 30, top: 5, left: 10 },
+        { size: 25, top: 50, left: 90 },
+        { size: 35, top: 80, left: 5 },
+        { size: 20, top: 15, left: 85 },
+        { size: 28, top: 45, left: 55 },
+        { size: 22, top: 25, left: 25 },
+        { size: 32, top: 70, left: 70 },
+        { size: 18, top: 35, left: 45 },
+        { size: 26, top: 55, left: 20 },
+        { size: 20, top: 90, left: 40 },
+        { size: 30, top: 10, left: 50 },
+        { size: 24, top: 75, left: 85 },
+      ];
+
+      hemacies.forEach((h) => {
+        const div = document.createElement('div');
+        div.className = 'hemacie-bg';
+        div.style.width = h.size + 'px';
+        div.style.height = h.size + 'px';
+        div.style.top = h.top + '%';
+        div.style.left = h.left + '%';
+        canvas.appendChild(div);
+      });
+
+      // ========== MOLÉCULAS DE ADN ==========
+      const dnaElements = [
+        { top: 15, left: 85, size: 40 },
+        { top: 60, left: 5, size: 35 },
+        { top: 30, left: 50, size: 30 },
+        { top: 80, left: 65, size: 45 },
+        { top: 45, left: 20, size: 25 },
+        { top: 70, left: 40, size: 38 },
+        { top: 10, left: 30, size: 32 },
+        { top: 90, left: 80, size: 28 },
+      ];
+
+      dnaElements.forEach((d) => {
+        const div = document.createElement('div');
+        div.className = 'dna-molecula-bg';
+        div.style.top = d.top + '%';
+        div.style.left = d.left + '%';
+        div.style.width = d.size + 'px';
+        div.style.height = d.size + 'px';
+
+        div.innerHTML = `
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 20 10 Q 40 30, 20 50 Q 0 70, 20 90" 
+                  stroke="rgba(100, 150, 200, 0.08)" stroke-width="2" fill="none"/>
+            <path d="M 80 10 Q 60 30, 80 50 Q 100 70, 80 90" 
+                  stroke="rgba(100, 150, 200, 0.08)" stroke-width="2" fill="none"/>
+            <line x1="30" y1="25" x2="70" y2="25" stroke="rgba(100, 150, 200, 0.04)" stroke-width="1.5"/>
+            <line x1="30" y1="40" x2="70" y2="40" stroke="rgba(100, 150, 200, 0.04)" stroke-width="1.5"/>
+            <line x1="20" y1="55" x2="80" y2="55" stroke="rgba(100, 150, 200, 0.04)" stroke-width="1.5"/>
+            <line x1="30" y1="70" x2="70" y2="70" stroke="rgba(100, 150, 200, 0.04)" stroke-width="1.5"/>
+            <line x1="20" y1="85" x2="80" y2="85" stroke="rgba(100, 150, 200, 0.04)" stroke-width="1.5"/>
+            <circle cx="20" cy="10" r="3" fill="rgba(100, 150, 200, 0.03)"/>
+            <circle cx="80" cy="10" r="3" fill="rgba(100, 150, 200, 0.03)"/>
+            <circle cx="20" cy="50" r="3" fill="rgba(100, 150, 200, 0.03)"/>
+            <circle cx="80" cy="50" r="3" fill="rgba(100, 150, 200, 0.03)"/>
+            <circle cx="20" cy="90" r="3" fill="rgba(100, 150, 200, 0.03)"/>
+            <circle cx="80" cy="90" r="3" fill="rgba(100, 150, 200, 0.03)"/>
+          </svg>
+        `;
+        canvas.appendChild(div);
+      });
+
+      console.log('🔬 Elementos biológicos estáticos agregados al panel de Administrador');
+    })();
+
+    // ============================================
+    // VERIFICACIÓN DE SESIÓN - ADMIN
+    // ============================================
+    (function verificarSesion() {
+      const sesion = sessionStorage.getItem('labUser');
+      if (!sesion) {
+        window.location.href = 'index.html';
+        return;
+      }
+      try {
+        const datos = JSON.parse(sesion);
+        if (!datos.rol || !datos.timestamp) {
+          sessionStorage.removeItem('labUser');
+          window.location.href = 'index.html';
+          return;
+        }
+        if (Date.now() - datos.timestamp > 28800000) {
+          sessionStorage.removeItem('labUser');
+          window.location.href = 'index.html';
+          return;
+        }
+        if (datos.rol !== 'admin') {
+          sessionStorage.removeItem('labUser');
+          window.location.href = 'index.html';
+          return;
+        }
+      } catch (e) {
+        sessionStorage.removeItem('labUser');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const btnCerrarSesion = document.getElementById('btnCerrarSesion');
+      if (btnCerrarSesion) {
+        btnCerrarSesion.addEventListener('click', function() {
+          sessionStorage.removeItem('labUser');
+          window.location.replace('index.html');
+        });
+      }
+
+      window.history.pushState(null, '', window.location.href);
+      window.addEventListener('popstate', function () {
+        const sesionActual = sessionStorage.getItem('labUser');
+        if (!sesionActual) {
+          window.location.replace('index.html');
+        } else {
+          window.history.pushState(null, '', window.location.href);
+        }
+      });
+    })();
+  </script>
+
+  <script type="module">
+    import Cl_vAdmin from "./dist/views/Cl_vAdmin.js";
+    import Cl_vExamen from "./dist/views/Cl_vExamen.js";
+    import Cl_cExamen from "./dist/controllers/Cl_cExamen.js";
+    import Cl_cLaboratorioAdmin from "./dist/controllers/Cl_cLaboratorioAdmin.js";
+    import Cl_sEstudio from "./dist/services/Cl_sEstudio.js";
+    import Cl_mEstudio from "./dist/models/Cl_mEstudio.js";
+    
+    function inicializarNavegacionPorTabs() {
+      const botonesNav = document.querySelectorAll('.nav-item');
+      const moduloFiltros = document.getElementById('modulo-filtros');
+      const moduloPorcentaje = document.getElementById('modulo-porcentaje');
+      const moduloNombres = document.getElementById('modulo-nombres');
+      const moduloTotal = document.getElementById('modulo-total');
+      const moduloEstadisticas = document.getElementById('modulo-estadisticas');
+      const moduloPorcentajeFinalizados = document.getElementById('modulo-porcentaje-finalizados');
+      const moduloPromedio = document.getElementById('modulo-promedio');
+      
+      function activarModulo(moduloId) {
+        if (moduloFiltros) moduloFiltros.classList.remove('active-modulo');
+        if (moduloPorcentaje) moduloPorcentaje.classList.remove('active-modulo');
+        if (moduloNombres) moduloNombres.classList.remove('active-modulo');
+        if (moduloTotal) moduloTotal.classList.remove('active-modulo');
+        if (moduloEstadisticas) moduloEstadisticas.classList.remove('active-modulo');
+        if (moduloPorcentajeFinalizados) moduloPorcentajeFinalizados.classList.remove('active-modulo');
+        if (moduloPromedio) moduloPromedio.classList.remove('active-modulo');
+        
+        if (moduloId === 'filtros' && moduloFiltros) moduloFiltros.classList.add('active-modulo');
+        if (moduloId === 'porcentaje' && moduloPorcentaje) moduloPorcentaje.classList.add('active-modulo');
+        if (moduloId === 'nombres' && moduloNombres) moduloNombres.classList.add('active-modulo');
+        if (moduloId === 'total' && moduloTotal) moduloTotal.classList.add('active-modulo');
+        if (moduloId === 'estadisticas' && moduloEstadisticas) moduloEstadisticas.classList.add('active-modulo');
+        if (moduloId === 'porcentaje-finalizados' && moduloPorcentajeFinalizados) moduloPorcentajeFinalizados.classList.add('active-modulo');
+        if (moduloId === 'promedio' && moduloPromedio) moduloPromedio.classList.add('active-modulo');
+        
+        botonesNav.forEach(btn => {
+          const btnModulo = btn.getAttribute('data-modulo');
+          if (btnModulo === moduloId) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        });
+      }
+      
+      botonesNav.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const moduloId = btn.getAttribute('data-modulo');
+          if (moduloId) activarModulo(moduloId);
+        });
+      });
+      
+      activarModulo('filtros');
+    }
+
+    async function iniciarAplicacion() {
+      try {
+        await Cl_sEstudio.cargarCatálogo();
+        
+        document.getElementById("cargando").style.display = "none";
+        document.getElementById("contenidoPrincipal").style.display = "block";
+        
+        inicializarNavegacionPorTabs();
+        
+        const vAdmin = new Cl_vAdmin();
+        const vExamen = new Cl_vExamen();
+        const cExamen = new Cl_cExamen(vExamen);
+        const cLaboratorioAdmin = new Cl_cLaboratorioAdmin(vAdmin, cExamen);
+        
+      } catch (error) {
+        console.error(error);
+        document.getElementById("cargando").innerHTML = '<p style="color:red;">Error al cargar. <button onclick="location.reload()">Reintentar</button></p>';
+      }
+    }
+    
+    iniciarAplicacion();
+  </script>
+</body>
+</html>

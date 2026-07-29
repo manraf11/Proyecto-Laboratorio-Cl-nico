@@ -1,17 +1,79 @@
-// services/Cl_sAuth.ts
-import { supabase } from '../config/database.js';
+// src/services/Cl_sAuth.ts
 import Cl_mUsuario from '../models/Cl_mUsuario.js';
 
+// USAR MOCKAPI PARA USUARIOS - TABLA: users
+const API_URL = "https://6a697172b2789286ad709109.mockapi.io/user";
+
+// Hash simple para contraseñas (solo para demostración)
 function hashPassword(password: string): string {
     return btoa(password);
 }
 
-function isBrowser(): boolean {
-    return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
-}
+// Usuarios por defecto para inicializar MockAPI
+const DEFAULT_USERS = [
+    { 
+        nombre_usuario: 'admin', 
+        nombre_completo: 'Administrador del Sistema', 
+        password: 'admin123', 
+        rol: 'admin', 
+        activo: true,
+        ultimo_acceso: new Date().toISOString()
+    },
+    { 
+        nombre_usuario: 'bioanalista', 
+        nombre_completo: 'Bioanalista Principal', 
+        password: 'bio123', 
+        rol: 'bioanalista', 
+        activo: true,
+        ultimo_acceso: new Date().toISOString()
+    },
+    { 
+        nombre_usuario: 'recepcion', 
+        nombre_completo: 'Recepcionista', 
+        password: 'recep123', 
+        rol: 'admin', 
+        activo: true,
+        ultimo_acceso: new Date().toISOString()
+    }
+];
 
 export default class Cl_sAuth {
     private static usuarioActual: Cl_mUsuario | null = null;
+
+    // Inicializar usuarios en MockAPI si están vacíos
+    static async inicializarUsuarios(): Promise<void> {
+        try {
+            console.log("📥 Verificando usuarios en MockAPI...");
+            const respuesta = await fetch(API_URL);
+            
+            if (!respuesta.ok) {
+                console.error(`❌ Error al verificar usuarios: ${respuesta.status}`);
+                return;
+            }
+
+            const usuarios = await respuesta.json();
+            
+            if (usuarios.length === 0) {
+                console.log("📤 Creando usuarios por defecto en MockAPI...");
+                for (const user of DEFAULT_USERS) {
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(user)
+                    });
+                }
+                console.log("✅ Usuarios por defecto creados en MockAPI");
+                console.log(`📋 Credenciales:`);
+                DEFAULT_USERS.forEach(u => {
+                    console.log(`   👤 ${u.nombre_usuario} / 🔑 ${u.password} (${u.rol})`);
+                });
+            } else {
+                console.log(`✅ ${usuarios.length} usuarios encontrados en MockAPI`);
+            }
+        } catch (error) {
+            console.error('❌ Error al inicializar usuarios:', error);
+        }
+    }
 
     static async login(nombreUsuario: string, password: string): Promise<{ 
         success: boolean; 
@@ -19,111 +81,95 @@ export default class Cl_sAuth {
         mensaje?: string 
     }> {
         try {
+            // Inicializar usuarios si es necesario
+            await this.inicializarUsuarios();
+
             const usuarioInput = nombreUsuario.trim().toLowerCase();
-            const passwordInput = password.trim();
+            console.log(`🔍 Buscando usuario: ${usuarioInput}`);
 
-            console.log(`🔍 Intentando login para usuario: ${usuarioInput}`);
-
-            // ============================================
-            // PASO 1: Verificar en Supabase
-            // ============================================
-            const { data, error } = await supabase
-                .from('usuarios')
-                .select('*')
-                .eq('nombre_usuario', usuarioInput)
-                .eq('activo', true)
-                .maybeSingle();
-
-            if (error) {
-                console.error('❌ Error al consultar Supabase:', error);
+            // Buscar en MockAPI filtrando por nombre_usuario
+            const respuesta = await fetch(`${API_URL}?nombre_usuario=${encodeURIComponent(usuarioInput)}`);
+            
+            if (!respuesta.ok) {
+                console.error(`❌ Error HTTP: ${respuesta.status}`);
+                return { success: false, mensaje: 'Error al conectar con el servidor' };
             }
 
-            if (data) {
-                const passwordHash = hashPassword(passwordInput);
-                
-                if (data.password_hash === passwordHash) {
-                    console.log(`✅ Usuario encontrado: ${data.nombre_usuario} (${data.rol})`);
-                    
-                    await supabase
-                        .from('usuarios')
-                        .update({ ultimo_acceso: new Date().toISOString() })
-                        .eq('id', data.id);
-
-                    const usuario = new Cl_mUsuario({
-                        id: String(data.id),
-                        nombreUsuario: data.nombre_usuario,
-                        nombreCompleto: data.nombre_completo,
-                        email: data.email,
-                        passwordHash: data.password_hash,
-                        rol: data.rol,
-                        activo: data.activo,
-                        ultimoAcceso: data.ultimo_acceso,
-                        createdAt: data.created_at,
-                        updatedAt: data.updated_at
-                    });
-
-                    this.usuarioActual = usuario;
-                    return { 
-                        success: true, 
-                        usuario, 
-                        mensaje: `Bienvenido ${usuario.nombreCompleto} (${usuario.getRolLabel()})` 
-                    };
-                } else {
-                    console.warn('❌ Contraseña incorrecta para usuario:', usuarioInput);
-                    return { success: false, mensaje: 'Contraseña incorrecta' };
-                }
+            const usuarios = await respuesta.json();
+            console.log(`📊 Resultados de búsqueda: ${usuarios.length}`);
+            
+            if (!Array.isArray(usuarios) || usuarios.length === 0) {
+                console.log(`❌ Usuario no encontrado: ${usuarioInput}`);
+                return { success: false, mensaje: 'Usuario no encontrado' };
             }
 
-            // ============================================
-            // PASO 2: Usuarios demo (fallback)
-            // ============================================
-            const DEMO_USERS: Record<string, { password: string; rol: 'admin' | 'bioanalista' | 'recepcionista'; nombreCompleto: string }> = {
-                admin: { password: 'admin123', rol: 'admin', nombreCompleto: 'Administrador' },
-                bioanalista: { password: 'bio123', rol: 'bioanalista', nombreCompleto: 'Bioanalista' },
-                recepcion: { password: 'rec123', rol: 'recepcionista', nombreCompleto: 'Recepcionista' }
-            };
+            const usuarioEncontrado = usuarios[0];
+            console.log(`👤 Usuario encontrado: ${usuarioEncontrado.nombre_usuario}`);
+            
+            // Verificar si el usuario está activo
+            if (usuarioEncontrado.activo === false) {
+                console.log(`❌ Usuario inactivo: ${usuarioInput}`);
+                return { success: false, mensaje: 'Usuario inactivo' };
+            }
 
-            const demo = DEMO_USERS[usuarioInput];
-            if (demo && passwordInput === demo.password) {
-                console.log(`✅ Usuario demo encontrado: ${usuarioInput} (${demo.rol})`);
-                const usuario = new Cl_mUsuario({
-                    id: `demo-${usuarioInput}`,
-                    nombreUsuario: usuarioInput,
-                    nombreCompleto: demo.nombreCompleto,
-                    email: `${usuarioInput}@laboratorio.local`,
-                    passwordHash: hashPassword(passwordInput),
-                    rol: demo.rol,
-                    activo: true
+            // Verificar contraseña
+            if (usuarioEncontrado.password !== password) {
+                console.log(`❌ Contraseña incorrecta para: ${usuarioInput}`);
+                return { success: false, mensaje: 'Contraseña incorrecta' };
+            }
+
+            // Verificar que tenga rol válido
+            if (!usuarioEncontrado.rol || !['admin', 'bioanalista'].includes(usuarioEncontrado.rol)) {
+                console.log(`❌ Rol inválido: ${usuarioEncontrado.rol}`);
+                return { success: false, mensaje: 'Rol de usuario inválido' };
+            }
+
+            // Crear objeto usuario
+            const usuario = new Cl_mUsuario({
+                id: String(usuarioEncontrado.id),
+                nombreUsuario: usuarioEncontrado.nombre_usuario,
+                nombreCompleto: usuarioEncontrado.nombre_completo || usuarioEncontrado.nombre_usuario,
+                email: `${usuarioEncontrado.nombre_usuario}@laboratorio.local`,
+                passwordHash: hashPassword(password),
+                rol: usuarioEncontrado.rol,
+                activo: usuarioEncontrado.activo !== undefined ? usuarioEncontrado.activo : true,
+                ultimoAcceso: usuarioEncontrado.ultimo_acceso
+            });
+
+            // Actualizar último acceso
+            try {
+                await fetch(`${API_URL}/${usuarioEncontrado.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ...usuarioEncontrado,
+                        ultimo_acceso: new Date().toISOString()
+                    })
                 });
-
-                this.usuarioActual = usuario;
-                return { 
-                    success: true, 
-                    usuario, 
-                    mensaje: `Bienvenido ${usuario.nombreCompleto} (modo demo)` 
-                };
+                console.log(`🔄 Último acceso actualizado para: ${usuarioInput}`);
+            } catch (updateError) {
+                console.warn('⚠️ No se pudo actualizar último acceso:', updateError);
             }
 
-            console.warn(`❌ Usuario no encontrado: ${usuarioInput}`);
+            this.usuarioActual = usuario;
+            console.log(`✅ Usuario ${usuario.nombreUsuario} autenticado correctamente`);
+            console.log(`🎯 Rol: ${usuario.rol}`);
+
             return { 
-                success: false, 
-                mensaje: 'Usuario o contraseña incorrectos' 
+                success: true, 
+                usuario, 
+                mensaje: `Bienvenido ${usuario.nombreCompleto}` 
             };
 
         } catch (error) {
             console.error('❌ Error en login:', error);
-            return { 
-                success: false, 
-                mensaje: 'Error al iniciar sesión. Verifique la conexión a la base de datos.' 
-            };
+            return { success: false, mensaje: 'Error al iniciar sesión' };
         }
     }
 
     static logout(): void {
         this.usuarioActual = null;
-        if (isBrowser()) {
-            sessionStorage.removeItem('labUser');
-        }
+        console.log("👋 Sesión cerrada");
     }
 
     static getUsuarioActual(): Cl_mUsuario | null {
@@ -142,61 +188,60 @@ export default class Cl_sAuth {
         return this.usuarioActual?.rol === 'bioanalista';
     }
 
-    static esRecepcionista(): boolean {
-        return this.usuarioActual?.rol === 'recepcionista';
-    }
-
     static async registrarUsuario(
         nombreUsuario: string,
         nombreCompleto: string,
         email: string,
         password: string,
-        rol: 'admin' | 'bioanalista' | 'recepcionista'
+        rol: 'admin' | 'bioanalista'
     ): Promise<{ success: boolean; mensaje?: string; usuario?: Cl_mUsuario }> {
         try {
-            const usuarioInput = nombreUsuario.trim().toLowerCase();
-            const passwordHash = hashPassword(password.trim());
+            console.log(`📤 Registrando usuario ${nombreUsuario} en MockAPI...`);
 
-            const { data: existe } = await supabase
-                .from('usuarios')
-                .select('id')
-                .or(`nombre_usuario.eq.${usuarioInput},email.eq.${email.toLowerCase()}`)
-                .maybeSingle();
+            // Verificar si ya existe
+            const verificar = await fetch(`${API_URL}?nombre_usuario=${encodeURIComponent(nombreUsuario)}`);
+            const existentes = await verificar.json();
 
-            if (existe) {
-                return { success: false, mensaje: 'El usuario o email ya está registrado' };
+            if (Array.isArray(existentes) && existentes.length > 0) {
+                console.log(`❌ Usuario ya existe: ${nombreUsuario}`);
+                return { success: false, mensaje: 'El usuario ya existe' };
             }
 
-            const { data, error } = await supabase
-                .from('usuarios')
-                .insert({
-                    nombre_usuario: usuarioInput,
-                    nombre_completo: nombreCompleto.trim(),
-                    email: email.toLowerCase().trim(),
-                    password_hash: passwordHash,
-                    rol: rol,
-                    activo: true
-                })
-                .select()
-                .single();
+            const nuevoUsuario = {
+                nombre_usuario: nombreUsuario,
+                nombre_completo: nombreCompleto,
+                password: password,
+                rol: rol,
+                activo: true,
+                ultimo_acceso: new Date().toISOString()
+            };
 
-            if (error) {
-                console.error('❌ Error al registrar usuario:', error);
-                return { success: false, mensaje: 'Error al registrar usuario: ' + error.message };
-            }
-
-            const usuario = new Cl_mUsuario({
-                id: String(data.id),
-                nombreUsuario: data.nombre_usuario,
-                nombreCompleto: data.nombre_completo,
-                email: data.email,
-                passwordHash: data.password_hash,
-                rol: data.rol,
-                activo: data.activo,
-                createdAt: data.created_at
+            const respuesta = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(nuevoUsuario)
             });
 
+            if (!respuesta.ok) {
+                throw new Error(`HTTP ${respuesta.status}`);
+            }
+
+            const datos = await respuesta.json();
+            
+            const usuario = new Cl_mUsuario({
+                id: String(datos.id),
+                nombreUsuario: datos.nombre_usuario,
+                nombreCompleto: datos.nombre_completo,
+                email: email,
+                passwordHash: hashPassword(password),
+                rol: datos.rol,
+                activo: datos.activo,
+                ultimoAcceso: datos.ultimo_acceso
+            });
+
+            console.log(`✅ Usuario ${nombreUsuario} registrado en MockAPI`);
             return { success: true, usuario, mensaje: 'Usuario registrado exitosamente' };
+
         } catch (error) {
             console.error('❌ Error al registrar usuario:', error);
             return { success: false, mensaje: 'Error al registrar usuario' };
@@ -209,39 +254,65 @@ export default class Cl_sAuth {
         passwordNuevo: string
     ): Promise<{ success: boolean; mensaje?: string }> {
         try {
-            const { data: usuario } = await supabase
-                .from('usuarios')
-                .select('password_hash')
-                .eq('id', parseInt(usuarioId))
-                .maybeSingle();
+            console.log(`🔄 Cambiando contraseña para usuario ${usuarioId}...`);
 
-            if (!usuario) {
+            // Obtener usuario actual
+            const respuesta = await fetch(`${API_URL}/${usuarioId}`);
+            if (!respuesta.ok) {
                 return { success: false, mensaje: 'Usuario no encontrado' };
             }
 
-            const hashActual = hashPassword(passwordActual);
-            if (usuario.password_hash !== hashActual) {
+            const usuario = await respuesta.json();
+
+            // Verificar contraseña actual
+            if (usuario.password !== passwordActual) {
                 return { success: false, mensaje: 'Contraseña actual incorrecta' };
             }
 
-            const nuevoHash = hashPassword(passwordNuevo);
-            const { error } = await supabase
-                .from('usuarios')
-                .update({ 
-                    password_hash: nuevoHash,
-                    updated_at: new Date().toISOString()
+            // Actualizar contraseña
+            const update = await fetch(`${API_URL}/${usuarioId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...usuario,
+                    password: passwordNuevo
                 })
-                .eq('id', parseInt(usuarioId));
+            });
 
-            if (error) {
-                console.error('❌ Error al cambiar password:', error);
-                return { success: false, mensaje: 'Error al cambiar la contraseña' };
+            if (!update.ok) {
+                return { success: false, mensaje: 'Error al actualizar contraseña' };
             }
 
+            console.log(`✅ Contraseña actualizada para usuario ${usuarioId}`);
             return { success: true, mensaje: 'Contraseña actualizada exitosamente' };
+
         } catch (error) {
             console.error('❌ Error al cambiar password:', error);
             return { success: false, mensaje: 'Error al cambiar la contraseña' };
+        }
+    }
+
+    // Método para obtener todos los usuarios (útil para administración)
+    static async obtenerTodosUsuarios(): Promise<Cl_mUsuario[]> {
+        try {
+            const respuesta = await fetch(API_URL);
+            if (!respuesta.ok) {
+                throw new Error(`HTTP ${respuesta.status}`);
+            }
+            const datos = await respuesta.json();
+            return datos.map((item: any) => new Cl_mUsuario({
+                id: String(item.id),
+                nombreUsuario: item.nombre_usuario,
+                nombreCompleto: item.nombre_completo,
+                email: `${item.nombre_usuario}@laboratorio.local`,
+                passwordHash: '',
+                rol: item.rol,
+                activo: item.activo,
+                ultimoAcceso: item.ultimo_acceso
+            }));
+        } catch (error) {
+            console.error('❌ Error al obtener usuarios:', error);
+            return [];
         }
     }
 }

@@ -6,7 +6,7 @@ export interface IUsuario {
     nombreCompleto: string;
     email: string;
     passwordHash: string;
-    rol: 'admin' | 'bioanalista' | 'recepcionista';
+    rol: 'admin' | 'bioanalista';
     activo: boolean;
     ultimoAcceso?: string;
     createdAt?: string;
@@ -19,7 +19,7 @@ export default class Cl_mUsuario {
     public nombreCompleto: string;
     public email: string;
     public passwordHash: string;
-    public rol: 'admin' | 'bioanalista' | 'recepcionista';
+    public rol: 'admin' | 'bioanalista';
     public activo: boolean;
     public ultimoAcceso?: string;
     public createdAt?: string;
@@ -46,11 +46,6 @@ export default class Cl_mUsuario {
     // Verificar si es bioanalista
     public esBioanalista(): boolean {
         return this.rol === 'bioanalista';
-    }
-
-    // Verificar si es recepcionista
-    public esRecepcionista(): boolean {
-        return this.rol === 'recepcionista';
     }
 
     // Verificar si el usuario está activo
@@ -90,8 +85,8 @@ export default class Cl_mUsuario {
             errores.push('La contraseña debe tener al menos 6 caracteres');
         }
 
-        if (!this.rol || !['admin', 'bioanalista', 'recepcionista'].includes(this.rol)) {
-            errores.push('El rol debe ser admin, bioanalista o recepcionista');
+        if (!this.rol || !['admin', 'bioanalista'].includes(this.rol)) {
+            errores.push('El rol debe ser admin o bioanalista');
         }
 
         return {
@@ -107,8 +102,6 @@ export default class Cl_mUsuario {
 
     // Obtener rol en español
     public getRolLabel(): string {
-        if (this.rol === 'admin') return 'Administrador';
-        if (this.rol === 'bioanalista') return 'Bioanalista';
-        return 'Recepcionista';
+        return this.rol === 'admin' ? 'Administrador' : 'Bioanalista';
     }
 }

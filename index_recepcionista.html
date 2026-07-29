@@ -146,7 +146,7 @@
       border: 1px solid #dce4ec;
     }
     .panel-header { 
-      background: #1a5f7a; 
+      background: linear-gradient(145deg, #1a5f7a 0%, #0d3f52 100%);
       color: white; 
       padding: 16px 20px; 
       text-align: center; 
@@ -748,29 +748,37 @@
 
     (function verificarSesion() {
       const sesion = sessionStorage.getItem('labUser');
-      if (!sesion) { window.location.href = 'indexlogin.html'; return; }
+      if (!sesion) { window.location.href = 'index.html'; return; }
       try {
         const datos = JSON.parse(sesion);
-        if (!datos.rol || !datos.timestamp || Date.now() - datos.timestamp > 28800000 || datos.rol !== 'recepcionista') {
+        if (!datos.rol || !datos.timestamp || Date.now() - datos.timestamp > 28800000) {
           sessionStorage.removeItem('labUser');
-          window.location.href = 'indexlogin.html';
+          window.location.href = 'index.html';
           return;
         }
+        // Permitir acceso a recepcionista y admin (ambos pueden ver esta vista)
+        if (datos.rol !== 'recepcionista' && datos.rol !== 'admin') {
+          sessionStorage.removeItem('labUser');
+          window.location.href = 'index.html';
+          return;
+        }
+        // Si es admin, también puede acceder
+        console.log(`✅ Sesión iniciada como: ${datos.usuario} (${datos.rol})`);
       } catch(e) {
         sessionStorage.removeItem('labUser');
-        window.location.href = 'indexlogin.html';
+        window.location.href = 'index.html';
         return;
       }
 
       document.getElementById('btnCerrarSesion').addEventListener('click', function() {
         sessionStorage.removeItem('labUser');
-        window.location.replace('indexlogin.html');
+        window.location.replace('index.html');
       });
 
       window.history.pushState(null, '', window.location.href);
       window.addEventListener('popstate', function () {
         if (!sessionStorage.getItem('labUser')) {
-          window.location.replace('indexlogin.html');
+          window.location.replace('index.html');
         } else {
           window.history.pushState(null, '', window.location.href);
         }
@@ -784,7 +792,6 @@
     import Cl_cExamen from "./dist/controllers/Cl_cExamen.js";
     import Cl_cLaboratorioRec from "./dist/controllers/Cl_cLaboratorioRec.js";
     import Cl_sEstudio from "./dist/services/Cl_sEstudio.js";
-    import Cl_mEstudio from "./dist/models/Cl_mEstudio.js";
     
     function inicializarNavegacionPorTabs() {
       const botonesNav = document.querySelectorAll('.nav-item');
@@ -818,7 +825,7 @@
         const vExamen = new Cl_vExamen();
         const cExamen = new Cl_cExamen(vExamen);
         const cLaboratorioRec = new Cl_cLaboratorioRec(vRec, cExamen);
-        console.log("Aplicación Recepcionista iniciada");
+        console.log("✅ Aplicación Recepcionista iniciada");
       } catch (error) {
         console.error(error);
         document.getElementById("cargando").innerHTML = '<p style="color:red;">Error al cargar. <button onclick="location.reload()">Reintentar</button></p>';
